@@ -1,0 +1,151 @@
+{% extends "layout.html" %}
+    {% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">{% if form.submit.label.text == 'Update Deal' %}Edit Pipeline{% else %}New Pipeline{% endif %}</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {{ form.submit(class="btn btn-md btn-outline-info mr-2") }}
+        <input type="reset" class="btn btn-md btn-outline-secondary mr-2" />
+        <a href="{{ url_for('deals.get_deals_view') }}" class="btn btn-md btn-outline-secondary" role="button">
+            <span data-feather="arrow-left"></span>
+              Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.title.label }}
+                {{ form.title(class="form-control") }}
+                <div class="invalid-feedback" style="{% if form.title.errors %}display:block;{% endif %}">
+                {% for error in form.title.errors %}
+                    {{ error }}
+                {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        {{ form.expected_close_price.label }}
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    {{ config.def_currency.symbol }}
+                                </span>
+                            </div>
+                            {{ form.expected_close_price(class="form-control") }}
+                        </div>
+                        <div class="invalid-feedback" style="{% if form.expected_close_price.errors %}display:block;{% endif %}">
+                        {% for error in form.expected_close_price.errors %}
+                            {{ error }}
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        {{ form.expected_close_date.label }}
+                        {{ form.expected_close_date(class="form-control datepicker") }}
+                        <div class="invalid-feedback" style="{% if form.expected_close_date.errors %}display:block;{% endif %}">
+                        {% for error in form.expected_close_date.errors %}
+                            {{ error }}
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        {{ form.deal_stages.label(class_="", id_="pipeStageLabel") }}
+                        {{ form.deal_stages(class="form-control custom-select") }}
+                        <div class="invalid-feedback" style="{% if form.deal_stages.errors %}display:block;{% endif %}">
+                        {% for error in form.deal_stages.errors %}
+                            {{ error }}
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        {{ form.probability.label }}
+                        {{ form.probability(class="form-control") }}
+                        <div class="invalid-feedback" style="{% if form.probability.errors %}display:block;{% endif %}">
+                        {% for error in form.probability.errors %}
+                            {{ error }}
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                {{ form.clients.label }}
+                {% if not form.clients.render_kw or form.clients.render_kw.get('disabled', False) != True %}
+                    {{ form.clients(class="form-control selectpicker", id="client_select", data_live_search="true", data_none_selected_text="Select a client...") }}
+                {% else %}
+                    <p>{{ form.clients.data.first_name }} {{ form.clients.data.last_name }}</p>
+                    {{ form.clients(id="client_select", style="display:none;") }}
+                {% endif %}
+                <div class="invalid-feedback" style="{% if form.clients.errors %}display:block;{% endif %}">
+                {% for error in form.clients.errors %}
+                    {{ error }}
+                {% endfor %}
+                </div>
+            </div>
+            {% if current_user.is_admin %}
+            <div class="form-group">
+                {{ form.assignees.label }}
+                {{ form.assignees(class="form-control selectpicker", id="assignee_select", data_live_search="true", data_none_selected_text="Select a team member...") }}
+                <div class="invalid-feedback" style="{% if form.assignees.errors %}display:block;{% endif %}">
+                {% for error in form.assignees.errors %}
+                    {{ error }}
+                {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <div class="form-group">
+                {{ form.notes.label }}
+                {{ form.notes(class="form-control", rows=3) }}
+                <div class="invalid-feedback" style="{% if form.notes.errors %}display:block;{% endif %}">
+                {% for error in form.notes.errors %}
+                    {{ error }}
+                {% endfor %}
+                </div>
+            </div>
+            {{ form.submit(class="btn btn-outline-primary") }}
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+    $(document).ready(function() {
+        $('.datepicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm',
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-screenshot',
+                clear: 'fa fa-trash',
+                close: 'fa fa-remove'
+            }
+        });
+        
+        // Change label text
+        $('#pipeStageLabel').text('Pipe Stage');
+        
+        {% if form.submit.label.text == 'Update Deal' %}
+            $('#submit').val('Update Pipeline');
+        {% else %}
+            $('#submit').val('Create Pipeline');
+        {% endif %}
+    });
+</script>
+{% endblock %}

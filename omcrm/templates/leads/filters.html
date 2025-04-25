@@ -1,0 +1,60 @@
+{% if current_user.is_admin %}
+<div class="filters border mb-3 rounded p-3 bg-light">
+    <h5 class="mb-3">Filters</h5>
+    <form method="POST" action="{{ url_for('leads.get_leads_view') }}">
+        {{ form.hidden_tag() }}
+        <div class="row align-items-end">
+            <div class="col-md-4 col-lg-3 mb-2">
+                <div class="form-group">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control", placeholder="Search...") }}
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 mb-2">
+                <div class="form-group">
+                    {{ form.source.label(class="form-label") }}
+                    {{ form.source(class="form-control") }}
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 mb-2">
+                <div class="form-group">
+                    {{ form.status.label(class="form-label") }}
+                    {{ form.status(class="form-control") }}
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 mb-2">
+                <div class="form-group">
+                    {{ form.owner.label(class="form-label") }}
+                    {{ form.owner(class="form-control") }}
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 mb-2">
+                <div class="form-group">
+                    {{ form.created_date_from.label(class="form-label") }}
+                    {{ form.created_date_from(class="form-control", type="date") }}
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 mb-2">
+                <div class="form-group">
+                    {{ form.created_date_to.label(class="form-label") }}
+                    {{ form.created_date_to(class="form-control", type="date") }}
+                </div>
+            </div>
+            <div class="col-md-3 col-lg-2 mb-2">
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="filter" class="icon-sm me-1"></i> Filter Leads
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3 col-lg-2 mb-2">
+                <div class="d-grid">
+                    <a href="{{ url_for('leads.reset_filters') }}" class="btn btn-outline-secondary">
+                        <i data-feather="refresh-cw" class="icon-sm me-1"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endif %}

@@ -1,0 +1,201 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Manage Pipeline Stages</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStageModal">
+                            <i class="fas fa-plus"></i> Add New Stage
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Configure the stages that a pipeline can move through. Stages are displayed in order from left to right in the pipeline board.</p>
+                    
+                    {% if stages %}
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Stage Name</th>
+                                <th>Display Order</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stageTableBody">
+                            {% for stage in stages %}
+                            <tr data-stage-id="{{ stage.id }}">
+                                <td>{{ stage.stage_name }}</td>
+                                <td>{{ stage.display_order }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info edit-stage" data-stage-id="{{ stage.id }}" data-stage-name="{{ stage.stage_name }}">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-stage" data-stage-id="{{ stage.id }}" data-stage-name="{{ stage.stage_name }}">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No pipeline stages defined yet. Add your first stage to get started.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Stage Modal -->
+<div class="modal fade" id="addStageModal" tabindex="-1" aria-labelledby="addStageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStageModalLabel">Add New Pipeline Stage</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('deals.manage_deal_stages') }}">
+                {{ form.hidden_tag() }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="stage_name" class="form-label">Stage Name</label>
+                        <input type="text" class="form-control" id="stage_name" name="stage_name" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Stage</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Stage Modal -->
+<div class="modal fade" id="editStageModal" tabindex="-1" aria-labelledby="editStageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editStageModalLabel">Edit Pipeline Stage</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editStageForm">
+                {{ form.hidden_tag() }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_stage_name" class="form-label">Stage Name</label>
+                        <input type="text" class="form-control" id="edit_stage_name" name="stage_name" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Stage Modal -->
+<div class="modal fade" id="deleteStageModal" tabindex="-1" aria-labelledby="deleteStageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteStageModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="deleteStageForm">
+                {{ form.hidden_tag() }}
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the pipeline stage "<span id="deleteStageNameDisplay"></span>"?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Warning: This action cannot be undone. Any pipelines in this stage will need to be reassigned.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Stage</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Handle edit button clicks
+        $('.edit-stage').click(function() {
+            var stageId = $(this).data('stage-id');
+            var stageName = $(this).data('stage-name');
+            
+            $('#edit_stage_name').val(stageName);
+            $('#editStageForm').attr('action', "{{ url_for('deals.edit_deal_stage', stage_id=0) }}".replace('0', stageId));
+            
+            var editModal = new bootstrap.Modal(document.getElementById('editStageModal'));
+            editModal.show();
+        });
+        
+        // Handle delete button clicks
+        $('.delete-stage').click(function() {
+            var stageId = $(this).data('stage-id');
+            var stageName = $(this).data('stage-name');
+            
+            $('#deleteStageNameDisplay').text(stageName);
+            $('#deleteStageForm').attr('action', "{{ url_for('deals.delete_deal_stage', stage_id=0) }}".replace('0', stageId));
+            
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteStageModal'));
+            deleteModal.show();
+        });
+        
+        // Make the table rows sortable (for reordering stages)
+        $("#stageTableBody").sortable({
+            update: function(event, ui) {
+                // Get the new order
+                var newOrder = [];
+                $('#stageTableBody tr').each(function(index) {
+                    newOrder.push({
+                        id: $(this).data('stage-id'),
+                        order: index + 1
+                    });
+                });
+                
+                // Send the new order to the server
+                $.ajax({
+                    url: "{{ url_for('deals.reorder_stages') }}",
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        stages: newOrder,
+                        csrf_token: "{{ csrf_token() }}"
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            // Update the display order in the table
+                            $('#stageTableBody tr').each(function(index) {
+                                $(this).find('td:nth-child(2)').text(index + 1);
+                            });
+                            
+                            // Show a success message
+                            toastr.success('Stage order updated successfully');
+                        } else {
+                            toastr.error('Failed to update stage order');
+                        }
+                    },
+                    error: function() {
+                        toastr.error('An error occurred while updating stage order');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %} 

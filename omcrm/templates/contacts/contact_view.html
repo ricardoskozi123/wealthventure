@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+    {% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h2 class="h4">{% if title %}{{title}}{% else %}No Title{% endif %}</h2>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ url_for('contacts.update_contact', contact_id=contact.id) }}"
+               class="btn btn-md btn-outline-primary mr-2" role="button">
+                <span data-feather="edit-2"></span>
+                  Edit
+            </a>
+            <a href="{{ url_for('contacts.get_contacts_view') }}" class="btn btn-md btn-outline-secondary" role="button">
+                <span data-feather="arrow-left"></span>
+                  Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-5">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item g_field col-12">
+                    <div class="row">
+                      <div class="col-6">
+                          <div class="label">First Name</div>
+                          <div class="text">{{ contact.first_name if contact.last_name else '_' }}</div>
+                      </div>
+                      <div class="col-6">
+                          <div class="label">Last Name</div>
+                          <div class="text">{{ contact.last_name if contact.last_name else '_' }}</div>
+                      </div>
+                  </div>
+                </li>
+                <li class="list-group-item g_field">
+                  <div class="label">Email</div>
+                    {% if contact.email %}
+                        <div class="text">
+                            <span data-feather="mail" class="mr-1"></span>
+                            <a href="mailto: {{ contact.email }}">{{ contact.email }}</a>
+                        </div>
+                    {% else %}
+                        <div class="text"><span data-feather="mail"></span> _</div>
+                    {% endif %}
+              </li>
+                <li class="list-group-item g_field col-12">
+                    <div class="row">
+                      <div class="col-6">
+                          <div class="label">Phone</div>
+                          <div class="text">
+                              <span data-feather="phone" class="mr-1"></span> {{ contact.phone if contact.phone else '_' }}
+                          </div>
+                      </div>
+                      <div class="col-6">
+                          <div class="label">Mobile</div>
+                          <div class="text">
+                              <span data-feather="smartphone" class="mr-1"></span> {{ contact.mobile if contact.mobile else '_' }}
+                          </div>
+                      </div>
+                    </div>
+              </li>
+
+                <li class="list-group-item g_field">
+                  <div class="label">Owner</div>
+                    {% if contact.contact_owner %}
+                    <div class="text">
+                        <div class="mt-1">
+                            {% with owner=contact.contact_owner %}{% include 'common/owner_cell.html' %}{% endwith %}
+                        </div>
+                    </div>
+                    {% else %}
+                        <div class="text">_</div>
+                    {% endif %}
+              </li>
+
+            </ul>
+        </div>
+        <div class="col-5">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item g_field col-12">
+                  <div class="label">Address</div>
+                  <div class="text">{{ contact.address_line if contact.address_line else '_' }}</div>
+              </li>
+              <li class="list-group-item g_field col-12">
+                  <div class="row">
+                      <div class="col-6">
+                          <div class="label">State</div>
+                          <div class="text">{{ contact.addr_state if contact.addr_state else '_' }}</div>
+                      </div>
+                      <div class="col-6">
+                          <div class="label">City</div>
+                          <div class="text">{{ contact.addr_city if contact.addr_city else '_' }}</div>
+                      </div>
+                  </div>
+              </li>
+                <li class="list-group-item g_field col-12">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="label">Postcode</div>
+                            <div class="text">{{ contact.post_code if contact.post_code else '_' }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="label">Country</div>
+                            <div class="text">{{ contact.country if contact.country else '_' }}</div>
+                        </div>
+                    </div>
+              </li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-10">
+            <div></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item g_field col-12">
+                    <div class="label">Notes</div>
+                    <div class="text">{{ contact.notes if contact.notes else '_' }}</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-10 mt-4">
+            <ul class="nav nav-tabs">
+              <li class="nav-item">
+                  <a href="#deals-tab" data-toggle="tab" role="tab" aria-controls="deals" aria-selected="true"
+                     class="nav-link active">Deals</a>
+              </li>
+            </ul>
+            <div class="tab-content p-4">
+              <div class="tab-pane fade show active" id="deals-tab" role="tabpanel" aria-labelledby="deals-tab">
+                <div class="mt-2 mb-4">Deals associated with this contact</div>
+                  {% if contact.deals|length > 0 %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Account</th>
+                                    <th>Price (USD)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for deal in contact.deals %}
+                                    <tr>
+                                        <td>{{ deal.title }}</td>
+                                        <td>{{ deal.account.name }}</td>
+                                        <td>{{ deal.expected_close_price }}</td>
+                                        <td>{{ deal.title }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                  {% else %}
+                    <p>No deals</p>
+                  {% endif %}
+              </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}

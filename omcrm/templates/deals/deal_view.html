@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+    {% block content %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <h4 class="card-title m-0">Pipeline Details</h4>
+            <div>
+                <a href="{{ url_for('deals.update_deal', deal_id=deal.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Title:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ deal.title }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Expected Close Price:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ config.def_currency.symbol }} {{ "{:,.2f}".format(deal.expected_close_price) }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Expected Close Date:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ deal.expected_close_date.strftime('%Y-%m-%d') if deal.expected_close_date }}
+                            {% if deal.is_expired() %}
+                                <span class="badge badge-danger">Expired</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Pipe Stage:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ deal.dealstage.stage_name }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Probability:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 mr-2" style="height: 8px; max-width: 200px;">
+                                    {% if deal.probability < 30 %}
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ deal.probability }}%"></div>
+                                    {% elif deal.probability < 70 %}
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ deal.probability }}%"></div>
+                                    {% else %}
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ deal.probability }}%"></div>
+                                    {% endif %}
+                                </div>
+                                <span>{{ deal.probability }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Notes:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ deal.notes or 'No notes available' }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title m-0">Client Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>Name:</strong> 
+                                <a href="{{ url_for('leads.get_lead_view', lead_id=deal.client_id) }}">
+                                    {{ deal.client.first_name }} {{ deal.client.last_name }}
+                                </a>
+                            </div>
+                            {% if deal.client.company_name %}
+                            <div class="mb-2">
+                                <strong>Company:</strong> {{ deal.client.company_name }}
+                            </div>
+                            {% endif %}
+                            {% if deal.client.email %}
+                            <div class="mb-2">
+                                <strong>Email:</strong> <a href="mailto:{{ deal.client.email }}">{{ deal.client.email }}</a>
+                            </div>
+                            {% endif %}
+                            {% if deal.client.phone %}
+                            <div class="mb-2">
+                                <strong>Phone:</strong> <a href="tel:{{ deal.client.phone }}">{{ deal.client.phone }}</a>
+                            </div>
+                            {% endif %}
+                            <div class="mb-2">
+                                <strong>Owner:</strong> 
+                                {% if deal.owner %}
+                                    {{ deal.owner.username }}
+                                {% else %}
+                                    Unassigned
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}

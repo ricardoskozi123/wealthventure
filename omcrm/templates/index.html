@@ -1,0 +1,481 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="dashboard-header slide-in-left">
+    <h1 class="dashboard-title">{% if title %}{{title}}{% else %}Dashboard{% endif %}</h1>
+    <p class="dashboard-subtitle">Welcome back, {{ current_user.first_name }}! Here's what's happening with your business today.</p>
+</div>
+
+<!-- Stats Overview -->
+<div class="row fade-in">
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="stats-icon primary">
+                <i data-feather="users"></i>
+            </div>
+            <div class="stats-info">
+                <h3>{{ total_leads }}</h3>
+                <p>Total Clients</p>
+                <div class="stats-progress">
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span>Assigned to you</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="stats-icon success">
+                <i data-feather="dollar-sign"></i>
+            </div>
+            <div class="stats-info">
+                <h3>{{ total_deals }}</h3>
+                <p>Deal Value</p>
+                <div class="stats-progress">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span>Your active deals</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="stats-icon warning">
+                <i data-feather="activity"></i>
+            </div>
+            <div class="stats-info">
+                <h3>{{ conversion_rate }}</h3>
+                <p>Conversion Rate</p>
+                <div class="stats-progress">
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 45%" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span>Deals Won / Total Deals</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="stats-card">
+            <div class="stats-icon danger">
+                <i data-feather="calendar"></i>
+            </div>
+            <div class="stats-info">
+                <h3>{{ total_tasks }}</h3>
+                <p>Total Tasks</p>
+                <div class="stats-progress">
+                    <div class="progress">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span>{{ activities_due }} due today</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row slide-in-left">
+    <!-- Revenue Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Revenue Overview</h5>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        This Month
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="#">This Week</a>
+                        <a class="dropdown-item" href="#">This Month</a>
+                        <a class="dropdown-item" href="#">This Quarter</a>
+                        <a class="dropdown-item" href="#">This Year</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leads by Source -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Leads by Source</h5>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        All Time
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="#">This Month</a>
+                        <a class="dropdown-item" href="#">This Quarter</a>
+                        <a class="dropdown-item" href="#">This Year</a>
+                        <a class="dropdown-item" href="#">All Time</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="leadsSourceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity and Upcoming Tasks -->
+<div class="row fade-in">
+    <!-- Recent Activity -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Activity</h5>
+                <a href="{{ url_for('activities.activities_list') }}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <span class="badge 
+                                            {% if 'created' in activity.action_type %}bg-success
+                                            {% elif 'deleted' in activity.action_type %}bg-danger
+                                            {% elif 'updated' in activity.action_type %}bg-info
+                                            {% elif 'approved' in activity.action_type %}bg-success
+                                            {% elif 'rejected' in activity.action_type %}bg-danger
+                                            {% elif 'comment' in activity.action_type %}bg-primary
+                                            {% elif 'deposit' in activity.action_type %}bg-success
+                                            {% elif 'withdrawal' in activity.action_type %}bg-warning
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ activity.action_type|replace('_', ' ')|title }}
+                                        </span>
+                                    </h6>
+                                    <p class="mb-1 text-muted">{{ activity.description }}</p>
+                                    {% if activity.user_id and activity.user_id in users %}
+                                    <small class="text-muted">
+                                        By {{ users[activity.user_id].username }}
+                                        {% if activity.lead_id and activity.lead_id in leads %}
+                                        for <a href="{{ url_for('leads.get_lead_view', lead_id=activity.lead_id) }}">{{ leads[activity.lead_id].first_name }} {{ leads[activity.lead_id].last_name }}</a>
+                                        {% endif %}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ activity.timestamp|timeago }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item">
+                            <div class="text-center py-3">
+                                <p class="mb-0">No recent activities.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upcoming Tasks -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Upcoming Tasks</h5>
+                <a href="{{ url_for('tasks.create_task') }}" class="btn btn-sm btn-primary">Add Task</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% if tasks|length > 0 %}
+                        {% for task in tasks %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input task-checkbox" type="checkbox" value="{{ task.id }}" id="task{{ task.id }}" data-task-id="{{ task.id }}">
+                                    <label class="form-check-label" for="task{{ task.id }}">
+                                        <h6 class="mb-1">{{ task.title }}</h6>
+                                        <p class="mb-1 text-muted">
+                                            {% if task.is_overdue_method() %}
+                                                <span class="text-danger">{{ task.due_date.strftime('%b %d, %H:%M') }} (Overdue)</span>
+                                            {% elif task.due_date.date() == today.date() %}
+                                                Due today at {{ task.due_date.strftime('%H:%M') }}
+                                            {% elif task.due_date.date() == (today + timedelta(days=1)).date() %}
+                                                Due tomorrow
+                                            {% else %}
+                                                {{ task.short_due_date }}
+                                            {% endif %}
+                                            {% if task.assignee_id and task.assignee_id in users %}
+                                                • Assigned to {{ users[task.assignee_id].first_name }}
+                                            {% endif %}
+                                        </p>
+                                    </label>
+                                </div>
+                                <span class="badge {% if task.priority == 'high' %}bg-danger{% elif task.priority == 'medium' %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ task.priority_label }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item">
+                            <div class="text-center py-3">
+                                <p class="mb-0">No upcoming tasks. Create a task to get started.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Deals -->
+<div class="row slide-in-left">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Pipeline</h5>
+                <a href="{{ url_for('deals.get_deals_view') }}" class="btn btn-sm btn-primary">View All Pipelines</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Pipeline</th>
+                                <th>Client</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Probability</th>
+                                <th>Expected Close</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_deals %}
+                                {% for deal in recent_deals %}
+                                <tr>
+                                    <td><a href="{{ url_for('deals.get_deal_view', deal_id=deal.id) }}">{{ deal.title }}</a></td>
+                                    <td>{{ deal.client.first_name }} {{ deal.client.last_name }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if deal.dealstage.stage_name == 'Won' %}bg-success
+                                            {% elif deal.dealstage.stage_name == 'Negotiation' %}bg-warning
+                                            {% elif deal.dealstage.stage_name == 'Proposal' %}bg-primary
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ deal.dealstage.stage_name }}
+                                        </span>
+                                    </td>
+                                    <td>${{ "{:,.2f}".format(deal.expected_close_price) }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                <div class="progress-bar 
+                                                    {% if deal.probability < 30 %}bg-danger
+                                                    {% elif deal.probability < 70 %}bg-warning
+                                                    {% else %}bg-success{% endif %}" 
+                                                    role="progressbar" 
+                                                    style="width: {{ deal.probability }}%"></div>
+                                            </div>
+                                            <small>{{ deal.probability }}%</small>
+                                        </div>
+                                    </td>
+                                    <td>{{ deal.expected_close_date.strftime('%b %d, %Y') if deal.expected_close_date }}</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i data-feather="more-vertical" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="{{ url_for('deals.get_deal_view', deal_id=deal.id) }}">View</a></li>
+                                                <li><a class="dropdown-item" href="{{ url_for('deals.update_deal', deal_id=deal.id) }}">Edit</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-3">No recent deals found.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<!-- Setup chart data after DOM is loaded -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize feather icons
+    feather.replace();
+    
+    // Revenue Chart - Deal Won values by month
+    var revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    var revenueChart = new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: {{ months|tojson }},
+            datasets: [{
+                label: 'Won Deal Revenue',
+                data: {{ monthly_revenue|tojson }},
+                backgroundColor: 'rgba(72, 149, 239, 0.2)',
+                borderColor: 'rgba(72, 149, 239, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: 'rgba(72, 149, 239, 1)',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false,
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Revenue: $' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Leads by Source Chart - Real source data
+    var sourcesCtx = document.getElementById('leadsSourceChart').getContext('2d');
+    var sourcesChart = new Chart(sourcesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ source_names|tojson }},
+            datasets: [{
+                data: {{ source_counts|tojson }},
+                backgroundColor: {{ source_colors|tojson }},
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        boxWidth: 12
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.label || '';
+                            var value = context.parsed || 0;
+                            var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            var percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                            return label + ': ' + value + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Task completion via AJAX
+    const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+    taskCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                const taskId = this.dataset.taskId;
+                
+                // Create form data
+                const formData = new FormData();
+                formData.append('task_id', taskId);
+                
+                // Send AJAX request
+                fetch('/tasks/complete', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Fade out the task item
+                        const taskItem = this.closest('.list-group-item');
+                        taskItem.style.opacity = '0.5';
+                        
+                        // Optionally remove after a delay
+                        setTimeout(() => {
+                            taskItem.remove();
+                            
+                            // Check if tasks are empty and show a message
+                            const remainingTasks = document.querySelectorAll('.task-checkbox').length;
+                            if (remainingTasks === 0) {
+                                const listGroup = document.querySelector('.list-group-flush');
+                                listGroup.innerHTML = `
+                                    <div class="list-group-item">
+                                        <div class="text-center py-3">
+                                            <p class="mb-0">No upcoming tasks. Create a task to get started.</p>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }, 1000);
+                    } else {
+                        // Reset checkbox if there was an error
+                        this.checked = false;
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    this.checked = false;
+                    console.error('Error completing task:', error);
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

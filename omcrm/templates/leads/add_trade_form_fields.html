@@ -1,0 +1,122 @@
+{{ form.csrf_token }}
+
+<div class="form-group mb-3">
+    <label class="form-control-label">Instrument</label>
+    <select class="form-control form-control-lg" id="instrument_id" name="instrument_id" required>
+        <option value="">Select Instrument</option>
+        {% for instrument in instruments %}
+            <option value="{{ instrument.id }}">{{ instrument.symbol }} - {{ instrument.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="form-group mb-3">
+    {{ form.amount.label(class_="form-control-label") }}
+    {% if form.amount.errors %}
+        {{ form.amount(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.amount.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.amount(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<div class="form-group mb-3">
+    {{ form.trade_type.label(class_="form-control-label") }}
+    {% if form.trade_type.errors %}
+        {{ form.trade_type(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.trade_type.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.trade_type(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<div class="form-group mb-3">
+    {{ form.order_type.label(class_="form-control-label") }}
+    {% if form.order_type.errors %}
+        {{ form.order_type(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.order_type.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.order_type(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            {{ form.bid_price.label(class_="form-control-label") }}
+            {% if form.bid_price.errors %}
+                {{ form.bid_price(class="form-control form-control-lg is-invalid") }}
+                <div class="invalid-feedback">
+                    {% for error in form.bid_price.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.bid_price(class="form-control form-control-lg") }}
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            {{ form.ask_price.label(class_="form-control-label") }}
+            {% if form.ask_price.errors %}
+                {{ form.ask_price(class="form-control form-control-lg is-invalid") }}
+                <div class="invalid-feedback">
+                    {% for error in form.ask_price.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.ask_price(class="form-control form-control-lg") }}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="form-group mb-3" id="target_price_group" style="display: none;">
+    {{ form.target_price.label(class_="form-control-label") }}
+    {% if form.target_price.errors %}
+        {{ form.target_price(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.target_price.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.target_price(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show/hide target price field based on order type
+        const orderTypeField = document.getElementById('order_type');
+        const targetPriceGroup = document.getElementById('target_price_group');
+        
+        function toggleTargetPriceField() {
+            if (orderTypeField.value === 'market') {
+                targetPriceGroup.style.display = 'none';
+            } else {
+                targetPriceGroup.style.display = 'block';
+            }
+        }
+        
+        // Initial toggle
+        toggleTargetPriceField();
+        
+        // Add event listener
+        orderTypeField.addEventListener('change', toggleTargetPriceField);
+    });
+</script> 

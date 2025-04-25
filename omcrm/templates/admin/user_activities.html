@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Activities by {{ user.username }}</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('activities.activities_list') }}">Activities</a></li>
+                    <li class="breadcrumb-item active">{{ user.username }}</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Activities by {{ user.username }}</h3>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Date/Time</th>
+                            <th>Client/Lead</th>
+                            <th>Activity</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in activities.items %}
+                        <tr>
+                            <td>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>
+                                {% if activity.lead_id and activity.lead_id in leads %}
+                                <a href="{{ url_for('activities.lead_activities', lead_id=activity.lead_id) }}">
+                                    {{ leads[activity.lead_id].first_name }} {{ leads[activity.lead_id].last_name }}
+                                </a>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if 'created' in activity.action_type %}badge-success
+                                    {% elif 'deleted' in activity.action_type %}badge-danger
+                                    {% elif 'updated' in activity.action_type %}badge-info
+                                    {% elif 'approved' in activity.action_type %}badge-success
+                                    {% elif 'rejected' in activity.action_type %}badge-danger
+                                    {% elif 'comment' in activity.action_type %}badge-primary
+                                    {% elif 'deposit' in activity.action_type %}badge-success
+                                    {% elif 'withdrawal' in activity.action_type %}badge-warning
+                                    {% else %}badge-secondary
+                                    {% endif %}">
+                                    {{ activity.action_type|replace('_', ' ')|title }}
+                                </span>
+                            </td>
+                            <td>{{ activity.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer clearfix">
+                <ul class="pagination pagination-sm m-0 float-right">
+                    {% for page_num in activities.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if activities.page == page_num %}
+                            <li class="page-item active">
+                                <a class="page-link" href="{{ url_for('activities.user_activities', user_id=user.id, page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('activities.user_activities', user_id=user.id, page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">...</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

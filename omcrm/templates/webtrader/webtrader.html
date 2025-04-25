@@ -1,0 +1,2534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebTrader - Professional Trading Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --dark-bg: #0e1525;
+            --darker-bg: #0b101e;
+            --medium-bg: #1a2033;
+            --light-bg: #232a3d;
+            --text-color: #e0e0e0;
+            --secondary-text: #8a8fa4;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --border-color: #2d3446;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .trading-platform {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+        
+        /* Main content styles */
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Instruments list styles */
+        .instruments-list {
+            width: 300px;
+            background-color: var(--medium-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .instruments-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .instruments-header h5 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        /* Market filter buttons */
+        .market-filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 10px;
+            gap: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .market-filter-btn {
+            flex: 1;
+            min-width: 70px;
+            padding: 8px 10px;
+            background-color: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--secondary-text);
+            font-size: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .market-filter-btn i {
+            margin-right: 5px;
+        }
+        
+        .market-filter-btn:hover {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+        }
+        
+        .market-filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .instruments-table {
+            width: 100%;
+        }
+        
+        .instruments-table th {
+            background-color: var(--darker-bg);
+            color: var(--secondary-text);
+            font-weight: 500;
+            font-size: 0.8rem;
+            padding: 10px 15px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+        
+        .instruments-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+        
+        .instruments-table tr:hover {
+            background-color: var(--light-bg);
+            cursor: pointer;
+        }
+        
+        .price-change {
+            display: flex;
+            align-items: center;
+        }
+        
+        .price-change i {
+            margin-right: 5px;
+        }
+        
+        /* Chart area */
+        .chart-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: var(--dark-bg);
+        }
+        
+        .chart-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .current-symbol {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            flex: 1;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Trading form */
+        .trading-panel {
+            padding: 15px;
+            background-color: var(--medium-bg);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .trading-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--text-color);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-sell {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-buy {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        /* Order book and trades */
+        .trades-section {
+            padding: 20px;
+        }
+        
+        .section-title {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .trades-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .trades-table th {
+            background-color: var(--medium-bg);
+            color: var(--secondary-text);
+            font-weight: 500;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .trades-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .trades-table tr:hover {
+            background-color: var(--light-bg);
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .badge-buy {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: var(--success-color);
+        }
+        
+        .badge-sell {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+        }
+        
+        .badge-pending {
+            background-color: rgba(234, 179, 8, 0.2);
+            color: #eab308;
+        }
+        
+        .account-info {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+        
+        .account-balance {
+            background-color: var(--medium-bg);
+            padding: 5px 12px;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .account-label {
+            color: var(--secondary-text);
+            margin-right: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .account-value {
+            font-weight: 600;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .instruments-list {
+                width: 250px;
+            }
+            
+            .trading-panel-pro {
+                width: 250px;
+            }
+            
+            .balance-info {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .balance-item {
+                padding: 5px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .instruments-list {
+                width: 100%;
+                height: auto;
+                max-height: 300px;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .chart-area {
+                height: 0;
+                flex: 1;
+            }
+            
+            .trading-panel-pro {
+                width: 100%;
+            }
+            
+            .trades-section {
+                overflow-x: auto;
+            }
+            
+            .user-info {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+            
+            .balance-info {
+                order: 1;
+                width: 100%;
+                margin-top: 10px;
+                justify-content: space-around;
+            }
+            
+            .username {
+                order: 2;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                padding-top: 5px;
+            }
+            
+            .header-buttons {
+                order: 3;
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+            
+            .return-admin-btn, .logout-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .header {
+                flex-direction: column;
+                padding: 10px;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .logo {
+                margin-bottom: 5px;
+                align-self: center;
+            }
+            
+            .user-info {
+                width: 100%;
+            }
+            
+            .balance-info {
+                width: 100%;
+                padding: 5px;
+                justify-content: space-between;
+            }
+            
+            .balance-item {
+                padding: 2px;
+            }
+            
+            .market-filter-buttons {
+                justify-content: space-between;
+            }
+            
+            .market-filter-btn {
+                min-width: auto;
+                padding: 5px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .market-filter-btn i {
+                margin-right: 2px;
+            }
+            
+            .trades-section .section-title {
+                font-size: 1rem;
+            }
+            
+            .header-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .return-admin-btn, .logout-btn {
+                width: 100%;
+                justify-content: center;
+                margin-top: 5px;
+                padding: 10px;
+            }
+        }
+        
+        /* Scoped styles for WebTrader Layout */
+        html, body {
+             height: 100%;
+             overflow: hidden; /* Prevent double scrollbars */
+        }
+        body {
+            display: flex;
+            flex-direction: column; /* Ensure body uses flex column */
+        }
+        .app-container {
+            display: flex;
+            flex-direction: row; /* Sidebar next to content */
+            flex-grow: 1; /* Allow container to grow */
+            height: 100vh; /* Ensure full viewport height */
+            overflow: hidden;
+        }
+        .app-sidebar { 
+            /* Assuming sidebar has fixed width and height handled by its own CSS */
+            flex-shrink: 0; 
+        }
+        .app-content {
+            display: flex;
+            flex-direction: column; /* Header above content-wrapper */
+            flex-grow: 1;
+            overflow: hidden; 
+            height: 100%;
+        }
+        .market-data {
+             flex-shrink: 0; /* Prevent market data bar from shrinking */
+        }
+        .content-wrapper {
+            display: flex;
+            flex-grow: 1; /* Takes remaining vertical space */
+            overflow: hidden; /* Important to contain children */
+            height: 100%; /* Make wrapper take full height within app-content */
+        }
+        
+        /* Ensure child columns also respect height */
+        .instruments-list, .chart-area, .trading-panel-pro {
+             height: 100%; /* Make columns take full height of wrapper */
+             display: flex; /* Use flex for vertical layout inside */
+             flex-direction: column;
+             overflow-y: auto; /* Allow internal scrolling if needed */
+        }
+        
+        /* Override overflow for chart-area to manage internal scrolling */
+        .chart-area {
+             overflow: hidden;
+        }
+        .trades-section {
+             overflow-y: auto; /* Scroll trades */
+             flex-shrink: 0; /* Prevent shrinking */
+        }
+        
+        /* Responsive overrides */
+        @media (max-width: 992px) {
+            .app-container {
+                 flex-direction: column;
+                 height: auto; /* Allow height to be determined by content */
+                 overflow: visible;
+            }
+            .app-content {
+                 height: auto;
+                 overflow: visible;
+            }
+            .content-wrapper {
+                flex-direction: column;
+                height: auto; 
+                overflow: visible;
+            }
+            .instruments-list,
+            .trading-panel-pro,
+            .chart-area {
+                height: auto;
+                overflow: visible;
+            }
+            .trades-section {
+                overflow-y: visible;
+            }
+        }
+        /* --- End Scoped Styles --- */
+        
+        /* Modern Trading Panel Styles */
+        .trading-panel-pro {
+            width: 300px;
+            background-color: var(--darker-bg);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow-y: auto;
+        }
+        
+        .trade-header {
+            padding: 15px;
+            background-color: var(--medium-bg);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .trading-form-pro {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .price-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .btn-price {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: var(--medium-bg);
+        }
+        
+        .btn-price span {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        
+        .btn-price strong {
+            font-size: 1.2rem;
+        }
+        
+        .btn-sell-price {
+            color: var(--danger-color);
+            border-left: 3px solid var(--danger-color);
+        }
+        
+        .btn-sell-price.active {
+            background-color: rgba(239, 68, 68, 0.15);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-buy-price {
+            color: var(--success-color);
+            border-left: 3px solid var(--success-color);
+        }
+        
+        .btn-buy-price.active {
+            background-color: rgba(34, 197, 94, 0.15);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .amount-group {
+            position: relative;
+            width: 100%;
+        }
+        
+        .amount-group input {
+            padding-right: 50px;
+            font-size: 1.1rem;
+            height: 48px;
+        }
+        
+        .unit-label {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-20%);
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+        }
+        
+        .trade-info {
+            background-color: var(--medium-bg);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .advanced-options {
+            margin-top: 5px;
+        }
+        
+        .advanced-options a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            text-align: center;
+        }
+        
+        #more-options-content {
+            margin-top: 15px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+        
+        .btn-submit-trade {
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-buy {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-buy:hover {
+            background-color: #1ca350;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+        }
+        
+        .btn-sell {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-sell:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Amount slider visual improvements - complete overhaul */
+        .amount-slider-container {
+            margin: 5px 0 15px;
+            position: relative;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--secondary-text);
+        }
+        
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            margin: 15px 0 5px;
+            width: 100%;
+        }
+        
+        /* Webkit (Chrome, Safari, newer Edge) */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+            border: none;
+        }
+        
+        /* Firefox */
+        input[type=range]::-moz-range-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+            border: none;
+        }
+        
+        /* MS Edge and IE */
+        input[type=range]::-ms-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+            border: none;
+        }
+        
+        /* Track styling for different browsers */
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+        
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+        
+        input[type=range]::-ms-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: transparent;
+            border-color: transparent;
+            color: transparent;
+        }
+        
+        input[type=range]::-ms-fill-lower {
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+        
+        input[type=range]::-ms-fill-upper {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+        
+        input[type=range]:focus {
+            outline: none;
+        }
+        
+        /* Active amount percentage marker styling */
+        .slider-labels span {
+            position: relative;
+            padding-top: 15px;
+        }
+        
+        .slider-labels span:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 8px;
+            background-color: var(--secondary-text);
+        }
+        
+        .slider-labels span.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .slider-labels span.active:before {
+            background-color: var(--primary-color);
+            height: 12px;
+        }
+        
+        /* Badge and input group styling */
+        .tp-badge {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: var(--success-color);
+        }
+        
+        .sl-badge {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+        }
+        
+        .input-group {
+            display: flex;
+            width: 100%;
+        }
+        
+        .input-group-text {
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            background-color: var(--medium-bg);
+            border: 1px solid var(--border-color);
+            border-left: none;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Amount input styling */
+        .input-with-badge {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .amount-badge {
+            position: absolute;
+            right: 10px;
+            background-color: var(--medium-bg);
+            color: var(--secondary-text);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            pointer-events: none;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            outline: none;
+        }
+        
+        /* Hide scrollbars throughout the WebTrader */
+        ::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            background: transparent;
+            display: none;
+        }
+        
+        /* For Firefox */
+        * {
+            scrollbar-width: none;
+        }
+        
+        /* For Internet Explorer and Edge */
+        * {
+            -ms-overflow-style: none;
+        }
+        
+        /* Remove outlines from all focusable elements */
+        :focus {
+            outline: none;
+        }
+        
+        /* Ensure content still scrollable but scrollbars invisible */
+        .instruments-list, 
+        .chart-area, 
+        .trading-panel-pro,
+        .main-content,
+        .trades-section {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Hide any remaining browser UI controls */
+        input[type="range"]::-webkit-slider-thumb,
+        input[type="range"]::-moz-range-thumb,
+        input[type="range"]::-ms-thumb {
+            opacity: 0.9;
+            border: none;
+            box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+        }
+        
+        /* Style the amount slider more discretely */
+        input[type=range] {
+            background: rgba(45, 52, 70, 0.5);
+            border: none;
+            height: 4px;
+        }
+        
+        /* Custom track styling (the line) */
+        input[type=range]::-webkit-slider-runnable-track,
+        input[type=range]::-moz-range-track,
+        input[type=range]::-ms-track {
+            height: 4px;
+            background: rgba(45, 52, 70, 0.5);
+            border: none;
+        }
+        
+        /* Additional market data styling */
+        .market-data-wrapper {
+            padding: 5px 0;
+        }
+
+        /* Add styles for leverage selector and margin info */
+        .leverage-selector {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .leverage-selector label {
+            display: block;
+            margin-bottom: 5px;
+            color: #999;
+        }
+
+        .leverage-selector select {
+            width: 100%;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        .margin-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .margin-info div {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+
+        .margin-info label {
+            color: #999;
+        }
+
+        .margin-info span {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Update existing styles */
+        .trading-panel {
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .balance-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-right: 20px;
+            background-color: var(--medium-bg);
+            padding: 8px 15px;
+            border-radius: 8px;
+        }
+
+        .balance-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .balance-label {
+            font-size: 0.7rem;
+            color: var(--secondary-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--text-color);
+            white-space: nowrap;
+            padding: 0 10px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .header {
+            background-color: var(--darker-bg);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-img {
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .balance-info {
+            display: flex;
+            gap: 15px;
+            background-color: var(--medium-bg);
+            padding: 8px 15px;
+            border-radius: 8px;
+        }
+
+        .return-admin-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            font-weight: 600;
+            border-radius: 5px;
+        }
+
+        .balance-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .balance-label {
+            font-size: 0.7rem;
+            color: var(--secondary-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--text-color);
+            white-space: nowrap;
+            padding: 0 10px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .return-admin-btn, .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            font-weight: 600;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .return-admin-btn:hover {
+            background-color: #c29d00;
+        }
+
+        .logout-btn {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+    </style>
+</head>
+<body class="webtrader-page">
+    <div class="trading-platform">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='imgs/bootstrap-solid.svg') }}" alt="Logo" class="logo-img">
+                <span class="logo-text">WebTrader</span>
+            </div>
+            
+            <div class="user-info">
+                <div class="balance-info">
+                    <div class="balance-item">
+                        <span class="balance-label">BALANCE:</span>
+                        <span class="balance-value">${{ "%.2f"|format(current_user.current_balance) }}</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="balance-label">EQUITY:</span>
+                        <span class="balance-value">${{ "%.2f"|format(current_user.equity) }}</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="balance-label">CREDIT:</span>
+                        <span class="balance-value">${{ "%.2f"|format(current_user.credit_balance) }}</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="balance-label">BONUS:</span>
+                        <span class="balance-value">${{ "%.2f"|format(current_user.bonus_balance) }}</span>
+                    </div>
+                </div>
+                
+                <span class="username">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+                
+                <div class="header-buttons">
+                    {% if 'admin_user_id' in session %}
+                    <a href="{{ url_for('leads.return_to_admin') }}" class="btn btn-warning return-admin-btn">
+                        <i class="fas fa-sign-out-alt"></i> Return to Admin
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('users.logout') }}" class="btn btn-danger logout-btn">
+                        <i class="fas fa-power-off"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Market Data Ticker -->
+        <div class="market-data">
+            {% for instrument in instruments %}
+            <div class="market-item">
+                <span class="symbol">{{ instrument.symbol }}</span>
+                <span class="price">
+                    {% if instrument.type == 'forex' %}
+                        {{ "%.4f"|format(instrument.current_price) }}
+                    {% else %}
+                        ${{ "%.2f"|format(instrument.current_price) }}
+                    {% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Content Area -->
+        <div class="content-wrapper">
+            <!-- Trading Instruments List -->
+            <div class="instruments-list">
+                <div class="instruments-header">
+                    <h5>Trading Instruments</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="market-filter-buttons">
+                    <button class="market-filter-btn active" onclick="filterInstruments('all')">
+                        <i class="fas fa-globe"></i> All
+                    </button>
+                    <button class="market-filter-btn" onclick="filterInstruments('crypto')">
+                        <i class="fab fa-bitcoin"></i> Crypto
+                    </button>
+                    <button class="market-filter-btn" onclick="filterInstruments('stock')">
+                        <i class="fas fa-chart-line"></i> Stocks
+                    </button>
+                    <button class="market-filter-btn" onclick="filterInstruments('forex')">
+                        <i class="fas fa-dollar-sign"></i> Forex
+                    </button>
+                    <button class="market-filter-btn" onclick="filterInstruments('commodities')">
+                        <i class="fas fa-oil-can"></i> Commod.
+                    </button>
+                </div>
+                
+                <table class="instruments-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Price</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for instrument in instruments %}
+                        <tr data-instrument-id="{{ instrument.id }}" 
+                            data-symbol="{{ instrument.symbol }}" 
+                            data-type="{{ instrument.type }}" 
+                            onclick="selectInstrument('{{ instrument.id }}')">
+                            <td>{{ instrument.symbol }}</td>
+                            <td>
+                                {% if instrument.type == 'forex' %}
+                                    {{ "%.4f"|format(instrument.current_price) }}
+                                {% elif instrument.type == 'crypto' %}
+                                    ${{ "%.2f"|format(instrument.current_price) }}
+                                {% else %}
+                                    ${{ "%.2f"|format(instrument.current_price) }}
+                                {% endif %}
+                            </td>
+                            <td class="price-change {% if loop.index % 2 == 0 %}price-up{% else %}price-down{% endif %}">
+                                <i class="fas fa-caret-{% if loop.index % 2 == 0 %}up{% else %}down{% endif %}"></i>
+                                <span>{% if loop.index % 2 == 0 %}+{% else %}-{% endif %}0.{{ loop.index }}%</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Chart Area (Includes Chart and Trades Tables Below) -->
+            <div class="chart-area">
+                <div class="chart-header">
+                    <div class="current-symbol">
+                        <span id="current-symbol-text">BTC/USD</span>
+                        <span id="current-price" class="price-up">--.--</span> <!-- Updated by JS -->
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary">1m</button>
+                        <button class="btn btn-sm btn-outline-secondary">5m</button>
+                        <button class="btn btn-sm btn-outline-secondary active">15m</button>
+                        <button class="btn btn-sm btn-outline-secondary">1h</button>
+                        <button class="btn btn-sm btn-outline-secondary">1d</button>
+                    </div>
+                </div>
+                
+                <div class="chart-container" id="tradingview_chart"></div>
+                
+                <!-- Trades Section (Moved inside chart-area) -->
+                <div class="trades-section">
+                    <h3 class="section-title">Open Trades</h3>
+                    <div class="table-responsive">
+                        <table class="trades-table open-trades-table"> {# Add class for targeting #}
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Amount</th>
+                                    <th>Entry Price</th> {# Renamed for clarity #}
+                                <th>Type</th>
+                                <th>Date</th>
+                                    <th>Current Price</th> {# Added for P/L Calc #}
+                                    <th>P/L ($)</th> {# Added P/L Column #}
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trade in open_trades %}
+                                {# Add data attributes needed for P/L calculation #}
+                                <tr class="open-trade-row" 
+                                    data-trade-id="{{ trade.id }}" 
+                                    data-instrument-id="{{ trade.instrument.id }}" 
+                                    data-entry-price="{{ trade.price }}" 
+                                    data-trade-amount="{{ trade.amount }}" 
+                                    data-trade-type="{{ trade.trade_type }}">
+                                    <td>{{ trade.instrument.symbol }}</td>
+                                    <td>{{ trade.amount }}</td>
+                                    <td>${{ "%.2f"|format(trade.price) }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ trade.trade_type }}">{{ trade.trade_type | upper }}</span>
+                                    </td>
+                                    <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td class="current-price-cell">--.--</td> {# Cell for current price #}
+                                    <td class="profit-loss-cell">--.--</td> {# Cell for P/L #}
+                                    <td>
+                                        <form method="POST" action="{{ url_for('webtrader.close_trade') }}" style="display:inline;">
+                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                            <input type="hidden" name="trade_id" value="{{ trade.id }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">Close</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                                {% if not open_trades %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">No open trades</td>
+                                </tr>
+                                {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                    
+                    <h3 class="section-title mt-4">Pending Orders</h3>
+                    <div class="table-responsive">
+                        <table class="trades-table">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Amount</th>
+                                    <th>Price</th>
+                                    <th>Type</th>
+                                    <th>Order Type</th>
+                                    <th>Target Price</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in pending_orders %}
+                                <tr>
+                                    <td>{{ order.instrument.symbol }}</td>
+                                    <td>{{ order.amount }}</td>
+                                    <td>${{ "%.2f"|format(order.price) }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ order.trade_type }}">{{ order.trade_type | upper }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge order-type-badge">{{ order.order_type | replace('_', ' ') | title }}</span>
+                                    </td>
+                                    <td>${{ "%.2f"|format(order.target_price) }}</td>
+                                    <td>{{ order.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('webtrader.cancel_order') }}" style="display:inline;">
+                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                                            <button type="submit" class="btn btn-warning btn-sm">Cancel</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not pending_orders %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">No pending orders</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+            </div>
+
+                    <h3 class="section-title mt-4">Closed Trades</h3>
+                    <div class="table-responsive">
+                        <table class="trades-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Amount</th>
+                                <th>Price</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Profit/Loss</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trade in closed_trades %}
+                                <tr>
+                                    <td>{{ trade.instrument.symbol }}</td>
+                                    <td>{{ trade.amount }}</td>
+                                    <td>${{ "%.2f"|format(trade.price) }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ trade.trade_type }}">{{ trade.trade_type | upper }}</span>
+                                    </td>
+                                    <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td class="{% if trade.profit_loss is not none and trade.profit_loss > 0 %}price-up{% elif trade.profit_loss is not none and trade.profit_loss < 0 %}price-down{% endif %}">
+                                        {{ "%.2f"|format(trade.profit_loss if trade.profit_loss else 0.00) }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                                {% if not closed_trades %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">No closed trades</td>
+                                </tr>
+                                {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+         <!-- Trading Panel - Redesigned (Moved to be sibling of chart-area) -->
+         <div class="trading-panel-pro">
+             <div class="trade-header">
+                 <span id="trade-panel-symbol">--/--</span>
+             </div>
+             <form class="trading-form-pro" method="POST" action="{{ url_for('webtrader.execute_trade') }}">
+                 {{ form.hidden_tag() }}
+                 <input type="hidden" id="instrument_id" name="instrument_id" value="{{ instruments[0].id if instruments else '' }}">
+                 <input type="hidden" id="trade_type" name="trade_type" value="buy">
+
+                 <div class="price-buttons">
+                     <button type="button" class="btn-price btn-sell-price" onclick="setTradeType('sell')">
+                         <span>SELL</span>
+                         <strong id="sell-price-display">--.--</strong>
+                     </button>
+                     <button type="button" class="btn-price btn-buy-price active" onclick="setTradeType('buy')">
+                         <span>BUY</span>
+                         <strong id="buy-price-display">--.--</strong>
+                     </button>
+                 </div>
+
+                 <!-- Add Leverage Selector -->
+                 <div class="form-group">
+                     <label for="leverage-select" class="form-label">Leverage</label>
+                     <select id="leverage-select" class="form-control" onchange="updateTradeInfo()">
+                         <option value="1">1x</option>
+                         <option value="2">2x</option>
+                         <option value="5">5x</option>
+                         <option value="10">10x</option>
+                         <option value="20">20x</option>
+                         <option value="50">50x</option>
+                         <option value="100">100x</option>
+                     </select>
+                 </div>
+
+                 <div class="form-row">
+                     <div class="form-group amount-group">
+                         <label for="amount">Amount</label>
+                         <div class="input-with-badge">
+                             <input type="number" step="any" class="form-control" id="trade_amount" name="amount" placeholder="0.00">
+                             <div class="amount-badge" id="amount-unit">---</div>
+                         </div>
+                     </div>
+                 </div>
+                 
+                 <!-- Add Margin Info Display -->
+                 <div class="trade-info">
+                     <div class="info-item">
+                         <span>Margin Required:</span>
+                         <span id="margin-required-value">$0.00</span>
+                     </div>
+                     <div class="info-item">
+                         <span>Effective Leverage:</span>
+                         <span id="effective-leverage">1x</span>
+                     </div>
+                     <div class="info-item">
+                         <span>Value:</span>
+                         <span id="trade-value">$0.00</span>
+                     </div>
+                     <div class="info-item">
+                         <span>Available Balance:</span>
+                         <span id="available-balance">${{ current_user.current_balance }}</span>
+                     </div>
+                 </div>
+
+                 <div class="advanced-options">
+                     <a href="#" onclick="toggleMoreOptions(event)">More Options <i class="fas fa-chevron-down"></i></a>
+                     <div id="more-options-content" style="display: none;">
+                         <div class="form-group">
+                              {{ form.order_type.label(class="form-label") }}
+                              {{ form.order_type(class="form-control") }}
+                         </div>
+                          <div class="form-group" id="target-price-group" style="display:none;">
+                              <label class="form-label">Target Price</label>
+                              <input type="number" step="any" id="target_price" name="target_price" class="form-control" placeholder="Set Limit/Stop Price">
+                          </div>
+                         <hr>
+                         <div class="form-group">
+                             <label for="take_profit">Take Profit</label>
+                             <div class="input-group">
+                                 <input type="number" step="any" id="take_profit" name="take_profit" class="form-control" placeholder="Set TP Price">
+                                 <div class="input-group-text">
+                                     <span class="badge tp-badge">+0.00%</span>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="form-group">
+                             <label for="stop_loss">Stop Loss</label>
+                             <div class="input-group">
+                                 <input type="number" step="any" id="stop_loss" name="stop_loss" class="form-control" placeholder="Set SL Price">
+                                 <div class="input-group-text">
+                                     <span class="badge sl-badge">-0.00%</span>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+
+                 <button type="submit" class="btn btn-submit-trade btn-buy" id="submit-trade-button">BUY</button>
+             </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+        let currentInstrument = {
+            id: null,
+            symbol: '',
+            name: '',
+            type: '',
+            price: 0.0,
+            precision: 2 // Default precision
+        };
+        let instrumentsData = {}; // Store instrument details keyed by ID
+
+        // --- TradingView Widget Initialization ---
+        window.tvWidget = new TradingView.widget({
+            "autosize": true,
+            "symbol": "BINANCE:BTCUSDT", // Default symbol
+            "interval": "15",
+            "timezone": "Etc/UTC",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "allow_symbol_change": true,
+            "container_id": "tradingview_chart",
+             "studies": [
+                "MASimple@tv-basicstudies"
+            ]
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Store initial instrument data from data attributes
+            const rows = document.querySelectorAll('.instruments-table tbody tr');
+            rows.forEach(row => {
+                const id = row.getAttribute('data-instrument-id');
+                const symbol = row.getAttribute('data-symbol'); // Get symbol from data attribute
+                const type = row.getAttribute('data-type'); // Get type from data attribute
+                
+                if (id && symbol && type) {
+                     let precision = 2;
+                     if (type === 'crypto') precision = 6;
+                     else if (type === 'forex') precision = 4;
+                
+                     instrumentsData[id] = { 
+                        symbol: symbol,
+                        name: '', // Consider adding name as data attribute if needed
+                        type: type,
+                        precision: precision
+                    };
+                     console.log(`Stored instrument data: ID=${id}, Symbol=${symbol}, Type=${type}, Precision=${precision}`); // Log stored data
+                } else {
+                     console.warn("Missing data attribute(s) for instrument row:", row);
+                }
+            });
+
+            // Select the first instrument by default if available
+            const firstRow = document.querySelector('.instruments-table tbody tr');
+            if (firstRow) {
+                selectInstrument(firstRow.getAttribute('data-instrument-id'));
+            }
+            
+            // Add event listener for order type change
+            const orderTypeSelect = document.getElementById('order_type');
+            if (orderTypeSelect) {
+                 orderTypeSelect.addEventListener('change', function() {
+        const targetPriceGroup = document.getElementById('target-price-group');
+                    if (this.value === 'limit' || this.value === 'stop') {
+            targetPriceGroup.style.display = 'block';
+        } else {
+            targetPriceGroup.style.display = 'none';
+        }
+    });
+                 // Trigger change initially to set visibility
+                 orderTypeSelect.dispatchEvent(new Event('change'));
+            }
+            
+             // Add event listener for amount change to update trade info
+             const amountInput = document.getElementById('trade_amount');
+             if (amountInput) {
+                 amountInput.addEventListener('input', updateTradeInfo);
+             }
+             
+             // Set initial trade type button state
+             setTradeType('buy');
+             
+             // Initial P/L calculation and start periodic updates
+             updateAllOpenTradesPL(); 
+             setInterval(updateAllOpenTradesPL, 15000); // Update P/L every 15 seconds
+             
+             // Start sliding ticker animation
+             startSlidingTicker(); 
+             
+             // Fix notification clicking issue
+             const marketItems = document.querySelectorAll('.market-item');
+             marketItems.forEach(item => {
+                 item.addEventListener('click', function(e) {
+                     e.preventDefault();
+                     const symbol = this.querySelector('.symbol').textContent;
+                     console.log('Clicked on market item:', symbol);
+                     // Find instrument with this symbol to select it
+                     const instrumentId = Object.keys(instrumentsData).find(id => 
+                         instrumentsData[id].symbol === symbol);
+                     if (instrumentId) {
+                         selectInstrument(instrumentId);
+                     }
+                 });
+             });
+             
+             // Make all market items and notification elements clickable
+             document.querySelectorAll('.market-data .market-item, .notification-item').forEach(element => {
+                 element.style.cursor = 'pointer';
+                 element.style.pointerEvents = 'auto';
+             });
+        });
+
+        function updateMarketDataTicker() {
+            const tickerItems = document.querySelectorAll('.market-data .market-item');
+            tickerItems.forEach(item => {
+                 const symbol = item.querySelector('.symbol').textContent;
+                 // Find instrument ID from our stored data based on symbol
+                 const instrumentId = Object.keys(instrumentsData).find(id => instrumentsData[id].symbol === symbol);
+                 
+                 if (instrumentId) {
+                     fetch(`/webtrader/get_price?instrument_id=${instrumentId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.current_price !== null) {
+                                const priceDisplay = item.querySelector('.price');
+                                const instrumentType = instrumentsData[instrumentId]?.type || 'unknown';
+                                const currentPrice = parseFloat(data.current_price);
+                                
+                                // Determine formatted price based on asset type and value
+                                let formattedPrice;
+                                if (instrumentType === 'crypto') {
+                                    if (currentPrice >= 1000) {
+                                        formattedPrice = currentPrice.toFixed(2); // BTC, ETH etc.
+                                    } else if (currentPrice >= 10) {
+                                        formattedPrice = currentPrice.toFixed(3);
+                                    } else if (currentPrice >= 1) {
+                                        formattedPrice = currentPrice.toFixed(4);
+                                    } else {
+                                        formattedPrice = currentPrice.toFixed(6); // Low value tokens
+                                    }
+                                } else if (instrumentType === 'forex') {
+                                    formattedPrice = currentPrice.toFixed(4); // Standard forex precision
+                                } else {
+                                    formattedPrice = currentPrice.toFixed(2); // Stocks, commodities
+                                }
+                                
+                                // Determine price change (requires previous price - simplified placeholder)
+                                const currentPriceText = priceDisplay.firstChild.textContent.trim().replace(/[^\d.]/g, '');
+                                const oldPrice = parseFloat(currentPriceText) || currentPrice;
+                                const changeDir = currentPrice > oldPrice ? 'up' : (currentPrice < oldPrice ? 'down' : 'unchanged');
+                                
+                                priceDisplay.className = `price price-${changeDir}`;
+                                let priceHtml;
+                                
+                                if (instrumentType === 'forex') {
+                                     priceHtml = formattedPrice; // No $ for forex
+                                } else if (instrumentType === 'crypto') {
+                                    priceHtml = `$${formattedPrice}`;
+                                } else {
+                                    priceHtml = `$${formattedPrice}`;
+                                }
+                                
+                                // Placeholder change %
+                                const changePercent = ((currentPrice - oldPrice) / oldPrice * 100) || (Math.random() * 1 - 0.5);
+                                priceHtml += `<small>${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%</small>`;
+                                priceDisplay.innerHTML = priceHtml;
+                            }
+                        })
+                        .catch(error => console.error(`Error fetching ticker price for ${symbol}:`, error));
+                 }
+            });
+        }
+        
+         function setTradeType(type) {
+             document.getElementById('trade_type').value = type;
+             const submitButton = document.getElementById('submit-trade-button');
+             if (submitButton) {
+                 submitButton.textContent = type.toUpperCase();
+                 submitButton.className = `btn btn-submit-trade btn-${type}`;
+             }
+             // Update active state of price buttons
+             document.querySelector('.btn-sell-price').classList.toggle('active', type === 'sell');
+             document.querySelector('.btn-buy-price').classList.toggle('active', type === 'buy');
+         }
+        
+        function selectInstrument(instrumentId) {
+            instrumentId = parseInt(instrumentId);
+            console.log(`Selecting instrument ID: ${instrumentId}`);
+            
+            if (!instrumentId || !instrumentsData[instrumentId]) {
+                console.error("Invalid instrument ID or data not found");
+                return;
+            }
+            
+            // Update global state
+            currentInstrument.id = instrumentId;
+            currentInstrument.symbol = instrumentsData[instrumentId].symbol;
+            currentInstrument.type = instrumentsData[instrumentId].type;
+            currentInstrument.precision = instrumentsData[instrumentId].precision;
+            
+            document.getElementById('instrument_id').value = instrumentId;
+            
+            // Update Trade Panel Header & Amount Unit
+            document.getElementById('trade-panel-symbol').textContent = currentInstrument.symbol;
+            let unit = currentInstrument.symbol;
+            if (unit.includes('/')) {
+                unit = unit.split('/')[0];
+            }
+            document.getElementById('amount-unit').textContent = unit;
+            
+            // Update Symbol Text Above Chart
+            document.getElementById('current-symbol-text').textContent = currentInstrument.symbol;
+            
+            // Fetch price and update UI elements
+            updateInstrumentPriceAndUI();
+
+            // Update TradingView Chart with forced refresh
+            let tvSymbol = '';
+            const symbol = currentInstrument.symbol;
+            const type = currentInstrument.type;
+            
+            if (type === 'crypto') {
+                const base = symbol.split('/')[0];
+                const quote = symbol.split('/')[1] || 'USD';
+                tvSymbol = `BINANCE:${base}${quote === 'USD' ? 'USDT' : quote}`;
+            } else if (type === 'stock') {
+                tvSymbol = `NASDAQ:${symbol}`;
+            } else if (type === 'forex') {
+                tvSymbol = `FX:${symbol.replace('/', '')}`;
+            } else if (type === 'commodities') {
+                if (symbol === 'GOLD') tvSymbol = 'TVC:GOLD';
+                else if (symbol === 'SILVER') tvSymbol = 'TVC:SILVER';
+                else if (symbol === 'OIL' || symbol === 'WTI') tvSymbol = 'NYMEX:CL1!';
+                else if (symbol === 'NATGAS') tvSymbol = 'NYMEX:NG1!';
+                else tvSymbol = symbol;
+            }
+            
+            if (window.tvWidget && tvSymbol) {
+                // Remove existing widget
+                const chartContainer = document.getElementById('tradingview_chart');
+                chartContainer.innerHTML = '';
+                
+                // Create new widget with the new symbol
+                window.tvWidget = new TradingView.widget({
+                    "autosize": true,
+                    "symbol": tvSymbol,
+                    "interval": "15",
+                    "timezone": "Etc/UTC",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "en",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_chart",
+                    "studies": [
+                        "MASimple@tv-basicstudies"
+                    ]
+                });
+            }
+            
+            // Highlight selected row in the list
+            const rows = document.querySelectorAll('.instruments-table tbody tr');
+            rows.forEach(row => {
+                row.classList.remove('active');
+                if (parseInt(row.getAttribute('data-instrument-id')) === instrumentId) {
+                    row.classList.add('active');
+                }
+            });
+            
+            // Reset amount and update trade info
+            document.getElementById('trade_amount').value = '';
+            updateTradeInfo();
+        }
+        
+        function updateInstrumentPriceAndUI() {
+            if (!currentInstrument.id) return;
+            
+            fetch(`/webtrader/get_price?instrument_id=${currentInstrument.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.current_price !== null) {
+                        const price = parseFloat(data.current_price);
+                        currentInstrument.price = price;
+                        const precision = currentInstrument.precision;
+                        
+                        // Format price based on instrument type
+                        let formattedPrice;
+                        if (currentInstrument.type === 'crypto') {
+                            // Use dynamic precision - fewer decimals for higher value cryptos
+                            if (price >= 1000) {
+                                formattedPrice = price.toFixed(2); // BTC, ETH etc.
+                            } else if (price >= 10) {
+                                formattedPrice = price.toFixed(3);
+                            } else if (price >= 1) {
+                                formattedPrice = price.toFixed(4);
+                            } else {
+                                formattedPrice = price.toFixed(6); // Low value tokens
+                            }
+                        } else if (currentInstrument.type === 'forex') {
+                            formattedPrice = price.toFixed(4); // Standard forex precision
+                        } else {
+                            formattedPrice = price.toFixed(2); // Stocks, commodities
+                        }
+                        
+                        // Update price in the header above chart
+                        document.getElementById('current-price').textContent = formattedPrice;
+                        // Update class for color (up/down) - requires previous price, simplified
+                        document.getElementById('current-price').className = (Math.random() > 0.5 ? 'price-up' : 'price-down');
+
+                        // Update Bid/Ask in the trading panel (simulate small spread)
+                        const spread = price * 0.0005; // Example: 0.05% spread
+                        const sellPrice = (price - spread / 2);
+                        const buyPrice = (price + spread / 2);
+                        
+                        // Format sell/buy price with same precision as main price
+                        let formattedSellPrice, formattedBuyPrice;
+                        if (currentInstrument.type === 'crypto') {
+                            if (price >= 1000) {
+                                formattedSellPrice = sellPrice.toFixed(2);
+                                formattedBuyPrice = buyPrice.toFixed(2);
+                            } else if (price >= 10) {
+                                formattedSellPrice = sellPrice.toFixed(3);
+                                formattedBuyPrice = buyPrice.toFixed(3);
+                            } else if (price >= 1) {
+                                formattedSellPrice = sellPrice.toFixed(4);
+                                formattedBuyPrice = buyPrice.toFixed(4);
+                            } else {
+                                formattedSellPrice = sellPrice.toFixed(6);
+                                formattedBuyPrice = buyPrice.toFixed(6);
+                            }
+                        } else if (currentInstrument.type === 'forex') {
+                            formattedSellPrice = sellPrice.toFixed(4);
+                            formattedBuyPrice = buyPrice.toFixed(4);
+                        } else {
+                            formattedSellPrice = sellPrice.toFixed(2);
+                            formattedBuyPrice = buyPrice.toFixed(2);
+                        }
+                        
+                        document.getElementById('sell-price-display').textContent = formattedSellPrice;
+                        document.getElementById('buy-price-display').textContent = formattedBuyPrice;
+                        
+                        // Update price in the instrument list table
+                        const row = document.querySelector(`.instruments-table tbody tr[data-instrument-id="${currentInstrument.id}"]`);
+                        if (row) {
+                            const priceCell = row.querySelector('td:nth-child(2)');
+                            let priceHtml;
+                            
+                            if (currentInstrument.type === 'forex') {
+                                priceHtml = formattedPrice; // No $ for forex
+                            } else if (currentInstrument.type === 'crypto') {
+                                priceHtml = `$${formattedPrice}`;
+                            } else {
+                                priceHtml = `$${formattedPrice}`;
+                            }
+                            
+                            priceCell.innerHTML = priceHtml;
+                        }
+                        
+                        // Update trade info based on new price
+                        updateTradeInfo();
+                    }
+                })
+                .catch(error => console.error('Error fetching instrument price:', error));
+        }
+
+        // Auto-refresh prices every 60 seconds (1 minute)
+        setInterval(function() {
+            // Update the selected instrument price from API
+            if (currentInstrument.id) { // Only update if an instrument is selected
+                 updateInstrumentPriceAndUI();
+            }
+            // Update market data ticker for all visible instruments
+            updateMarketDataTicker();
+            // Note: P/L updates handled by a separate interval
+        }, 60000); // 60 seconds refresh
+        
+        // --- New Function for Real-time P/L ---
+        function updateAllOpenTradesPL() {
+            console.log("Updating P/L for open trades...");
+            const openTradeRows = document.querySelectorAll('.open-trade-row');
+            openTradeRows.forEach(row => {
+                const instrumentId = row.getAttribute('data-instrument-id');
+                const entryPrice = parseFloat(row.getAttribute('data-entry-price'));
+                const tradeAmount = parseFloat(row.getAttribute('data-trade-amount'));
+                const tradeType = row.getAttribute('data-trade-type');
+                const plCell = row.querySelector('.profit-loss-cell');
+                const currentPriceCell = row.querySelector('.current-price-cell');
+                
+                if (!instrumentId || isNaN(entryPrice) || isNaN(tradeAmount) || !tradeType || !plCell || !currentPriceCell) {
+                    console.warn("Missing data for P/L calculation on row:", row);
+                    return; // Skip if data is missing
+                }
+                
+                // Fetch the current price for this instrument
+                fetch(`/webtrader/get_price?instrument_id=${instrumentId}`)
+            .then(response => response.json())
+            .then(data => {
+                        if (data.current_price !== null) {
+                            const currentPrice = parseFloat(data.current_price);
+                            const instrumentData = instrumentsData[instrumentId];
+                            const precision = instrumentData ? instrumentData.precision : 2;
+                            
+                            // Update current price cell
+                            currentPriceCell.textContent = currentPrice.toFixed(precision);
+                            
+                            // Calculate P/L
+                            let profitLoss = 0;
+                            if (tradeType === 'buy') {
+                                profitLoss = (currentPrice - entryPrice) * tradeAmount;
+                            } else if (tradeType === 'sell') {
+                                profitLoss = (entryPrice - currentPrice) * tradeAmount;
+                            }
+                            
+                            // Update P/L cell
+                            plCell.textContent = profitLoss.toFixed(2);
+                            plCell.className = 'profit-loss-cell ' + (profitLoss >= 0 ? 'price-up' : 'price-down');
+                        } else {
+                             console.warn(`Could not get current price for instrument ID ${instrumentId} to calculate P/L`);
+                             currentPriceCell.textContent = '--.--';
+                             plCell.textContent = '--.--';
+                             plCell.className = 'profit-loss-cell';
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching price for P/L calc (Instrument ID ${instrumentId}):`, error);
+                        currentPriceCell.textContent = 'Error';
+                        plCell.textContent = 'Error';
+                        plCell.className = 'profit-loss-cell price-down';
+                     });
+            });
+        }
+        // --- End P/L Function ---
+        
+         function toggleMoreOptions(event) {
+            event.preventDefault();
+            const content = document.getElementById('more-options-content');
+            const link = event.currentTarget; // Use currentTarget
+            const icon = link.querySelector('i');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                if (icon) icon.className = 'fas fa-chevron-up';
+            } else {
+                content.style.display = 'none';
+                if (icon) icon.className = 'fas fa-chevron-down';
+            }
+         }
+         
+         function updateTradeInfo() {
+             // Calculate and display Margin Impact, Trade Value based on Amount and Price
+             const amountInput = document.getElementById('trade_amount');
+             const amount = parseFloat(amountInput.value) || 0;
+             const price = currentInstrument.price || 0;
+             const type = currentInstrument.type;
+             let tradeValue = 0;
+             let marginImpact = 0;
+             const leverage = 50; // Example leverage, make this dynamic later
+             
+             if (amount > 0 && price > 0) {
+                 tradeValue = amount * price;
+                 // Margin calculation depends heavily on asset type and broker rules
+                 // Simple example: margin = value / leverage
+                 marginImpact = tradeValue / leverage;
+             }
+             
+             const valuePrecision = 2;
+             document.getElementById('trade-value').textContent = `$ ${tradeValue.toFixed(valuePrecision)}`;
+             document.getElementById('margin-impact').textContent = `$ ${marginImpact.toFixed(valuePrecision)}`;
+         }
+
+        function filterInstruments(type) {
+            // Update active state on filter buttons
+            const filterButtons = document.querySelectorAll('.market-filter-btn');
+            filterButtons.forEach(button => {
+                button.classList.remove('active');
+                // Find the text content of the button (ignoring the icon)
+                const buttonText = button.textContent.trim().toLowerCase();
+                if ((type === 'all' && buttonText.includes('all')) ||
+                    (type === 'crypto' && buttonText.includes('crypto')) ||
+                    (type === 'stock' && buttonText.includes('stocks')) ||
+                    (type === 'forex' && buttonText.includes('forex')) ||
+                    (type === 'commodities' && buttonText.includes('commod'))) {
+                    button.classList.add('active');
+                }
+            });
+            
+            // Filter the instruments table
+            const rows = document.querySelectorAll('.instruments-table tbody tr');
+            rows.forEach(row => {
+                const rowType = row.getAttribute('data-type');
+                if (type === 'all') {
+                    row.style.display = '';
+                } else {
+                    row.style.display = (rowType === type) ? '' : 'none';
+                }
+            });
+        }
+        
+        // --- Sliding Ticker Logic ---
+        function startSlidingTicker() {
+            const ticker = document.querySelector('.market-data');
+            if (!ticker) return;
+            
+            // Clone all market items for seamless scrolling
+            const items = ticker.querySelectorAll('.market-item');
+            const itemsArray = Array.from(items);
+            
+            // Create wrapper if it doesn't exist
+            let wrapper = ticker.querySelector('.market-data-wrapper');
+            if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.className = 'market-data-wrapper';
+                wrapper.style.display = 'flex';
+                wrapper.style.position = 'relative';
+                wrapper.style.whiteSpace = 'nowrap';
+                
+                // Add original items
+                itemsArray.forEach(item => {
+                    wrapper.appendChild(item.cloneNode(true));
+                });
+                
+                // Add duplicates for seamless loop
+                itemsArray.forEach(item => {
+                    wrapper.appendChild(item.cloneNode(true));
+                });
+                
+                ticker.innerHTML = '';
+                ticker.appendChild(wrapper);
+            }
+            
+            let position = 0;
+            const speed = 1; // Adjust speed as needed
+            
+            function animate() {
+                position -= speed;
+                const firstSetWidth = wrapper.children[0].offsetWidth * itemsArray.length;
+                
+                if (-position >= firstSetWidth) {
+                    position = 0;
+                }
+                
+                wrapper.style.transform = `translateX(${position}px)`;
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        // Update market data ticker prices
+        function updateMarketDataTicker() {
+            const tickerItems = document.querySelectorAll('.market-data .market-item');
+            tickerItems.forEach(item => {
+                const symbol = item.querySelector('.symbol').textContent;
+                // Find instrument ID from our stored data based on symbol
+                const instrumentId = Object.keys(instrumentsData).find(id => 
+                    instrumentsData[id].symbol === symbol);
+                
+                if (instrumentId) {
+                    fetch(`/webtrader/get_price?instrument_id=${instrumentId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.current_price !== null) {
+                                const priceDisplay = item.querySelector('.price');
+                                const currentPrice = parseFloat(data.current_price);
+                                const oldPrice = parseFloat(priceDisplay.getAttribute('data-last-price') || currentPrice);
+                                
+                                // Store new price for next comparison
+                                priceDisplay.setAttribute('data-last-price', currentPrice.toString());
+                                
+                                // Format price based on type
+                                let formattedPrice;
+                                if (symbol.includes('/')) {
+                                    if (symbol.startsWith('BTC')) {
+                                        formattedPrice = currentPrice.toFixed(2);
+                                    } else {
+                                        formattedPrice = currentPrice.toFixed(4);
+                                    }
+                                } else {
+                                    formattedPrice = currentPrice.toFixed(2);
+                                }
+                                
+                                // Calculate price change
+                                const priceChange = ((currentPrice - oldPrice) / oldPrice) * 100;
+                                const changeClass = currentPrice >= oldPrice ? 'price-up' : 'price-down';
+                                
+                                // Update price display
+                                priceDisplay.className = `price ${changeClass}`;
+                                priceDisplay.innerHTML = `$${formattedPrice} <small>${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%</small>`;
+                            }
+                        })
+                        .catch(error => console.error(`Error updating ticker price for ${symbol}:`, error));
+                }
+            });
+        }
+
+        // Update open trades prices and P/L
+        function updateAllOpenTradesPL() {
+            const openTradeRows = document.querySelectorAll('.open-trade-row');
+            openTradeRows.forEach(row => {
+                const instrumentId = row.getAttribute('data-instrument-id');
+                const entryPrice = parseFloat(row.getAttribute('data-entry-price'));
+                const tradeAmount = parseFloat(row.getAttribute('data-trade-amount'));
+                const tradeType = row.getAttribute('data-trade-type');
+                
+                if (!instrumentId || !entryPrice || !tradeAmount || !tradeType) return;
+                
+                fetch(`/webtrader/get_price?instrument_id=${instrumentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.current_price !== null) {
+                            const currentPrice = parseFloat(data.current_price);
+                            
+                            // Update current price cell
+                            const currentPriceCell = row.querySelector('.current-price-cell');
+                            if (currentPriceCell) {
+                                currentPriceCell.textContent = currentPrice.toFixed(2);
+                            }
+                            
+                            // Calculate P/L
+                            let profitLoss;
+                            if (tradeType.toLowerCase() === 'buy') {
+                                profitLoss = (currentPrice - entryPrice) * tradeAmount;
+                            } else {
+                                profitLoss = (entryPrice - currentPrice) * tradeAmount;
+                            }
+                            
+                            // Update P/L cell
+                            const plCell = row.querySelector('.profit-loss-cell');
+                            if (plCell) {
+                                plCell.textContent = profitLoss.toFixed(2);
+                                plCell.className = `profit-loss-cell ${profitLoss >= 0 ? 'price-up' : 'price-down'}`;
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error updating trade P/L:', error));
+            });
+        }
+
+        // Start periodic updates when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start the sliding ticker
+            startSlidingTicker();
+            
+            // Update market data ticker every 5 seconds
+            setInterval(updateMarketDataTicker, 5000);
+            
+            // Update open trades P/L every 3 seconds
+            setInterval(updateAllOpenTradesPL, 3000);
+        });
+
+        // --- Amount Slider functionality ---
+        document.addEventListener("DOMContentLoaded", function() {
+            // Setup amount slider
+            const amountSlider = document.getElementById('amount-slider');
+            const amountInput = document.getElementById('trade_amount');
+            const sliderLabels = document.querySelectorAll('.slider-labels span');
+            
+            if (amountSlider && amountInput) {
+                // Update input value when slider moves
+                amountSlider.addEventListener('input', function() {
+                    // Calculate amount based on percentage and user balance
+                    const percentage = this.value;
+                    const balance = parseFloat("{{ current_user.current_balance }}") || 1000;
+                    const maxAmount = balance / (currentInstrument.price || 1);
+                    
+                    // Format amount based on asset type and value
+                    let scaledAmount;
+                    if (currentInstrument.type === 'crypto') {
+                        if (currentInstrument.price >= 1000) {
+                            // For high-value cryptos, show fewer decimals
+                            scaledAmount = (maxAmount * percentage / 100).toFixed(4);
+                        } else {
+                            // For lower-value cryptos, more precision
+                            scaledAmount = (maxAmount * percentage / 100).toFixed(6);
+                        }
+                    } else if (currentInstrument.type === 'forex') {
+                        scaledAmount = (maxAmount * percentage / 100).toFixed(2);
+                    } else {
+                        // Stocks, commodities, etc.
+                        scaledAmount = (maxAmount * percentage / 100).toFixed(2);
+                    }
+                    
+                    // Update input field
+                    amountInput.value = scaledAmount;
+                    
+                    // Update slider labels active state
+                    updateSliderLabels(percentage);
+                    
+                    // Update trade info based on new amount
+                    updateTradeInfo();
+                });
+                
+                // Allow manual input to adjust slider
+                amountInput.addEventListener('input', function() {
+                    const inputAmount = parseFloat(this.value) || 0;
+                    const balance = parseFloat("{{ current_user.current_balance }}") || 1000;
+                    const maxAmount = balance / (currentInstrument.price || 1);
+                    
+                    // Calculate percentage of max amount
+                    const percentage = Math.min(100, (inputAmount / maxAmount) * 100);
+                    
+                    // Update slider position
+                    amountSlider.value = percentage;
+                    
+                    // Update slider labels active state
+                    updateSliderLabels(percentage);
+                    
+                    // Update trade info
+                    updateTradeInfo();
+                });
+                
+                // Function to update active states on slider labels
+                function updateSliderLabels(percentage) {
+                    // Remove active class from all labels
+                    sliderLabels.forEach(label => label.classList.remove('active'));
+                    
+                    // Determine closest label to activate
+                    const labelValues = [0, 25, 50, 75, 100];
+                    const closestIndex = labelValues.reduce((prev, curr, index) => 
+                        Math.abs(curr - percentage) < Math.abs(labelValues[prev] - percentage) ? index : prev, 0);
+                    
+                    // Add active class to closest label
+                    sliderLabels[closestIndex].classList.add('active');
+                }
+            }
+            
+            // Setup Take Profit and Stop Loss percentage badges
+            const takeProfitInput = document.getElementById('take_profit');
+            const stopLossInput = document.getElementById('stop_loss');
+            const tpBadge = document.querySelector('.tp-badge');
+            const slBadge = document.querySelector('.sl-badge');
+            
+            if (takeProfitInput && tpBadge) {
+                takeProfitInput.addEventListener('input', function() {
+                    if (!currentInstrument.price) return;
+                    
+                    const tpPrice = parseFloat(this.value) || 0;
+                    const currentPrice = currentInstrument.price;
+                    const tradeType = document.getElementById('trade_type').value;
+                    
+                    // Calculate percentage difference
+                    let percentDiff = 0;
+                    if (tradeType === 'buy') {
+                        percentDiff = ((tpPrice - currentPrice) / currentPrice) * 100;
+                    } else {
+                        percentDiff = ((currentPrice - tpPrice) / currentPrice) * 100;
+                    }
+                    
+                    // Update badge
+                    tpBadge.textContent = (percentDiff > 0 ? '+' : '') + percentDiff.toFixed(2) + '%';
+                });
+            }
+            
+            if (stopLossInput && slBadge) {
+                stopLossInput.addEventListener('input', function() {
+                    if (!currentInstrument.price) return;
+                    
+                    const slPrice = parseFloat(this.value) || 0;
+                    const currentPrice = currentInstrument.price;
+                    const tradeType = document.getElementById('trade_type').value;
+                    
+                    // Calculate percentage difference
+                    let percentDiff = 0;
+                    if (tradeType === 'buy') {
+                        percentDiff = ((slPrice - currentPrice) / currentPrice) * 100;
+                    } else {
+                        percentDiff = ((currentPrice - slPrice) / currentPrice) * 100;
+                    }
+                    
+                    // Update badge
+                    slBadge.textContent = (percentDiff > 0 ? '+' : '') + percentDiff.toFixed(2) + '%';
+                });
+            }
+        });
+        
+        // Update trade type and recalculate TP/SL percentages
+        function setTradeType(type) {
+            const oldType = document.getElementById('trade_type').value;
+            document.getElementById('trade_type').value = type;
+            const submitButton = document.getElementById('submit-trade-button');
+            if (submitButton) {
+                submitButton.textContent = type.toUpperCase();
+                submitButton.className = `btn btn-submit-trade btn-${type}`;
+            }
+            // Update active state of price buttons
+            document.querySelector('.btn-sell-price').classList.toggle('active', type === 'sell');
+            document.querySelector('.btn-buy-price').classList.toggle('active', type === 'buy');
+            
+            // If trade type changed, recalculate TP/SL percentages
+            if (oldType !== type) {
+                const takeProfitInput = document.getElementById('take_profit');
+                const stopLossInput = document.getElementById('stop_loss');
+                
+                if (takeProfitInput && takeProfitInput.value) {
+                    takeProfitInput.dispatchEvent(new Event('input'));
+                }
+                
+                if (stopLossInput && stopLossInput.value) {
+                    stopLossInput.dispatchEvent(new Event('input'));
+                }
+            }
+        }
+        
+        function updateTradeInfo() {
+            // Calculate and display Margin Impact, Trade Value based on Amount and Price
+            const amountInput = document.getElementById('trade_amount');
+            const amount = parseFloat(amountInput.value) || 0;
+            const price = currentInstrument.price || 0;
+            const type = currentInstrument.type;
+            let tradeValue = 0;
+            let marginImpact = 0;
+            const leverage = 50; // Example leverage, make this dynamic later
+            
+            if (amount > 0 && price > 0) {
+                tradeValue = amount * price;
+                // Margin calculation depends heavily on asset type and broker rules
+                // Simple example: margin = value / leverage
+                marginImpact = tradeValue / leverage;
+            }
+            
+            const valuePrecision = 2;
+            document.getElementById('trade-value').textContent = `$ ${tradeValue.toFixed(valuePrecision)}`;
+            document.getElementById('margin-impact').textContent = `$ ${marginImpact.toFixed(valuePrecision)}`;
+            
+            // Check if amount exceeds available balance
+            const availableBalance = parseFloat("{{ current_user.current_balance }}") || 0;
+            const submitButton = document.getElementById('submit-trade-button');
+            
+            if (marginImpact > availableBalance) {
+                // Not enough balance
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.classList.add('disabled');
+                }
+                document.getElementById('margin-impact').classList.add('price-down');
+            } else {
+                // Sufficient balance
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('disabled');
+                }
+                document.getElementById('margin-impact').classList.remove('price-down');
+            }
+        }
+
+        // Add leverage-related functions
+        function getCurrentLeverage() {
+            return parseFloat(document.getElementById('leverage-select').value) || 1;
+        }
+
+        function updateTradeInfo() {
+            const amount = parseFloat(document.getElementById('trade_amount').value) || 0;
+            const leverage = getCurrentLeverage();
+            
+            // Get the actual instrument price (not affected by leverage)
+            const currentPrice = currentInstrument.price || parseFloat(document.getElementById('buy-price').textContent) || 0;
+            
+            // Calculate position value (before leverage)
+            const positionValue = amount * currentPrice;
+            
+            // Calculate required margin based on leverage
+            const marginRequired = positionValue / leverage;
+            
+            // Update margin info display
+            document.getElementById('margin-required-value').textContent = `$${marginRequired.toFixed(2)}`;
+            document.getElementById('effective-leverage').textContent = `${leverage}x`;
+            document.getElementById('trade-value').textContent = `$${positionValue.toFixed(2)}`;
+            
+            // Validate against available balance
+            const availableBalance = parseFloat(document.getElementById('available-balance').textContent.replace('$', '')) || 0;
+            const isValidTrade = marginRequired <= availableBalance;
+            
+            // Update trade buttons state
+            const submitButton = document.getElementById('submit-trade-button');
+            if (submitButton) {
+                submitButton.disabled = !isValidTrade || amount <= 0;
+                if (!isValidTrade && amount > 0) {
+                    submitButton.title = "Insufficient margin available";
+                } else if (amount <= 0) {
+                    submitButton.title = "Please enter an amount";
+                } else {
+                    submitButton.title = "";
+                }
+            }
+        }
+
+        function executeTrade(direction) {
+            const amount = parseFloat(document.getElementById('trade_amount').value);
+            const leverage = getCurrentLeverage();
+            const currentPrice = currentInstrument.price || parseFloat(document.getElementById('buy-price').textContent) || 0;
+            
+            if (!amount || amount <= 0) {
+                showNotification('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            const positionValue = amount * currentPrice;
+            const marginRequired = positionValue / leverage;
+            const availableBalance = parseFloat(document.getElementById('available-balance').textContent.replace('$', ''));
+            
+            if (marginRequired > availableBalance) {
+                showNotification('Insufficient margin available', 'error');
+                return;
+            }
+            
+            // Add leverage to the trade data without affecting the price
+            const tradeData = {
+                symbol: currentInstrument.symbol,
+                amount: amount,
+                direction: direction,
+                leverage: leverage,
+                margin: marginRequired,
+                price: currentPrice // Use actual instrument price
+            };
+            
+            // Send trade to server
+            fetch('/api/trade', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(tradeData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`${direction.toUpperCase()} order executed successfully`, 'success');
+                    updateBalance(data.newBalance);
+                    loadOpenTrades();
+                } else {
+                    showNotification(data.error || 'Trade execution failed', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Trade execution error:', error);
+                showNotification('Trade execution failed', 'error');
+            });
+        }
+
+        function updateInstrumentPriceAndUI() {
+            if (!currentInstrument.id) return;
+            
+            fetch(`/webtrader/get_price?instrument_id=${currentInstrument.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.current_price !== null) {
+                        const price = parseFloat(data.current_price);
+                        currentInstrument.price = price; // Store the actual price
+                        
+                        // Format price based on instrument type (without leverage influence)
+                        let formattedPrice;
+                        if (currentInstrument.type === 'crypto') {
+                            if (price >= 1000) {
+                                formattedPrice = price.toFixed(2);
+                            } else if (price >= 10) {
+                                formattedPrice = price.toFixed(3);
+                            } else if (price >= 1) {
+                                formattedPrice = price.toFixed(4);
+                            } else {
+                                formattedPrice = price.toFixed(6);
+                            }
+                        } else if (currentInstrument.type === 'forex') {
+                            formattedPrice = price.toFixed(4);
+                        } else {
+                            formattedPrice = price.toFixed(2);
+                        }
+                        
+                        // Update displays with actual price (not affected by leverage)
+                        document.getElementById('current-price').textContent = formattedPrice;
+                        
+                        // Update Bid/Ask with small spread
+                        const spread = price * 0.0002; // 0.02% spread
+                        const sellPrice = (price - spread).toFixed(currentInstrument.precision);
+                        const buyPrice = (price + spread).toFixed(currentInstrument.precision);
+                        
+                        document.getElementById('sell-price-display').textContent = sellPrice;
+                        document.getElementById('buy-price-display').textContent = buyPrice;
+                        
+                        // Update trade info with new price
+                        updateTradeInfo();
+                    }
+                })
+                .catch(error => console.error('Error fetching instrument price:', error));
+        }
+</script>
+</body>
+</html>

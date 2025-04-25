@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Instruments</h1>
+
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <a href="{{ url_for('webtrader.new_instrument') }}" class="btn btn-primary">New Instrument</a>
+        {% if current_user.is_admin %}
+        <form action="{{ url_for('webtrader.update_all_prices') }}" method="post" class="d-inline">
+            <button type="submit" class="btn btn-success">Update All Prices</button>
+        </form>
+        <a href="{{ url_for('webtrader.check_pending_orders') }}" class="btn btn-info">Check Pending Orders</a>
+        {% endif %}
+    </div>
+    <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="btn btn-secondary">Back to WebTrader</a>
+</div>
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Name</th>
+            <th>Current Price</th>
+            <th>Type</th>
+            <th>Last Updated</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for instrument in instruments %}
+        <tr>
+            <td>{{ instrument.symbol }}</td>
+            <td>{{ instrument.name }}</td>
+            <td>${{ instrument.current_price }}</td>
+            <td>{{ instrument.type }}</td>
+            <td>{% if instrument.last_updated %}{{ instrument.last_updated.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}Never{% endif %}</td>
+            <td>
+                <a href="{{ url_for('webtrader.edit_instrument', instrument_id=instrument.id) }}" class="btn btn-secondary">Edit</a>
+                <form action="{{ url_for('webtrader.delete_instrument') }}" method="post" class="d-inline">
+                    <input type="hidden" name="instrument_id" value="{{ instrument.id }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

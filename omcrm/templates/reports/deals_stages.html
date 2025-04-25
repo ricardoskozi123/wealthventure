@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+    {% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h2 class="h4">{% if title %}{{title}}{% else %}No Title{% endif %}</h2>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a class="btn btn btn-sm btn-outline-primary" role="button" href="{{ url_for('reports.deal_reports') }}">
+                <span data-feather="arrow-left"></span>
+                  Back to Deal Reports
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 mb-4">
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" id="ds_price" class="btn btn-sm btn-outline-secondary">Price</button>
+              <button type="button" id="ds_count" class="btn btn-sm btn-outline-secondary">Volume</button>
+            </div>
+            <canvas id="myChart1" class="seg_chart_1" width="400" height="300"></canvas>
+            <canvas id="myChart2" class="seg_chart_2" style="display: none;" width="400" height="300"></canvas>
+        </div>
+        <div class="col-6 mb-4">
+            <canvas id="myChart3" class="seg_chart_1" width="400" height="300"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-9">
+
+    {% if deals|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover fixed-layout-table">
+              <thead class="thead-light">
+                <tr>
+                    <th width="150" scope="col">Deal Stage</th>
+                    <th width="150" scope="col">Total Cost</th>
+                    <th width="150" scope="col">Deals Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for deal in deals %}
+                <tr>
+                      <td>{{ deal.stage_name }}</td>
+                      <td>{{ config.def_currency.symbol }} {{ "{:,.2f}".format(deal.total_price) }}</td>
+                    <td><span class="badge badge-info">{{ deal.total_count }}</span></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="container text-center pt-4">
+            <div><span data-feather="eye-off"></span></div>
+            <p>No deal stage records found.</p>
+        </div>
+    {% endif %}
+        </div>
+    </div>
+<script src="{{ url_for('static', filename='scripts/reports/deal_stage_reports.js') }}"></script>
+    <script>
+            $(document).ready(function() {
+                var label_arr = [];
+                var data_arr = [];
+                var data_arr1 = [];
+
+                {% for deal in deals %}
+                    label_arr.push('{{ deal.stage_name }}');
+                    data_arr.push({{ deal.total_price }});
+                    data_arr1.push({{ deal.total_count }});
+                {% endfor %}
+
+                plot_deal_stage_report_price_bar_graph(label_arr, data_arr);
+                plot_deal_stage_report_count_bar_graph(label_arr, data_arr1);
+                plot_deal_stage_report_price_pie_chart(label_arr, data_arr);
+
+                $('#ds_price')
+                    .removeClass('btn-outline-secondary')
+                    .addClass('btn-secondary');
+
+                $('#ds_price').on('click', function() {
+                    $('#myChart1').css('display', 'block');
+                    $('#myChart2').css('display', 'none');
+
+                    $('#ds_price')
+                        .removeClass('btn-outline-secondary')
+                        .addClass('btn-secondary');
+
+                    $('#ds_count')
+                        .removeClass('btn-secondary')
+                        .addClass('btn-outline-secondary');
+                });
+
+                 $('#ds_count').on('click', function() {
+                    $('#myChart1').css('display', 'none');
+                    $('#myChart2').css('display', 'block');
+
+                    $('#ds_price')
+                        .removeClass('btn-secondary')
+                        .addClass('btn-outline-secondary');
+
+                    $('#ds_count')
+                        .removeClass('btn-outline-secondary')
+                        .addClass('btn-secondary');
+                 });
+            });
+    </script>
+    {% endblock %}

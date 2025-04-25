@@ -1,0 +1,275 @@
+{% extends "layout.html" %}
+{% block styles %}
+<style>
+    .kanban-container {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    .kanban-column {
+        flex: 0 0 300px;
+        margin-right: 15px;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+    }
+    .kanban-column-header {
+        padding: 10px 15px;
+        font-weight: bold;
+        border-bottom: 1px solid #dee2e6;
+        background-color: #e9ecef;
+        border-radius: 6px 6px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .kanban-column-count {
+        background-color: rgba(0,0,0,0.1);
+        border-radius: 10px;
+        padding: 2px 8px;
+        font-size: 0.8rem;
+    }
+    .kanban-card-list {
+        min-height: 50px;
+        padding: 10px;
+    }
+    .kanban-card {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 10px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        cursor: move;
+    }
+    .kanban-card:hover {
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    .kanban-card-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .kanban-card-client {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 8px;
+    }
+    .kanban-card-price {
+        font-weight: bold;
+    }
+    .kanban-card-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    .kanban-card-actions {
+        margin-top: 8px;
+        font-size: 0.8rem;
+    }
+    .kanban-card-probability {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .progress {
+        height: 6px;
+        margin-right: 5px;
+    }
+    .drag-over {
+        background-color: #e2f0ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">Pipeline Board</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a class="btn btn-sm btn-outline-primary mr-2" role="button" href="{{ url_for('deals.get_deals_view') }}">
+            <span data-feather="list"></span>
+            List View
+        </a>
+        <a class="btn btn-sm btn-outline-primary" role="button" href="{{ url_for('deals.new_deal') }}">
+            <span data-feather="plus"></span>
+            New Pipeline
+        </a>
+    </div>
+</div>
+
+{% include "deals/kanban_filters.html" %}
+
+<div class="kanban-container">
+    {% for stage in deal_stages %}
+    <div class="kanban-column">
+        <div class="kanban-column-header">
+            {{ stage.stage_name }}
+            <span class="kanban-column-count" id="count-{{ stage.id }}">0</span>
+        </div>
+        <div class="kanban-card-list" id="stage-{{ stage.id }}" data-stage-id="{{ stage.id }}">
+            <!-- Cards will be loaded here via JavaScript -->
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Card Template for JavaScript -->
+<template id="card-template">
+    <div class="kanban-card" id="deal-[ID]" data-deal-id="[ID]">
+        <div class="kanban-card-title">[TITLE]</div>
+        <div class="kanban-card-client">[CLIENT_NAME]</div>
+        <div class="kanban-card-probability">
+            <div class="progress flex-grow-1">
+                <div class="progress-bar [PROGRESS_CLASS]" role="progressbar" style="width: [PROBABILITY]%"></div>
+            </div>
+            <span>[PROBABILITY]%</span>
+        </div>
+        <div class="kanban-card-price">[CURRENCY][PRICE]</div>
+        <div class="kanban-card-date">[CLOSE_DATE]</div>
+        <div class="kanban-card-actions">
+            <a href="/deals/[ID]" class="btn btn-sm btn-outline-secondary">
+                <span data-feather="eye"></span>
+            </a>
+            <a href="/deals/edit/[ID]" class="btn btn-sm btn-outline-secondary">
+                <span data-feather="edit"></span>
+            </a>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize feather icons
+        feather.replace();
+
+        // Load deals data
+        const deals = [
+            {% for deal in deals %}
+            {
+                id: {{ deal.id }},
+                title: "{{ deal.title }}",
+                clientName: "{{ deal.client.first_name }} {{ deal.client.last_name }}",
+                price: "{{ "{:,.2f}".format(deal.expected_close_price) }}",
+                closeDate: "{{ deal.expected_close_date.strftime('%Y-%m-%d') if deal.expected_close_date else 'No date' }}",
+                stageId: {{ deal.deal_stage_id }},
+                probability: {{ deal.probability }}
+            },
+            {% endfor %}
+        ];
+
+        // Initialize columns with deals
+        deals.forEach(function(deal) {
+            addDealToStage(deal);
+        });
+
+        // Update column counts
+        updateColumnCounts();
+
+        // Add drag and drop functionality
+        setupDragAndDrop();
+
+        function addDealToStage(deal) {
+            const stage = document.getElementById(`stage-${deal.stageId}`);
+            
+            if (!stage) return;
+            
+            // Clone the template
+            const template = document.getElementById('card-template').innerHTML;
+            
+            // Replace placeholders with actual data
+            let cardHtml = template
+                .replace(/\[ID\]/g, deal.id)
+                .replace('[TITLE]', deal.title)
+                .replace('[CLIENT_NAME]', deal.clientName)
+                .replace('[CURRENCY]', '{{ config.def_currency.symbol }} ')
+                .replace('[PRICE]', deal.price)
+                .replace('[CLOSE_DATE]', deal.closeDate)
+                .replace('[PROBABILITY]', deal.probability);
+            
+            // Set progress bar class based on probability
+            if (deal.probability < 30) {
+                cardHtml = cardHtml.replace('[PROGRESS_CLASS]', 'bg-danger');
+            } else if (deal.probability < 70) {
+                cardHtml = cardHtml.replace('[PROGRESS_CLASS]', 'bg-warning');
+            } else {
+                cardHtml = cardHtml.replace('[PROGRESS_CLASS]', 'bg-success');
+            }
+            
+            // Add the card to the stage
+            stage.innerHTML += cardHtml;
+        }
+
+        function updateColumnCounts() {
+            document.querySelectorAll('.kanban-card-list').forEach(function(column) {
+                const stageId = column.dataset.stageId;
+                const count = column.querySelectorAll('.kanban-card').length;
+                document.getElementById(`count-${stageId}`).textContent = count;
+            });
+        }
+
+        function setupDragAndDrop() {
+            // Make cards draggable
+            document.querySelectorAll('.kanban-card').forEach(function(card) {
+                card.setAttribute('draggable', true);
+                
+                card.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', card.id);
+                    setTimeout(() => {
+                        card.classList.add('invisible');
+                    }, 0);
+                });
+                
+                card.addEventListener('dragend', function() {
+                    card.classList.remove('invisible');
+                });
+            });
+            
+            // Set up drop targets
+            document.querySelectorAll('.kanban-card-list').forEach(function(column) {
+                column.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('drag-over');
+                });
+                
+                column.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+                
+                column.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    const cardId = e.dataTransfer.getData('text/plain');
+                    const card = document.getElementById(cardId);
+                    const stageId = this.dataset.stageId;
+                    const dealId = card.dataset.dealId;
+                    
+                    // Move the card to the new column
+                    this.appendChild(card);
+                    
+                    // Update counts
+                    updateColumnCounts();
+                    
+                    // Save the change via AJAX
+                    fetch(`/deals/update_stage/${dealId}/${stageId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to update stage');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (!data.success) {
+                                console.error('Error updating stage:', data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // Revert the change if there was an error
+                            // This would require keeping track of the original column
+                        });
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

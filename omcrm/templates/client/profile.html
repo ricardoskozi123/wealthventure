@@ -1,0 +1,428 @@
+{% extends "client_layout.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-4">
+            <!-- User Profile Card -->
+            <div class="card shadow-lg border-0 rounded-lg overflow-hidden">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h3 class="card-title m-0">Your Profile</h3>
+                </div>
+                <div class="card-body text-center">
+                    {% if user.profile_image %}
+                        <div class="avatar-container mb-4">
+                            <img src="{{ url_for('static', filename='profile_imgs/' + user.profile_image) }}" alt="Profile Picture" class="img-thumbnail rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #007bff; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                            <div class="avatar-overlay">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="mb-4 d-flex justify-content-center align-items-center bg-light rounded-circle mx-auto" style="width: 150px; height: 150px; border: 3px solid #007bff; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                            <i class="fas fa-user-circle text-primary" style="font-size: 100px;"></i>
+                        </div>
+                    {% endif %}
+                    <h4 class="font-weight-bold">{{ user.first_name }} {{ user.last_name }}</h4>
+                    <p class="text-muted">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        Client since {{ user.conversion_date.strftime('%B %d, %Y') if user.conversion_date else 'N/A' }}
+                    </p>
+                    <div class="stats-container d-flex justify-content-around mt-4">
+                        <div class="stat-item text-center">
+                            <h5 class="mb-0 font-weight-bold text-primary">{{ user.trades|length }}</h5>
+                            <small class="text-muted">Total Trades</small>
+                        </div>
+                        <div class="stat-item text-center">
+                            <h5 class="mb-0 font-weight-bold text-success">${{ "%.2f"|format(user.current_balance) }}</h5>
+                            <small class="text-muted">Balance</small>
+                        </div>
+                        <div class="stat-item text-center">
+                            <h5 class="mb-0 font-weight-bold text-info">{{ user.country }}</h5>
+                            <small class="text-muted">Country</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Status Card -->
+            <div class="card shadow-lg border-0 rounded-lg mt-4">
+                <div class="card-header bg-gradient-success text-white">
+                    <h3 class="card-title m-0">Account Status</h3>
+                </div>
+                <div class="card-body">
+                    <div class="status-item d-flex justify-content-between align-items-center py-2">
+                        <div class="status-label">
+                            <i class="fas fa-shield-alt mr-2 text-primary"></i>
+                            <span>Account Verified</span>
+                        </div>
+                        <div class="status-value">
+                            <span class="badge badge-pill badge-success">
+                                <i class="fas fa-check"></i> Yes
+                            </span>
+                        </div>
+                    </div>
+                    <div class="status-item d-flex justify-content-between align-items-center py-2">
+                        <div class="status-label">
+                            <i class="fas fa-chart-line mr-2 text-primary"></i>
+                            <span>Trading Status</span>
+                        </div>
+                        <div class="status-value">
+                            <span class="badge badge-pill {% if user.available_to_trade %}badge-success{% else %}badge-danger{% endif %}">
+                                {% if user.available_to_trade %}
+                                    <i class="fas fa-check"></i> Enabled
+                                {% else %}
+                                    <i class="fas fa-times"></i> Disabled
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="status-item d-flex justify-content-between align-items-center py-2">
+                        <div class="status-label">
+                            <i class="fas fa-calendar-check mr-2 text-primary"></i>
+                            <span>Member Since</span>
+                        </div>
+                        <div class="status-value">
+                            <span class="badge badge-pill badge-info">
+                                {{ user.conversion_date.strftime('%b %Y') if user.conversion_date else 'N/A' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <!-- Account Settings Card -->
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-gradient-info text-white">
+                    <h3 class="card-title m-0">Account Settings</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" class="modern-form">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Personal Information -->
+                        <div class="section-header d-flex align-items-center mb-3">
+                            <div class="section-icon mr-3">
+                                <i class="fas fa-user-circle fa-2x text-primary"></i>
+                            </div>
+                            <h4 class="m-0">Personal Information</h4>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="first_name" class="form-label text-muted">First Name</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control bg-light" id="first_name" value="{{ user.first_name }}" disabled>
+                                    </div>
+                                    <small class="text-muted mt-1">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Contact support to change this information
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="last_name" class="form-label text-muted">Last Name</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control bg-light" id="last_name" value="{{ user.last_name }}" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email" class="form-label text-muted">Email Address</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        </div>
+                                        <input type="email" class="form-control bg-light" id="email" value="{{ user.email }}" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="country" class="form-label text-muted">Country</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-globe-americas"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control bg-light" id="country" value="{{ user.country }}" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Profile Picture -->
+                        <div class="section-header d-flex align-items-center mb-3">
+                            <div class="section-icon mr-3">
+                                <i class="fas fa-camera fa-2x text-primary"></i>
+                            </div>
+                            <h4 class="m-0">Profile Picture</h4>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="picture" class="form-label text-muted">Update Profile Picture</label>
+                                    <div class="custom-file">
+                                        {{ form.picture(class="custom-file-input", id="customFile") }}
+                                        <label class="custom-file-label" for="customFile">Choose file</label>
+                                    </div>
+                                    {% if form.picture.errors %}
+                                        {% for error in form.picture.errors %}
+                                            <div class="text-danger mt-1">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i>
+                                        Supported formats: JPG, PNG. Maximum size: 5MB.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Security Section -->
+                        <div class="section-header d-flex align-items-center mb-3">
+                            <div class="section-icon mr-3">
+                                <i class="fas fa-shield-alt fa-2x text-primary"></i>
+                            </div>
+                            <h4 class="m-0">Security Settings</h4>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="password" class="form-label text-muted">New Password</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        </div>
+                                        {{ form.password(class="form-control", placeholder="Leave blank to keep current password") }}
+                                    </div>
+                                    {% if form.password.errors %}
+                                        {% for error in form.password.errors %}
+                                            <div class="text-danger mt-1">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i>
+                                        Password must be at least 6 characters.
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="confirm_password" class="form-label text-muted">Confirm New Password</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        </div>
+                                        {{ form.confirm_password(class="form-control") }}
+                                    </div>
+                                    {% if form.confirm_password.errors %}
+                                        {% for error in form.confirm_password.errors %}
+                                            <div class="text-danger mt-1">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group text-end mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg px-5") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Account Security Card -->
+            <div class="card shadow-lg border-0 rounded-lg mt-4">
+                <div class="card-header bg-gradient-warning text-white">
+                    <h3 class="card-title m-0">Account Security</h3>
+                </div>
+                <div class="card-body">
+                    <div class="security-item d-flex align-items-center mb-3">
+                        <div class="security-icon mr-3">
+                            <i class="fas fa-sign-in-alt fa-2x text-primary"></i>
+                        </div>
+                        <div class="security-content flex-grow-1">
+                            <h5 class="mb-1">Last Login</h5>
+                            <p class="text-muted mb-0">{{ user.last_login|default('N/A', true) }}</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary" disabled>
+                                <i class="fas fa-history mr-2"></i>
+                                View History
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="security-item d-flex align-items-center">
+                        <div class="security-icon mr-3">
+                            <i class="fas fa-shield-alt fa-2x text-success"></i>
+                        </div>
+                        <div class="security-content flex-grow-1">
+                            <h5 class="mb-1">Two-Factor Authentication</h5>
+                            <p class="text-muted mb-0">Additional security for your account</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-success" disabled>
+                                <i class="fas fa-plus-circle mr-2"></i>
+                                Enable
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modern form styling */
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, #007bff, #00c6ff);
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(45deg, #28a745, #48d368);
+    }
+    
+    .bg-gradient-info {
+        background: linear-gradient(45deg, #17a2b8, #2febd2);
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(45deg, #ffc107, #ff9800);
+    }
+    
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .avatar-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 10px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    
+    .section-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: rgba(0, 123, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .security-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .status-item, .security-item {
+        padding: 12px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .status-item:hover, .security-item:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .custom-file-label::after {
+        content: "Browse";
+    }
+    
+    /* Custom input styling */
+    .form-control {
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 1px solid #ced4da;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, #007bff, #00c6ff);
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 123, 255, 0.3);
+    }
+    
+    .btn-outline-primary {
+        color: #007bff;
+        border-color: #007bff;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-outline-success {
+        color: #28a745;
+        border-color: #28a745;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-success:hover {
+        background-color: #28a745;
+        color: white;
+    }
+</style>
+{% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Update file input label with selected filename
+    $('.custom-file-input').on('change', function() {
+        let fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').addClass("selected").html(fileName);
+    });
+</script>
+{% endblock scripts %} 

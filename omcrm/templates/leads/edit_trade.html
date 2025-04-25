@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h2>Edit Trade</h2>
+    
+    {% if trade %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Trade Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Instrument:</strong> {{ trade.instrument.name if trade.instrument else "N/A" }}</p>
+                    <p><strong>Symbol:</strong> {{ trade.instrument.symbol if trade.instrument else "N/A" }}</p>
+                    <p><strong>Amount:</strong> {{ trade.amount }}</p>
+                    <p><strong>Price:</strong> {{ trade.price }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Type:</strong> {{ trade.trade_type|capitalize }}</p>
+                    <p><strong>Status:</strong> <span class="badge bg-{{ 'success' if trade.status == 'closed' else 'primary' }}">{{ trade.status|capitalize }}</span></p>
+                    <p><strong>Opening Date:</strong> {{ trade.opening_date.strftime('%Y-%m-%d %H:%M:%S') if trade.opening_date else trade.date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    {% if trade.status == 'closed' %}
+                        <p><strong>Closing Date:</strong> {{ trade.closing_date.strftime('%Y-%m-%d %H:%M:%S') if trade.closing_date else 'Not recorded' }}</p>
+                        {% if trade.profit_loss is not none %}
+                            <p>
+                                <strong>Profit/Loss:</strong> 
+                                <span class="badge bg-{{ 'success' if trade.profit_loss > 0 else 'danger' }}">
+                                    {{ trade.profit_loss|round(2) }}
+                                </span>
+                            </p>
+                        {% endif %}
+                    {% else %}
+                        <!-- Live P/L information for open trades -->
+                        <p><strong>Current Market Price:</strong> <span id="current-price">Loading...</span></p>
+                        <p>
+                            <strong>Live P/L:</strong> 
+                            <span id="live-pl" class="badge">Calculating...</span>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        {% include 'leads/trade_form_fields.html' %}
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if trade and trade.status == 'open' and trade.instrument %}
+            // Pre-assign template variables to JavaScript variables
+            var instrumentId = "{{ trade.instrument_id }}";
+            var tradePrice = {{ trade.price }};
+            var tradeAmount = {{ trade.amount }};
+            var tradeType = "{{ trade.trade_type }}";
+            
+            // Function to update current price and P/L
+            function updatePriceAndPL() {
+                // Use the correct API endpoint and parameter name 'current_price' instead of 'price'
+                fetch('/webtrader/get_price?instrument_id=' + instrumentId)
+                    .then(function(response) { 
+                        return response.json(); 
+                    })
+                    .then(function(data) {
+                        // Update current price - get the correct property name from the API
+                        var currentPrice = data.current_price;
+                        if (currentPrice === null) {
+                            document.getElementById('current-price').textContent = 'Not available';
+                            document.getElementById('live-pl').textContent = 'Not available';
+                            return;
+                        }
+                        
+                        document.getElementById('current-price').textContent = currentPrice.toFixed(2);
+                        
+                        // Calculate P/L
+                        var profitLoss = 0;
+                        
+                        if (tradeType === 'buy') { // Long position
+                            profitLoss = (currentPrice - tradePrice) * tradeAmount;
+                        } else { // Short position
+                            profitLoss = (tradePrice - currentPrice) * tradeAmount;
+                        }
+                        
+                        // Update P/L display
+                        var plElement = document.getElementById('live-pl');
+                        plElement.textContent = profitLoss.toFixed(2);
+                        plElement.className = profitLoss >= 0 ? 'badge bg-success' : 'badge bg-danger';
+                    })
+                    .catch(function(error) {
+                        console.error('Error fetching price:', error);
+                        document.getElementById('current-price').textContent = 'Error';
+                        document.getElementById('live-pl').textContent = 'Error';
+                    });
+            }
+            
+            // Update immediately and then every 10 seconds
+            updatePriceAndPL();
+            setInterval(updatePriceAndPL, 10000);
+        {% endif %}
+    });
+</script>
+{% endblock content %}

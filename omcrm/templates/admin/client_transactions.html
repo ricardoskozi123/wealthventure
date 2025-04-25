@@ -1,0 +1,352 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Client Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Name:</strong> {{ client.first_name }} {{ client.last_name }}</p>
+                                <p><strong>Email:</strong> {{ client.email }}</p>
+                                <p><strong>Phone:</strong> {{ client.phone or 'N/A' }}</p>
+                                <p><strong>Mobile:</strong> {{ client.mobile or 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Current Balance:</strong> ${{ "%.2f"|format(client.current_balance) }}</p>
+                                <p><strong>Bonus Balance:</strong> ${{ "%.2f"|format(client.bonus_balance) }}</p>
+                                <p><strong>Credit Balance:</strong> ${{ "%.2f"|format(client.credit_balance) }}</p>
+                                <p><strong>Total Balance:</strong> ${{ "%.2f"|format(client.get_total_balance()) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Transaction History</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="transactionTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="deposits-tab" data-toggle="tab" href="#deposits" role="tab" aria-controls="deposits" aria-selected="true" style="color: #495057; font-weight: 600;">Deposits</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="withdrawals-tab" data-toggle="tab" href="#withdrawals" role="tab" aria-controls="withdrawals" aria-selected="false" style="color: #495057; font-weight: 600;">Withdrawals</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="transactionTabsContent">
+                            <div class="tab-pane fade show active" id="deposits" role="tabpanel" aria-labelledby="deposits-tab">
+                                {% if deposits %}
+                                <div class="table-responsive mt-4">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Approved By</th>
+                                                <th>Processed Date</th>
+                                                <th>Notes</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for deposit in deposits %}
+                                            <tr>
+                                                <td>{{ deposit.id }}</td>
+                                                <td>${{ "%.2f"|format(deposit.amount) }}</td>
+                                                <td>
+                                                    {{ deposit.method|capitalize }}
+                                                    {% if deposit.crypto_type %}
+                                                    ({{ deposit.crypto_type }})
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ deposit.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                <td>
+                                                    {% if deposit.status == 'pending' %}
+                                                    <span class="badge badge-warning">Pending</span>
+                                                    {% elif deposit.status == 'approved' %}
+                                                    <span class="badge badge-success">Approved</span>
+                                                    {% elif deposit.status == 'rejected' %}
+                                                    <span class="badge badge-danger">Rejected</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if deposit.processed_by and users[deposit.processed_by] %}
+                                                        {{ users[deposit.processed_by].username }}
+                                                    {% elif deposit.status != 'pending' %}
+                                                        Unknown
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if deposit.processed_date %}
+                                                        {{ deposit.processed_date.strftime('%Y-%m-%d %H:%M') }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ deposit.notes or '-' }}</td>
+                                                <td>
+                                                    {% if deposit.status == 'pending' %}
+                                                    <form method="POST" action="{{ url_for('transactions.approve_deposit', deposit_id=deposit.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                                    </form>
+                                                    <form method="POST" action="{{ url_for('transactions.reject_deposit', deposit_id=deposit.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                                    </form>
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="mt-4">No deposits found for this client.</p>
+                                {% endif %}
+                            </div>
+                            <div class="tab-pane fade" id="withdrawals" role="tabpanel" aria-labelledby="withdrawals-tab">
+                                {% if withdrawals %}
+                                <div class="table-responsive mt-4">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Approved By</th>
+                                                <th>Processed Date</th>
+                                                <th>Reference</th>
+                                                <th>Notes</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for withdrawal in withdrawals %}
+                                            <tr>
+                                                <td>{{ withdrawal.id }}</td>
+                                                <td>${{ "%.2f"|format(withdrawal.amount) }}</td>
+                                                <td>
+                                                    {{ withdrawal.method|capitalize }}
+                                                    {% if withdrawal.crypto_type %}
+                                                    ({{ withdrawal.crypto_type }})
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ withdrawal.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                <td>
+                                                    {% if withdrawal.status == 'pending' %}
+                                                    <span class="badge badge-warning">Pending</span>
+                                                    {% elif withdrawal.status == 'approved' %}
+                                                    <span class="badge badge-success">Approved</span>
+                                                    {% elif withdrawal.status == 'rejected' %}
+                                                    <span class="badge badge-danger">Rejected</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if withdrawal.processed_by and users[withdrawal.processed_by] %}
+                                                        {{ users[withdrawal.processed_by].username }}
+                                                    {% elif withdrawal.status != 'pending' %}
+                                                        Unknown
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if withdrawal.processed_date %}
+                                                        {{ withdrawal.processed_date.strftime('%Y-%m-%d %H:%M') }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ withdrawal.reference or '-' }}</td>
+                                                <td>{{ withdrawal.notes or '-' }}</td>
+                                                <td>
+                                                    {% if withdrawal.status == 'pending' %}
+                                                    <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#approveWithdrawalModal{{ withdrawal.id }}">
+                                                        Approve
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#rejectWithdrawalModal{{ withdrawal.id }}">
+                                                        Reject
+                                                    </button>
+
+                                                    <!-- Approve Withdrawal Modal -->
+                                                    <div class="modal fade" id="approveWithdrawalModal{{ withdrawal.id }}" tabindex="-1" role="dialog" aria-labelledby="approveWithdrawalModalLabel{{ withdrawal.id }}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="approveWithdrawalModalLabel{{ withdrawal.id }}">Approve Withdrawal #{{ withdrawal.id }}</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <form method="POST" action="{{ url_for('transactions.approve_withdrawal', withdrawal_id=withdrawal.id) }}">
+                                                                    <div class="modal-body">
+                                                                        <div class="form-group">
+                                                                            <label for="reference">Transaction Reference (optional)</label>
+                                                                            <input type="text" class="form-control" id="reference" name="reference" placeholder="Enter transaction ID or reference">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                        <button type="submit" class="btn btn-success">Approve Withdrawal</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Reject Withdrawal Modal -->
+                                                    <div class="modal fade" id="rejectWithdrawalModal{{ withdrawal.id }}" tabindex="-1" role="dialog" aria-labelledby="rejectWithdrawalModalLabel{{ withdrawal.id }}" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="rejectWithdrawalModalLabel{{ withdrawal.id }}">Reject Withdrawal #{{ withdrawal.id }}</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <form method="POST" action="{{ url_for('transactions.reject_withdrawal', withdrawal_id=withdrawal.id) }}">
+                                                                    <div class="modal-body">
+                                                                        <div class="form-group">
+                                                                            <label for="reason">Rejection Reason (optional)</label>
+                                                                            <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Enter reason for rejection"></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                        <button type="submit" class="btn btn-danger">Reject Withdrawal</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="mt-4">No withdrawals found for this client.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Add Manual Transaction</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="manualTxTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="add-deposit-tab" data-toggle="tab" href="#add-deposit" role="tab" aria-controls="add-deposit" aria-selected="true" style="color: #495057; font-weight: 600;">Add Deposit</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="add-withdrawal-tab" data-toggle="tab" href="#add-withdrawal" role="tab" aria-controls="add-withdrawal" aria-selected="false" style="color: #495057; font-weight: 600;">Add Withdrawal</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="manualTxTabsContent">
+                            <div class="tab-pane fade show active" id="add-deposit" role="tabpanel" aria-labelledby="add-deposit-tab">
+                                <form method="POST" action="{{ url_for('transactions.add_manual_deposit', client_id=client.id) }}" class="mt-4">
+                                    <div class="form-group">
+                                        <label for="deposit-amount">Amount</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+                                            </div>
+                                            <input type="number" class="form-control" id="deposit-amount" name="amount" min="0.01" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="deposit-method">Method</label>
+                                        <select class="form-control" id="deposit-method" name="method" required>
+                                            <option value="wire">Wire Transfer</option>
+                                            <option value="crypto">Cryptocurrency</option>
+                                            <option value="card">Credit/Debit Card</option>
+                                            <option value="manual">Manual (Admin)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="deposit-notes">Notes</label>
+                                        <textarea class="form-control" id="deposit-notes" name="notes" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="auto-approve-deposit" name="auto_approve" value="1" checked>
+                                            <label class="custom-control-label" for="auto-approve-deposit">Automatically approve deposit</label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Deposit</button>
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="add-withdrawal" role="tabpanel" aria-labelledby="add-withdrawal-tab">
+                                <form method="POST" action="{{ url_for('transactions.add_manual_withdrawal', client_id=client.id) }}" class="mt-4">
+                                    <div class="form-group">
+                                        <label for="withdrawal-amount">Amount</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+                                            </div>
+                                            <input type="number" class="form-control" id="withdrawal-amount" name="amount" min="0.01" step="0.01" max="{{ client.get_total_balance() }}" required>
+                                        </div>
+                                        <small class="form-text text-muted">Maximum withdrawal: ${{ "%.2f"|format(client.get_total_balance()) }}</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="withdrawal-method">Method</label>
+                                        <select class="form-control" id="withdrawal-method" name="method" required>
+                                            <option value="wire">Wire Transfer</option>
+                                            <option value="crypto">Cryptocurrency</option>
+                                            <option value="manual">Manual (Admin)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="withdrawal-reference">Reference (optional)</label>
+                                        <input type="text" class="form-control" id="withdrawal-reference" name="reference">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="withdrawal-notes">Notes</label>
+                                        <textarea class="form-control" id="withdrawal-notes" name="notes" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="auto-approve-withdrawal" name="auto_approve" value="1" checked>
+                                            <label class="custom-control-label" for="auto-approve-withdrawal">Automatically approve withdrawal</label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Withdrawal</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

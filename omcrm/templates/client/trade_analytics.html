@@ -1,0 +1,580 @@
+{% extends "client_layout.html" %}
+{% block content %}
+<!-- Modern, clean analytics interface -->
+<div class="container-fluid px-0">
+    <!-- Minimal header -->
+    <div class="d-flex justify-content-between align-items-center py-3 mb-4 border-bottom">
+        <h1 class="fs-4 fw-normal m-0">Trading Performance</h1>
+        <div>
+            <a href="{{ url_for('client.dashboard') }}" class="btn btn-sm btn-light me-2">
+                <i data-feather="arrow-left" class="me-1" style="width: 16px; height: 16px;"></i>Dashboard
+            </a>
+            <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="btn btn-sm btn-primary">
+                <i data-feather="trending-up" class="me-1" style="width: 16px; height: 16px;"></i>WebTrader
+            </a>
+        </div>
+    </div>
+
+    <!-- Key metrics cards in a single row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex flex-column align-items-center text-center">
+                        <small class="text-muted mb-1">Win Rate</small>
+                        <h2 class="fs-1 mb-0 {{ 'text-success' if metrics.win_rate >= 50 else '' }}">{{ "%.1f"|format(metrics.win_rate) }}%</h2>
+                        <small class="text-muted">{{ metrics.winning_trades }} of {{ metrics.total_trades }} trades</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex flex-column align-items-center text-center">
+                        <small class="text-muted mb-1">Total P/L</small>
+                        <h2 class="fs-1 mb-0 {{ 'text-success' if metrics.total_pnl > 0 else 'text-danger' if metrics.total_pnl < 0 else '' }}">
+                            ${{ "%.2f"|format(metrics.total_pnl) }}
+                        </h2>
+                        <small class="text-muted">All time</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex flex-column align-items-center text-center">
+                        <small class="text-muted mb-1">Avg. Profit</small>
+                        <h2 class="fs-1 mb-0 text-success">${{ "%.2f"|format(metrics.avg_profit_per_winning_trade) }}</h2>
+                        <small class="text-muted">Per winning trade</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex flex-column align-items-center text-center">
+                        <small class="text-muted mb-1">Avg. Loss</small>
+                        <h2 class="fs-1 mb-0 text-danger">${{ "%.2f"|format(metrics.avg_loss_per_losing_trade) }}</h2>
+                        <small class="text-muted">Per losing trade</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section - Using Plotly for better rendering -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Cumulative P/L</h6>
+                    <div id="cumulativePLChart" style="height:280px; width:100%;" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Monthly Performance</h6>
+                    <div id="monthlyPerformanceChart" style="height:280px; width:100%;" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Performance by Instrument</h6>
+                    <div id="instrumentPerformanceChart" style="height:280px; width:100%;" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Win/Loss Distribution</h6>
+                    <div id="winLossDistributionChart" style="height:280px; width:100%;" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Journal -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="card-title text-muted mb-0">Trade Journal</h6>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="showClosedTradesOnly">
+                    <label class="form-check-label small text-muted" for="showClosedTradesOnly">Show closed trades only</label>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Instrument</th>
+                            <th>Type</th>
+                            <th>Entry Price</th>
+                            <th>Exit Price</th>
+                            <th>Amount</th>
+                            <th>P/L</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trade in trades %}
+                        <tr class="trade-row {{ 'closed-trade' if trade.status == 'closed' else 'open-trade' }}">
+                            <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ trade.instrument.symbol }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if trade.trade_type == 'buy' else 'danger' }}">
+                                    {{ trade.trade_type.upper() }}
+                                </span>
+                            </td>
+                            <td>${{ "%.4f"|format(trade.price) }}</td>
+                            <td>
+                                {% if trade.closing_price %}
+                                    ${{ "%.4f"|format(trade.closing_price) }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ trade.amount }}</td>
+                            <td>
+                                {% if trade.status == 'closed' and trade.profit_loss %}
+                                    <span class="badge bg-{{ 'success' if trade.profit_loss > 0 else 'danger' }}">
+                                        ${{ "%.2f"|format(trade.profit_loss) }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'primary' if trade.status == 'open' else 'secondary' }}">
+                                    {{ trade.status|capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-secondary view-notes-btn" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#tradeNotesModal" 
+                                        data-trade-id="{{ trade.id }}"
+                                        data-trade-notes="{{ trade.notes|default('') }}">
+                                    <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('client.view_trade_details', trade_id=trade.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trade Notes Modal -->
+<div class="modal fade" id="tradeNotesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Trade Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="tradeNotesForm">
+                    <input type="hidden" id="tradeId" name="trade_id">
+                    <div class="mb-3">
+                        <textarea class="form-control" id="tradeNotes" name="notes" rows="5" placeholder="Add your notes about this trade..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveNotesBtn">Save Notes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
+<script>
+// Add these variables at the top to store actual server data
+const serverData = {
+    cumulative: {{ cumulative_pl_data | safe }},
+    monthly: {{ monthly_performance_data | safe }},
+    instrument: {{ instrument_performance_data | safe }},
+    winLoss: {{ win_loss_distribution_data | safe }}
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Create and display charts with server data
+    createCharts();
+    
+    // Filter for showing closed trades only
+    var filterCheckbox = document.getElementById('showClosedTradesOnly');
+    if (filterCheckbox) {
+        filterCheckbox.addEventListener('change', function() {
+            var openTrades = document.querySelectorAll('.open-trade');
+            for (var i = 0; i < openTrades.length; i++) {
+                openTrades[i].style.display = this.checked ? 'none' : '';
+            }
+        });
+    }
+    
+    // Trade notes modal functionality
+    var notesModal = document.getElementById('tradeNotesModal');
+    if (notesModal) {
+        notesModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            var tradeId = button.getAttribute('data-trade-id');
+            var tradeNotes = button.getAttribute('data-trade-notes');
+            
+            document.getElementById('tradeId').value = tradeId;
+            document.getElementById('tradeNotes').value = tradeNotes || '';
+        });
+        
+        document.getElementById('saveNotesBtn').addEventListener('click', function() {
+            var tradeId = document.getElementById('tradeId').value;
+            var notes = document.getElementById('tradeNotes').value;
+            
+            // Send AJAX request to save notes
+            fetch('{{ url_for("client.save_trade_notes") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: 'trade_id=' + encodeURIComponent(tradeId) + '&notes=' + encodeURIComponent(notes)
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    // Close modal
+                    var modalInstance = bootstrap.Modal.getInstance(notesModal);
+                    modalInstance.hide();
+                    
+                    // Update button data attribute
+                    document.querySelector('[data-trade-id="' + tradeId + '"]').setAttribute('data-trade-notes', notes);
+                } else {
+                    alert('Error saving notes: ' + data.error);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Error saving notes. Please try again.');
+            });
+        });
+    }
+    
+    // Initialize Feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+});
+
+function createCharts() {
+    // Define common chart config
+    var config = {
+        responsive: true,
+        displayModeBar: false
+    };
+    
+    // Setup placeholder charts first
+    var cumulativeChart = createPlaceholderCumulativeChart();
+    var monthlyChart = createPlaceholderMonthlyChart();
+    var instrumentChart = createPlaceholderInstrumentChart();
+    var winLossChart = createPlaceholderWinLossChart();
+    
+    // Try to draw the charts
+    try {
+        // Draw placeholder charts first
+        Plotly.newPlot('cumulativePLChart', cumulativeChart.data, cumulativeChart.layout, config);
+        Plotly.newPlot('monthlyPerformanceChart', monthlyChart.data, monthlyChart.layout, config);
+        Plotly.newPlot('instrumentPerformanceChart', instrumentChart.data, instrumentChart.layout, config);
+        Plotly.newPlot('winLossDistributionChart', winLossChart.data, winLossChart.layout, config);
+        
+        // Then try to update with real data if available
+        if (serverData && Object.keys(serverData).length > 0) {
+            // Update cumulative chart
+            if (serverData.cumulative && serverData.cumulative.data) {
+                // Apply styling to server data
+                let chartData = serverData.cumulative;
+                chartData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+                chartData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+                chartData.layout.margin = {l: 50, r: 20, b: 50, t: 30, pad: 4};
+                chartData.layout.title = {
+                    text: 'Cumulative Profit/Loss Over Time',
+                    font: {size: 14},
+                    y: 0.98
+                };
+                
+                if (chartData.data[0]) {
+                    chartData.data[0].fill = 'tozeroy';
+                    chartData.data[0].fillcolor = 'rgba(75, 192, 192, 0.2)';
+                    chartData.data[0].line = {color: 'rgba(75, 192, 192, 1)', width: 2};
+                }
+                
+                Plotly.react('cumulativePLChart', chartData.data, chartData.layout, config);
+            }
+            
+            // Update monthly chart
+            if (serverData.monthly && serverData.monthly.data) {
+                let chartData = serverData.monthly;
+                chartData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+                chartData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+                chartData.layout.margin = {l: 50, r: 20, b: 50, t: 30, pad: 4};
+                chartData.layout.title = {
+                    text: 'Monthly Performance',
+                    font: {size: 14},
+                    y: 0.98
+                };
+                
+                Plotly.react('monthlyPerformanceChart', chartData.data, chartData.layout, config);
+            }
+            
+            // Update instrument chart
+            if (serverData.instrument && serverData.instrument.data) {
+                let chartData = serverData.instrument;
+                chartData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+                chartData.layout.margin = {l: 20, r: 20, b: 20, t: 30, pad: 4};
+                chartData.layout.title = {
+                    text: 'Performance by Instrument',
+                    font: {size: 14},
+                    y: 0.98
+                };
+                
+                Plotly.react('instrumentPerformanceChart', chartData.data, chartData.layout, config);
+            }
+            
+            // Update win/loss chart
+            if (serverData.winLoss && serverData.winLoss.data) {
+                let chartData = serverData.winLoss;
+                chartData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+                chartData.layout.margin = {l: 20, r: 20, b: 20, t: 30, pad: 4};
+                chartData.layout.title = {
+                    text: 'Win/Loss Distribution',
+                    font: {size: 14},
+                    y: 0.98
+                };
+                
+                Plotly.react('winLossDistributionChart', chartData.data, chartData.layout, config);
+            }
+        }
+    } catch (e) {
+        console.error('Error creating charts:', e);
+    }
+    
+    // Redraw charts on window resize
+    window.addEventListener('resize', function() {
+        Plotly.relayout('cumulativePLChart', {autosize: true});
+        Plotly.relayout('monthlyPerformanceChart', {autosize: true});
+        Plotly.relayout('instrumentPerformanceChart', {autosize: true});
+        Plotly.relayout('winLossDistributionChart', {autosize: true});
+    });
+}
+
+// Helper functions to create placeholder charts
+function createPlaceholderCumulativeChart() {
+    var dates = generateDates(30);
+    var values = generateCumulative(30);
+    
+    return {
+        data: [{
+            x: dates,
+            y: values,
+            type: 'scatter',
+            mode: 'lines',
+            fill: 'tozeroy',
+            line: {
+                color: 'rgba(75, 192, 192, 1)',
+                width: 2
+            },
+            fillcolor: 'rgba(75, 192, 192, 0.2)'
+        }],
+        layout: {
+            autosize: true,
+            margin: {l: 50, r: 20, b: 50, t: 30, pad: 4},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            showlegend: false,
+            title: {
+                text: 'Cumulative P/L',
+                font: {size: 14},
+                y: 0.98
+            },
+            xaxis: {
+                showgrid: false,
+                zeroline: false,
+                title: {
+                    text: 'Date',
+                    standoff: 10
+                }
+            },
+            yaxis: {
+                showgrid: true,
+                zeroline: true,
+                gridcolor: 'rgba(230,230,230,0.8)',
+                title: {
+                    text: 'P/L ($)',
+                    standoff: 10
+                }
+            }
+        }
+    };
+}
+
+function createPlaceholderMonthlyChart() {
+    return {
+        data: [{
+            x: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+            y: [120, -50, 200, -30, 150],
+            type: 'bar',
+            marker: {
+                color: ['rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)', 
+                       'rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)', 
+                       'rgba(75, 192, 192, 0.8)']
+            }
+        }],
+        layout: {
+            autosize: true,
+            margin: {l: 50, r: 20, b: 50, t: 30, pad: 4},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            showlegend: false,
+            title: {
+                text: 'Monthly Performance',
+                font: {size: 14},
+                y: 0.98
+            },
+            xaxis: {
+                showgrid: false,
+                title: {
+                    text: 'Month',
+                    standoff: 10
+                }
+            },
+            yaxis: {
+                showgrid: true,
+                gridcolor: 'rgba(230,230,230,0.8)',
+                title: {
+                    text: 'P/L ($)',
+                    standoff: 10
+                }
+            }
+        }
+    };
+}
+
+function createPlaceholderInstrumentChart() {
+    return {
+        data: [{
+            labels: ['BTC', 'ETH', 'SOL', 'AAPL', 'TSLA'],
+            values: [30, 25, 15, 20, 10],
+            type: 'pie',
+            hole: 0.5,
+            textinfo: 'label+percent',
+            textposition: 'outside',
+            automargin: true,
+            marker: {
+                colors: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)'
+                ]
+            }
+        }],
+        layout: {
+            autosize: true,
+            margin: {l: 20, r: 20, b: 20, t: 30, pad: 4},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            showlegend: false,
+            title: {
+                text: 'Performance by Instrument',
+                font: {size: 14},
+                y: 0.98
+            }
+        }
+    };
+}
+
+function createPlaceholderWinLossChart() {
+    return {
+        data: [{
+            labels: ['Winning', 'Losing', 'Break Even'],
+            values: [65, 30, 5],
+            type: 'pie',
+            hole: 0.5,
+            textinfo: 'label+percent',
+            textposition: 'outside',
+            automargin: true,
+            marker: {
+                colors: [
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(201, 203, 207, 0.8)'
+                ]
+            }
+        }],
+        layout: {
+            autosize: true,
+            margin: {l: 20, r: 20, b: 20, t: 30, pad: 4},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            showlegend: false,
+            title: {
+                text: 'Win/Loss Distribution',
+                font: {size: 14},
+                y: 0.98
+            }
+        }
+    };
+}
+
+// Helper functions to generate sample data
+function generateDates(count) {
+    var dates = [];
+    var today = new Date();
+    
+    for (var i = count - 1; i >= 0; i--) {
+        var date = new Date(today);
+        date.setDate(today.getDate() - i);
+        dates.push(date);
+    }
+    
+    return dates;
+}
+
+function generateCumulative(count) {
+    var values = [0];
+    var lastValue = 0;
+    
+    for (var i = 1; i < count; i++) {
+        var change = Math.random() * 20 - 5; // Random value between -5 and 15
+        lastValue += change;
+        values.push(lastValue);
+    }
+    
+    return values;
+}
+</script>
+{% endblock scripts %} 

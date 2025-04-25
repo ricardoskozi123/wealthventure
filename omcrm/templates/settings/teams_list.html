@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+    {% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h2 class="h4">{% if title %}{{title}}{% else %}No Title{% endif %}</h2>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a class="btn btn btn-sm btn-outline-primary" role="button" href="{{ url_for('settings.settings_team_new') }}">
+                <span data-feather="plus"></span>
+                  New Team
+            </a>
+        </div>
+    </div>
+
+    {% if teams.items|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover fixed-layout-table">
+              <thead class="thead-light">
+                <tr>
+                    <th width="300" scope="col">Team Name</th>
+                    <th width="300" scope="col">Description</th>
+                    <th width="250" scope="col">Team Leader</th>
+                    <th width="150" scope="col">Members</th>
+                    <th width="150" scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for team in teams.items %}
+                <tr>
+                    <td>{{ team.name }}</td>
+                    <td>{{ team.description }}</td>
+                    <td>
+                        {% if team.leader %}
+                            {{ team.leader.get_name() }}
+                        {% else %}
+                            <span class="text-muted">Not assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ team.members|length }}</td>
+                    <td>
+                        <a href="{{ url_for('settings.settings_team_view', team_id=team.id) }}" class="btn btn-outline-secondary btn-sm mr-1" role="button">
+                            <span data-feather="eye"></span>
+                        </a>
+                        <a href="{{ url_for('settings.settings_team_update', team_id=team.id) }}" class="btn btn-outline-secondary btn-sm mr-1" role="button">
+                            <span data-feather="edit"></span>
+                        </a>
+                        <a href="{{ url_for('settings.settings_team_remove', team_id=team.id) }}" class="btn btn-outline-secondary btn-sm mr-1" role="button">
+                            <span data-feather="trash"></span>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+
+        <!-- pagination -->
+        {% if teams.total > 10 %}
+            {% with view_id="settings.settings_teams_view", items=teams %}
+                {% include "common/pagination.html" %}
+            {% endwith %}
+        {% endif %}
+    {% else %}
+        <div class="container text-center pt-4">
+            <div><span data-feather="users"></span></div>
+            <p>No teams found. Please create a team to manage groups of users.</p>
+        </div>
+    {%  endif %}
+    {% endblock %} 

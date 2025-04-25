@@ -1,0 +1,183 @@
+{% extends "client_layout.html" %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Welcome, {{ current_user.first_name }}</h1>
+            </div>
+            <div class="col-sm-6 text-right">
+                <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="btn btn-lg btn-primary">
+                    <i class="fas fa-chart-line mr-2"></i>Access WebTrader
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Account Overview Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Account Overview</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 col-12">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info"><i class="fas fa-wallet"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Balance</span>
+                                <span class="info-box-number">${{ current_user.current_balance }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-12">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success"><i class="fas fa-chart-line"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Equity</span>
+                                <span class="info-box-number">${{ current_user.equity }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-12">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning"><i class="fas fa-credit-card"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Credit</span>
+                                <span class="info-box-number">${{ current_user.credit_balance }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-12">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-danger"><i class="fas fa-gift"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Bonus</span>
+                                <span class="info-box-number">${{ current_user.bonus_balance }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Trades Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Trades</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Instrument</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>P/L</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trade in trades %}
+                            <tr>
+                                <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ trade.instrument.symbol }}</td>
+                                <td>
+                                    <span class="badge {% if trade.trade_type == 'buy' %}badge-success{% else %}badge-danger{% endif %}">
+                                        {{ trade.trade_type|upper }}
+                                    </span>
+                                </td>
+                                <td>{{ trade.amount }}</td>
+                                <td>${{ "%.2f"|format(trade.price) }}</td>
+                                <td>
+                                    <span class="badge {% if trade.status == 'open' %}badge-primary{% else %}badge-secondary{% endif %}">
+                                        {{ trade.status|upper }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if trade.profit_loss %}
+                                    <span class="{% if trade.profit_loss > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ${{ "%.2f"|format(trade.profit_loss) }}
+                                    </span>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not trades %}
+                            <tr>
+                                <td colspan="7" class="text-center">No recent trades</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade History Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Trade History (Last 30 Days)</h3>
+            </div>
+            <div class="card-body">
+                <div id="trade-history-chart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/plotly.js@1.58.4/dist/plotly.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dates = {{ dates|tojson }};
+        const cumulative_pl = {{ cumulative_pl|tojson }};
+        
+        const trace = {
+            x: dates,
+            y: cumulative_pl,
+            mode: 'lines+markers',
+            line: {
+                color: '#3c8dbc',
+                width: 2
+            },
+            marker: {
+                color: '#3c8dbc',
+                size: 6
+            },
+            fill: 'tozeroy',
+            fillcolor: 'rgba(60, 141, 188, 0.1)'
+        };
+        
+        const layout = {
+            margin: { t: 20, l: 50, r: 20, b: 50 },
+            xaxis: {
+                title: 'Date',
+                showgrid: false
+            },
+            yaxis: {
+                title: 'Cumulative P/L ($)',
+                showgrid: true,
+                gridcolor: 'rgba(0,0,0,0.1)'
+            },
+            autosize: true,
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            showlegend: false
+        };
+        
+        Plotly.newPlot('trade-history-chart', [trace], layout, {responsive: true});
+    });
+</script>
+{% endblock %}

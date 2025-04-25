@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Trading CRM">
+    <meta name="author" content="Admin">
+    <meta name="generator" content="Jekyll v3.8.5">
+    <title>TradingCRM - Client Portal</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.1.0/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+      .main-sidebar .nav-link.active {
+        background-color: #007bff;
+        color: #fff;
+      }
+      .main-sidebar .nav-link:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+      }
+      .nav-item .nav-icon {
+        margin-right: 0.5rem;
+      }
+    </style>
+  </head>
+  <body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+      <!-- Main Sidebar Container -->
+      <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="{{ url_for('client.dashboard') }}" class="brand-link">
+          <img src="{{ url_for('static', filename='imgs/bootstrap-solid.svg') }}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+          <span class="brand-text font-weight-light">TradingCRM</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <!-- Sidebar user panel (optional) -->
+          <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+              {% if current_user.profile_image %}
+                <img src="{{ url_for('static', filename='profile_imgs/' + current_user.profile_image) }}" class="img-circle elevation-2" alt="User Image" style="width: 35px; height: 35px; object-fit: cover;">
+              {% else %}
+                <i class="fas fa-user-circle text-white fa-2x"></i>
+              {% endif %}
+            </div>
+            <div class="info">
+              <a href="{{ url_for('client.profile') }}" class="d-block">{{ current_user.first_name }} {{ current_user.last_name }}</a>
+            </div>
+          </div>
+
+          <!-- Sidebar Menu -->
+          <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+              <li class="nav-item">
+                <a href="{{ url_for('client.dashboard') }}" class="nav-link {% if request.endpoint == 'client.dashboard' %}active{% endif %}">
+                  <i class="nav-icon fas fa-tachometer-alt"></i>
+                  <p>Dashboard</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="nav-link {% if request.endpoint == 'webtrader.webtrader_dashboard' %}active{% endif %}">
+                  <i class="nav-icon fas fa-chart-line"></i>
+                  <p>WebTrader</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('client.trade_analytics') }}" class="nav-link {% if request.endpoint == 'client.trade_analytics' %}active{% endif %}">
+                  <i class="nav-icon fas fa-chart-bar"></i>
+                  <p>Trading Analytics</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('client.deposit') }}" class="nav-link {% if request.endpoint == 'client.deposit' %}active{% endif %}">
+                  <i class="nav-icon fas fa-money-bill-wave"></i>
+                  <p>Deposit Funds</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('client.withdraw') }}" class="nav-link {% if request.endpoint == 'client.withdraw' %}active{% endif %}">
+                  <i class="nav-icon fas fa-wallet"></i>
+                  <p>Withdraw Funds</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('reports.deal_reports') }}" class="nav-link {% if request.endpoint == 'reports.deal_reports' %}active{% endif %}">
+                  <i class="nav-icon fas fa-file-alt"></i>
+                  <p>Reports</p>
+                </a>
+              </li>
+              <li class="nav-header">ACCOUNT</li>
+              <li class="nav-item">
+                <a href="{{ url_for('client.profile') }}" class="nav-link {% if request.endpoint == 'client.profile' %}active{% endif %}">
+                  <i class="nav-icon fas fa-user-cog"></i>
+                  <p>Profile Settings</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('users.logout') }}" class="nav-link">
+                  <i class="nav-icon fas fa-sign-out-alt"></i>
+                  <p>Sign Out</p>
+                </a>
+              </li>
+            </ul>
+          </nav>
+          <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- Content Wrapper. Contains page content -->
+      <div class="content-wrapper">
+        <!-- Main content -->
+        <div class="content">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-12">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+              </div>
+            </div>
+            {% block content %}{% endblock %}
+          </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content -->
+      </div>
+      <!-- /.content-wrapper -->
+
+      <!-- Main Footer -->
+      <footer class="main-footer">
+        <div class="float-right d-none d-sm-inline">
+          Trading Platform
+        </div>
+        <strong>Copyright &copy; {{ now.year }} TradingCRM.</strong> All rights reserved.
+      </footer>
+    </div>
+    <!-- ./wrapper -->
+
+    <!-- Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.1.0/dist/js/adminlte.min.js"></script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
+

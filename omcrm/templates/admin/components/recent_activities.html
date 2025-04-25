@@ -1,0 +1,144 @@
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-history mr-1"></i>
+            Recent Activity
+        </h3>
+        <div class="card-tools">
+            <a href="{{ url_for('activities.activities_list') }}" class="btn btn-tool">
+                <i class="fas fa-list"></i> View All
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <ul class="activity-list">
+            {% for activity in recent_activities %}
+            <li class="activity-item">
+                <div class="activity-icon 
+                    {% if 'created' in activity.action_type %}bg-success
+                    {% elif 'deleted' in activity.action_type %}bg-danger
+                    {% elif 'updated' in activity.action_type %}bg-info
+                    {% elif 'approved' in activity.action_type %}bg-success
+                    {% elif 'rejected' in activity.action_type %}bg-danger
+                    {% elif 'comment' in activity.action_type %}bg-primary
+                    {% elif 'deposit' in activity.action_type %}bg-success
+                    {% elif 'withdrawal' in activity.action_type %}bg-warning
+                    {% else %}bg-secondary
+                    {% endif %}">
+                    {% if 'lead' in activity.action_type %}
+                        <i class="fas fa-user-plus"></i>
+                    {% elif 'comment' in activity.action_type %}
+                        <i class="fas fa-comment"></i>
+                    {% elif 'deal' in activity.action_type %}
+                        <i class="fas fa-handshake"></i>
+                    {% elif 'meeting' in activity.action_type %}
+                        <i class="fas fa-calendar-check"></i>
+                    {% elif 'deposit' in activity.action_type %}
+                        <i class="fas fa-money-bill-wave"></i>
+                    {% elif 'withdrawal' in activity.action_type %}
+                        <i class="fas fa-money-bill-wave"></i>
+                    {% elif 'transaction' in activity.action_type %}
+                        <i class="fas fa-exchange-alt"></i>
+                    {% else %}
+                        <i class="fas fa-cog"></i>
+                    {% endif %}
+                </div>
+                <div class="activity-content">
+                    <div class="activity-detail">
+                        {{ activity.description }}
+                    </div>
+                    <div class="activity-meta">
+                        {% if activity.user_id and activity.user_id in users %}
+                        <span class="activity-user">
+                            <a href="{{ url_for('activities.user_activities', user_id=activity.user_id) }}">
+                                {{ users[activity.user_id].username }}
+                            </a>
+                        </span>
+                        {% else %}
+                        <span class="activity-user">System</span>
+                        {% endif %}
+                        
+                        {% if activity.lead_id and activity.lead_id in leads %}
+                        <span class="activity-lead">
+                            <a href="{{ url_for('activities.lead_activities', lead_id=activity.lead_id) }}">
+                                {{ leads[activity.lead_id].first_name }} {{ leads[activity.lead_id].last_name }}
+                            </a>
+                        </span>
+                        {% endif %}
+                        
+                        <span class="activity-time">
+                            {{ activity.timestamp|timeago }}
+                        </span>
+                    </div>
+                </div>
+            </li>
+            {% else %}
+            <li class="activity-item">
+                <div class="activity-content">
+                    <div class="activity-detail text-center p-3">
+                        No recent activities found.
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<style>
+.activity-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.activity-item {
+    display: flex;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-detail {
+    margin-bottom: 3px;
+    font-weight: 500;
+}
+
+.activity-meta {
+    display: flex;
+    font-size: 12px;
+    color: #999;
+}
+
+.activity-user, .activity-lead {
+    margin-right: 10px;
+}
+
+.activity-user a, .activity-lead a {
+    color: #666;
+    text-decoration: none;
+}
+
+.activity-time {
+    margin-left: auto;
+}
+</style> 

@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Lead Sources</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSourceModal">
+                                <i class="fas fa-plus"></i> Add New Source
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Affiliate ID</th>
+                                    <th>API Status</th>
+                                    <th>API Key</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for source in sources %}
+                                <tr>
+                                    <td>{{ source.id }}</td>
+                                    <td>{{ source.source_name }}</td>
+                                    <td>{{ source.affiliate_id or '-' }}</td>
+                                    <td>
+                                        {% if source.is_api_enabled %}
+                                            <span class="badge badge-success">Enabled</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Disabled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if source.api_key %}
+                                            <div class="input-group">
+                                                <input type="text" id="api-key-{{ source.id }}" class="form-control" value="{{ source.api_key }}" readonly>
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-secondary" onclick="copyToClipboard('api-key-{{ source.id }}')">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <em>Not generated</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <form method="POST" action="{{ url_for('leads.toggle_api_access', source_id=source.id) }}">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <button type="submit" class="btn btn-sm {{ 'btn-danger' if source.is_api_enabled else 'btn-success' }}">
+                                                    {{ 'Disable API' if source.is_api_enabled else 'Enable API' }}
+                                                </button>
+                                            </form>
+                                            {% if source.api_key %}
+                                                <form method="POST" action="{{ url_for('leads.regenerate_api_key', source_id=source.id) }}" class="ml-2">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                    <button type="submit" class="btn btn-sm btn-warning ml-2">
+                                                        Regenerate Key
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">API Usage Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>Lead Import API Endpoint</h5>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="api-endpoint" value="{{ request.host_url }}api/import_lead" readonly>
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('api-endpoint')">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <h5>Required Parameters</h5>
+                        <ul>
+                            <li><strong>api_key</strong> - The API key shown in the table above</li>
+                            <li><strong>first_name</strong> - Lead's first name</li>
+                            <li><strong>last_name</strong> - Lead's last name</li>
+                            <li><strong>email</strong> - Lead's email address</li>
+                        </ul>
+                        
+                        <h5>Optional Parameters</h5>
+                        <ul>
+                            <li><strong>phone</strong> - Lead's phone number</li>
+                            <li><strong>country</strong> - Lead's country</li>
+                            <li><strong>company_name</strong> - Lead's company name</li>
+                            <li><strong>notes</strong> - Additional notes</li>
+                            <li><strong>affiliate_id</strong> - Affiliate ID for tracking (if not set in source)</li>
+                        </ul>
+                        
+                        <h5>Example API Call (GET)</h5>
+                        <pre class="bg-light p-3">{{ request.host_url }}api/import_lead?api_key=YOUR_API_KEY&first_name=John&last_name=Doe&email=john@example.com</pre>
+                        
+                        <h5>Example API Call (POST JSON)</h5>
+                        <pre class="bg-light p-3">
+fetch('{{ request.host_url }}api/import_lead', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        api_key: 'YOUR_API_KEY',
+        first_name: 'John',
+        last_name: 'Doe',
+        email: 'john@example.com'
+    })
+})
+.then(response => response.json())
+.then(data => console.log(data));</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Add Lead Source Modal -->
+<div class="modal fade" id="addSourceModal" tabindex="-1" aria-labelledby="addSourceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSourceModalLabel">Add New Lead Source</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('leads.lead_sources') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="source_name" class="form-label">Source Name</label>
+                        <input type="text" class="form-control" id="source_name" name="source_name" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Source</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copyToClipboard(elementId) {
+        const element = document.getElementById(elementId);
+        element.select();
+        document.execCommand('copy');
+        
+        // Show tooltip or notification
+        toastr.success('Copied to clipboard!');
+    }
+</script>
+{% endblock %}

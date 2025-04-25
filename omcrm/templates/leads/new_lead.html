@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3">
+                <h2 class="h3 mb-0">
+                    <i class="fas fa-user-plus text-primary me-2"></i>
+                    {{ title|default('New Lead') }}
+                </h2>
+                <div class="btn-toolbar">
+                    <a href="{{ url_for('leads.get_leads_view') }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-1"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.first_name.label(class="form-label") }}
+                                    {% if form.first_name.errors %}
+                                        {{ form.first_name(class="form-control is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.first_name.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.first_name(class="form-control", placeholder="Enter first name") }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.last_name.label(class="form-label") }}
+                                    {% if form.last_name.errors %}
+                                        {{ form.last_name(class="form-control is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.last_name.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.last_name(class="form-control", placeholder="Enter last name") }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.company_name.label(class="form-label") }}
+                            {{ form.company_name(class="form-control", placeholder="Enter company name (optional)") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {% if form.email.errors %}
+                                {{ form.email(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.email(class="form-control", placeholder="Enter email address") }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.phone.label(class="form-label") }}
+                                    {{ form.phone(class="form-control", placeholder="Enter phone number") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.country.label(class="form-label") }}
+                                    {% if form.country.errors %}
+                                        {{ form.country(class="form-control is-invalid", list="countryList") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.country.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.country(class="form-control", placeholder="Select country", list="countryList") }}
+                                    {% endif %}
+                                    <datalist id="countryList">
+                                        <option value="United States">
+                                        <option value="United Kingdom">
+                                        <option value="Canada">
+                                        <option value="Australia">
+                                        <option value="Germany">
+                                        <option value="France">
+                                        <option value="Italy">
+                                        <option value="Spain">
+                                        <option value="Japan">
+                                        <option value="China">
+                                        <option value="India">
+                                        <option value="Brazil">
+                                        <option value="Russia">
+                                        <option value="South Africa">
+                                        <option value="Mexico">
+                                    </datalist>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if current_user.is_admin %}
+                        <div class="mb-4">
+                            {{ form.assignees.label(class="form-label") }}
+                            {{ form.assignees(class="form-select") }}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Show available to trade checkbox only for clients -->
+                        {% if lead and lead.is_client %}
+                        <div class="field">
+                            <div class="control">
+                                <label class="checkbox">
+                                    {{ form.available_to_trade() }}
+                                    {{ form.available_to_trade.label.text }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i data-feather="refresh-cw" class="me-1"></i> Reset
+                            </button>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Add some nice styling for a better form appearance */
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2653d4;
+    }
+</style>
+{% endblock %}

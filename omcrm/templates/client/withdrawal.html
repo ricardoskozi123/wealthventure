@@ -1,0 +1,47 @@
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Handle payment method toggle
+        $('input[name="withdrawal_method"]').change(function() {
+            $('.payment-details').hide();
+            if (this.value === 'crypto') {
+                $('#cryptoOptions').show();
+            } else if (this.value === 'wire') {
+                $('#wireOptions').show();
+            }
+        });
+        
+        // Handle form submission
+        $('#withdrawalForm').on('submit', function(e) {
+            // Get form element
+            const form = this;
+            
+            // Validate amount
+            const amount = parseFloat($('#amount').val());
+            const availableBalance = parseFloat('{{ current_user.balance }}');
+            
+            if (amount < 100) {
+                e.preventDefault();
+                alert('Minimum withdrawal amount is $100.');
+                return false;
+            }
+            
+            if (amount > availableBalance) {
+                e.preventDefault();
+                alert('You cannot withdraw more than your available balance.');
+                return false;
+            }
+            
+            // If validation passes, show the confirmation modal first
+            e.preventDefault();
+            const withdrawalModal = new bootstrap.Modal(document.getElementById('withdrawalConfirmationModal'));
+            withdrawalModal.show();
+            
+            // When the OK button in the modal is clicked, submit the form
+            $('#withdrawalConfirmationModal .btn-primary').one('click', function() {
+                form.submit();
+            });
+        });
+    });
+</script>
+{% endblock %} 

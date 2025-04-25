@@ -1,0 +1,217 @@
+<!-- Upcoming Tasks -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Upcoming Tasks</h5>
+        <div>
+            <a href="{{ url_for('tasks.task_list') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            <a href="{{ url_for('tasks.create_task') }}" class="btn btn-sm btn-primary">
+                <span data-feather="plus" style="width: 14px; height: 14px;"></span>
+                Add Task
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <ul class="list-group list-group-flush" id="upcoming-tasks-list">
+            <li class="list-group-item text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading tasks...</p>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Task Item Template -->
+<template id="task-item-template">
+    <li class="list-group-item task-item">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="mb-1 task-title">Task Title</h6>
+                <div class="small text-muted task-due-date">Due today at 3:00 PM</div>
+            </div>
+            <div class="d-flex">
+                <span class="badge task-priority me-2">Medium</span>
+                <form action="{{ url_for('tasks.complete_task') }}" method="POST" class="task-complete-form">
+                    <input type="hidden" name="task_id" value="" class="task-id-input">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="button" class="btn btn-sm btn-outline-success complete-task-btn">
+                        <span data-feather="check" style="width: 14px; height: 14px;"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </li>
+</template>
+
+<!-- Recent Activity -->
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Recent Activity</h5>
+        <a href="{{ url_for('tasks.task_list') }}" class="btn btn-sm btn-outline-secondary">View All Tasks</a>
+    </div>
+    <div class="card-body p-0">
+        <ul class="list-group list-group-flush" id="activity-list">
+            <li class="list-group-item text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading activity...</p>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<style>
+.activity-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.task-priority {
+    text-transform: capitalize;
+}
+
+.badge.high {
+    background-color: #dc3545;
+}
+
+.badge.medium {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge.low {
+    background-color: #198754;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetchUpcomingTasks();
+    setupTaskCompletion();
+    // For now, just display a placeholder message for activity
+    showActivityPlaceholder();
+});
+
+function showActivityPlaceholder() {
+    const activityList = document.getElementById('activity-list');
+    activityList.innerHTML = `
+        <li class="list-group-item text-center py-4">
+            <p class="mb-0">Task activity tracking is coming soon!</p>
+        </li>
+    `;
+}
+
+function fetchUpcomingTasks() {
+    fetch('{{ url_for("tasks.get_dashboard_tasks") }}')
+        .then(response => response.json())
+        .then(data => {
+            const tasksList = document.getElementById('upcoming-tasks-list');
+            tasksList.innerHTML = '';
+
+            if (data.tasks.length === 0) {
+                tasksList.innerHTML = `
+                    <li class="list-group-item text-center py-4">
+                        <p class="mb-0">No upcoming tasks. Create a new task to get started.</p>
+                        <a href="{{ url_for('tasks.create_task') }}" class="btn btn-sm btn-primary mt-2">
+                            <span data-feather="plus" style="width: 14px; height: 14px;"></span>
+                            Add Task
+                        </a>
+                    </li>
+                `;
+                feather.replace();
+                return;
+            }
+
+            const template = document.getElementById('task-item-template');
+
+            data.tasks.forEach(task => {
+                const clone = document.importNode(template.content, true);
+                
+                // Set task data
+                clone.querySelector('.task-title').textContent = task.title;
+                clone.querySelector('.task-due-date').textContent = task.due_date;
+                
+                // Set priority
+                const priorityBadge = clone.querySelector('.task-priority');
+                priorityBadge.textContent = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
+                priorityBadge.classList.add(task.priority);
+                
+                // Set task ID for completion
+                clone.querySelector('.task-id-input').value = task.id;
+                
+                // Add overdue indicator
+                if (task.is_overdue) {
+                    clone.querySelector('.task-due-date').classList.add('text-danger');
+                    clone.querySelector('.task-due-date').textContent += ' (Overdue)';
+                }
+                
+                tasksList.appendChild(clone);
+            });
+            
+            // Reactivate feather icons
+            feather.replace();
+        })
+        .catch(error => {
+            console.error('Error fetching tasks:', error);
+            document.getElementById('upcoming-tasks-list').innerHTML = `
+                <li class="list-group-item text-center py-4">
+                    <p class="text-danger mb-0">Error loading tasks. Please try again later.</p>
+                </li>
+            `;
+        });
+}
+
+function setupTaskCompletion() {
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('complete-task-btn') || e.target.closest('.complete-task-btn')) {
+            const button = e.target.classList.contains('complete-task-btn') ? 
+                e.target : e.target.closest('.complete-task-btn');
+            const form = button.closest('.task-complete-form');
+            const taskId = form.querySelector('.task-id-input').value;
+            
+            if (confirm('Mark this task as complete?')) {
+                const formData = new FormData(form);
+                
+                fetch('{{ url_for("tasks.complete_task") }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the task item from the list
+                        form.closest('.task-item').remove();
+                        
+                        // If no tasks left, show the empty state
+                        const tasksList = document.getElementById('upcoming-tasks-list');
+                        if (tasksList.children.length === 0) {
+                            tasksList.innerHTML = `
+                                <li class="list-group-item text-center py-4">
+                                    <p class="mb-0">No upcoming tasks. Create a new task to get started.</p>
+                                    <a href="{{ url_for('tasks.create_task') }}" class="btn btn-sm btn-primary mt-2">
+                                        <span data-feather="plus" style="width: 14px; height: 14px;"></span>
+                                        Add Task
+                                    </a>
+                                </li>
+                            `;
+                            feather.replace();
+                        }
+                    } else {
+                        alert('Error completing task: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error completing task:', error);
+                    alert('Error completing task. Please try again.');
+                });
+            }
+        }
+    });
+}
+</script> 

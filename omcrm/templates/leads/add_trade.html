@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h2>Add Trade for {{ lead.first_name }} {{ lead.last_name }}</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        {% include 'leads/add_trade_form_fields.html' %}
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock content %}

@@ -1,0 +1,357 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3">
+                <h2 class="h3 mb-0">
+                    <i class="fas fa-user-circle text-primary me-2"></i>
+                    {% if lead.is_client %}Client{% else %}Lead{% endif %} Information
+                </h2>
+                <div class="btn-toolbar">
+                    <a href="{{ url_for('leads.update_lead', lead_id=lead.id) }}"
+                        class="btn btn-outline-primary me-2">
+                        <i data-feather="edit-2" class="me-1"></i> Edit
+                    </a>
+                    {% if lead.is_client %}
+                        <a href="{{ url_for('leads.reset_client_password', lead_id=lead.id) }}" 
+                            class="btn btn-warning me-2">
+                            <i data-feather="key" class="me-1"></i> Reset Password
+                        </a>
+                        <a href="{{ url_for('leads.manage_balance', lead_id=lead.id) }}" 
+                            class="btn btn-primary me-2">
+                            <i data-feather="dollar-sign" class="me-1"></i> Manage Balance
+                        </a>
+                        <form method="POST" action="{{ url_for('leads.login_as_client', client_id=lead.id) }}" style="display:inline-block; margin-right: 0.5rem;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+                            <button type="submit" class="btn btn-success">
+                                <i data-feather="log-in" class="me-1"></i> Login to WebTrader
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{{ url_for('leads.convert_lead', lead_id=lead.id) }}" 
+                            class="btn btn-success me-2">
+                            <i data-feather="user-check" class="me-1"></i> Convert
+                        </a>
+                    {% endif %}
+                    {% if lead.is_client %}
+                        <a href="{{ url_for('leads.get_clients_view') }}" class="btn btn-outline-secondary">
+                            <i data-feather="arrow-left" class="me-1"></i> Back to Clients
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('leads.get_leads_view') }}" class="btn btn-outline-secondary">
+                            <i data-feather="arrow-left" class="me-1"></i> Back to Leads
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Lead/Client Information Card -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Contact Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Profile Image and Basic Info -->
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            <div class="mb-3">
+                                <div class="avatar-circle mx-auto">
+                                    <span class="initials">{{ lead.first_name[0]|upper if lead.first_name else '' }}{{ lead.last_name[0]|upper if lead.last_name else '' }}</span>
+                                </div>
+                            </div>
+                            <h4>{{ lead.first_name }} {{ lead.last_name }}</h4>
+                            {% if lead.is_client %}
+                                <span class="badge bg-success">Client</span>
+                            {% else %}
+                                <span class="badge bg-primary">Lead</span>
+                            {% endif %}
+                            
+                            <!-- Balance Information (for clients) -->
+                            {% if lead.is_client %}
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Current:</span>
+                                        <span class="fw-bold">${{ '%.2f'|format(lead.current_balance) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Bonus:</span>
+                                        <span class="fw-bold text-success">${{ '%.2f'|format(lead.bonus_balance) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span>Total:</span>
+                                        <span>${{ '%.2f'|format(lead.get_total_balance()) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Contact Information -->
+                        <div class="col-md-8">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 140px;">
+                                            <i data-feather="mail" class="text-primary me-1"></i> Email:
+                                        </th>
+                                        <td>
+                                            {% if lead.email %}
+                                                <a href="mailto:{{ lead.email }}">{{ lead.email }}</a>
+                                            {% else %}
+                                                <span class="text-muted">Not provided</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="phone" class="text-primary me-1"></i> Phone:
+                                        </th>
+                                        <td>
+                                            {% if lead.phone %}
+                                                <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>
+                                            {% else %}
+                                                <span class="text-muted">Not provided</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="globe" class="text-primary me-1"></i> Country:
+                                        </th>
+                                        <td>
+                                            {% if lead.country %}
+                                                {% set country_code = lead.country|lower|replace(' ', '') %}
+                                                {% if country_code == 'unitedstates' %}{% set country_code = 'us' %}
+                                                {% elif country_code == 'unitedkingdom' %}{% set country_code = 'gb' %}
+                                                {% elif country_code == 'japan' %}{% set country_code = 'jp' %}
+                                                {% elif country_code == 'china' %}{% set country_code = 'cn' %}
+                                                {% elif country_code == 'india' %}{% set country_code = 'in' %}
+                                                {% elif country_code == 'brazil' %}{% set country_code = 'br' %}
+                                                {% elif country_code == 'russia' %}{% set country_code = 'ru' %}
+                                                {% elif country_code == 'germany' %}{% set country_code = 'de' %}
+                                                {% elif country_code == 'france' %}{% set country_code = 'fr' %}
+                                                {% elif country_code == 'spain' %}{% set country_code = 'es' %}
+                                                {% elif country_code == 'italy' %}{% set country_code = 'it' %}
+                                                {% elif country_code == 'canada' %}{% set country_code = 'ca' %}
+                                                {% elif country_code == 'australia' %}{% set country_code = 'au' %}
+                                                {% endif %}
+                                                <img src="https://flagcdn.com/24x18/{{ country_code }}.png" alt="{{ lead.country }}" class="country-flag"> {{ lead.country }}
+                                            {% else %}
+                                                <span class="text-muted">Not provided</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="user" class="text-primary me-1"></i> Owner:
+                                        </th>
+                                        <td>
+                                            {% if lead.owner %}
+                                                {{ lead.owner.first_name }} {{ lead.owner.last_name }}
+                                            {% else %}
+                                                <span class="text-muted">Not assigned</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trades Section (for clients) -->
+            {% if lead.is_client %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="trending-up" class="me-1"></i> Trades
+                    </h5>
+                    <a href="{{ url_for('leads.add_trade', lead_id=lead.id) }}" class="btn btn-sm btn-primary">
+                        <i data-feather="plus" class="me-1"></i> Add Trade
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if lead.trades %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Amount</th>
+                                    <th>Price</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>P/L</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in lead.trades %}
+                                <tr>
+                                    <td>{{ trade.instrument.symbol if trade.instrument else "N/A" }}</td>
+                                    <td>${{ '%.2f'|format(trade.amount) }}</td>
+                                    <td>${{ '%.2f'|format(trade.price) }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if trade.trade_type == 'buy' else 'danger' }}">
+                                            {{ trade.trade_type|upper }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if trade.status == 'closed' else 'primary' }}">
+                                            {{ trade.status|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if trade.profit_loss is not none %}
+                                            <span class="badge bg-{{ 'success' if trade.profit_loss > 0 else 'danger' }}">
+                                                ${{ '%.2f'|format(trade.profit_loss) }}
+                                            </span>
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('leads.edit_trade', trade_id=trade.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i data-feather="edit" class="icon-xs"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="mb-0 text-muted">No trades found for this client.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="message-square" class="me-1"></i> Comments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.content(class="form-control", placeholder="Add a comment...", rows=3) }}
+                        </div>
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                    
+                    <hr>
+                    
+                    <div class="comments-list mt-3">
+                        {% if comments %}
+                            {% for comment in comments %}
+                            <div class="comment-item mb-3">
+                                <div class="d-flex">
+                                    <div class="me-2">
+                                        <div class="avatar-small">
+                                            <span class="initials-small">{{ comment.user.first_name[0]|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">{{ comment.user.get_name() }}</h6>
+                                            <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+                                        </div>
+                                        <p class="mb-0 mt-1">{{ comment.content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-3">
+                                <p class="text-muted mb-0">No comments yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Avatar styles */
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #3f51b5;
+        border-radius: 50%;
+        color: white;
+        font-size: 32px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .avatar-small {
+        width: 36px;
+        height: 36px;
+        background-color: #3f51b5;
+        border-radius: 50%;
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .initials, .initials-small {
+        line-height: 1;
+    }
+    
+    /* Add country flag support */
+    .flag-icon {
+        display: inline-block;
+        width: 1.3em;
+        background-size: contain;
+        background-position: 50%;
+        background-repeat: no-repeat;
+        margin-right: 0.5em;
+    }
+    
+    /* Common country flags - add more as needed */
+    .flag-icon-us { background-image: url('https://flagcdn.com/w20/us.png'); }
+    .flag-icon-uk, .flag-icon-gb { background-image: url('https://flagcdn.com/w20/gb.png'); }
+    .flag-icon-ca { background-image: url('https://flagcdn.com/w20/ca.png'); }
+    .flag-icon-au { background-image: url('https://flagcdn.com/w20/au.png'); }
+    .flag-icon-de { background-image: url('https://flagcdn.com/w20/de.png'); }
+    .flag-icon-fr { background-image: url('https://flagcdn.com/w20/fr.png'); }
+    .flag-icon-jp { background-image: url('https://flagcdn.com/w20/jp.png'); }
+    .flag-icon-cn { background-image: url('https://flagcdn.com/w20/cn.png'); }
+    .flag-icon-in { background-image: url('https://flagcdn.com/w20/in.png'); }
+    .flag-icon-br { background-image: url('https://flagcdn.com/w20/br.png'); }
+    .flag-icon-ru { background-image: url('https://flagcdn.com/w20/ru.png'); }
+    .flag-icon-es { background-image: url('https://flagcdn.com/w20/es.png'); }
+    .flag-icon-it { background-image: url('https://flagcdn.com/w20/it.png'); }
+    
+    /* Make the icon-xs smaller for better button fit */
+    .icon-xs {
+        width: 16px;
+        height: 16px;
+    }
+</style>
+{% endblock %}

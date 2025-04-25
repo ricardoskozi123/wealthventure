@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">{{ title }}</h2>
+</div>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group mb-3">
+        {{ form.source_name.label(class="form-control-label") }}
+        {{ form.source_name(class="form-control") }}
+    </div>
+    
+    <div class="form-group mb-3">
+        {{ form.affiliate_id.label(class="form-control-label") }}
+        {{ form.affiliate_id(class="form-control") }}
+        <small class="form-text text-muted">Optional: Identifier used for tracking leads from this source</small>
+    </div>
+    
+    {% if form.api_key.data %}
+    <div class="form-group mb-3">
+        {{ form.api_key.label(class="form-control-label") }}
+        <div class="input-group">
+            {{ form.api_key(class="form-control", readonly=true) }}
+            <button type="button" class="btn btn-outline-secondary" onclick="copyToClipboard('{{ form.api_key.data }}')">
+                <i data-feather="copy"></i> Copy
+            </button>
+        </div>
+        <small class="form-text text-muted">This key is used to authenticate API requests for importing leads</small>
+    </div>
+    {% endif %}
+    
+    <div class="form-check mb-3">
+        {{ form.is_api_enabled(class="form-check-input") }}
+        {{ form.is_api_enabled.label(class="form-check-label") }}
+        <div class="form-text">When enabled, leads can be imported via the API using this source's API key</div>
+    </div>
+    
+    <div class="form-group">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('API key copied to clipboard');
+    }, function() {
+        alert('Failed to copy API key');
+    });
+}
+</script>
+
+{% endblock %}

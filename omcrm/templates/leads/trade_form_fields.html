@@ -1,0 +1,247 @@
+{{ form.csrf_token }}
+<div class="form-group mb-3">
+    {{ form.symbol.label(class_="form-control-label") }}
+    {% if form.symbol.errors %}
+        {{ form.symbol(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.symbol.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.symbol(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<div class="form-group mb-3">
+    {{ form.amount.label(class_="form-control-label") }}
+    {% if form.amount.errors %}
+        {{ form.amount(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.amount.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.amount(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<div class="form-group mb-3">
+    {{ form.price.label(class_="form-control-label") }}
+    {% if form.price.errors %}
+        {{ form.price(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.price.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.price(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<div class="form-group mb-3">
+    {{ form.trade_type.label(class_="form-control-label") }}
+    {% if form.trade_type.errors %}
+        {{ form.trade_type(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.trade_type.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.trade_type(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<div class="form-group mb-3">
+    {{ form.opening_date.label(class_="form-control-label") }}
+    <div class="input-group date datetimepicker" id="openingDateTimePicker" data-target-input="nearest">
+        {% if form.opening_date.errors %}
+            {{ form.opening_date(class="form-control form-control-lg datetimepicker-input is-invalid", data_target="#openingDateTimePicker") }}
+            <div class="input-group-append" data-target="#openingDateTimePicker" data-toggle="datetimepicker">
+                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+            </div>
+            <div class="invalid-feedback">
+                {% for error in form.opening_date.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% else %}
+            {{ form.opening_date(class="form-control form-control-lg datetimepicker-input", data_target="#openingDateTimePicker") }}
+            <div class="input-group-append" data-target="#openingDateTimePicker" data-toggle="datetimepicker">
+                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if form.status is defined %}
+<div class="form-group mb-3">
+    {{ form.status.label(class_="form-control-label") }}
+    {% if form.status.errors %}
+        {{ form.status(class="form-control form-control-lg is-invalid") }}
+        <div class="invalid-feedback">
+            {% for error in form.status.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ form.status(class="form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+<div id="closing_fields" style="display: none;">
+    <div class="form-group mb-3" id="closing_date_group">
+        {{ form.closing_date.label(class_="form-control-label") }}
+        <div class="input-group date datetimepicker" id="closingDateTimePicker" data-target-input="nearest">
+            {% if form.closing_date.errors %}
+                {{ form.closing_date(class="form-control form-control-lg datetimepicker-input is-invalid", data_target="#closingDateTimePicker") }}
+                <div class="input-group-append" data-target="#closingDateTimePicker" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+                <div class="invalid-feedback">
+                    {% for error in form.closing_date.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form.closing_date(class="form-control form-control-lg datetimepicker-input", data_target="#closingDateTimePicker") }}
+                <div class="input-group-append" data-target="#closingDateTimePicker" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-group mb-3" id="closing_price_group">
+        {{ form.closing_price.label(class_="form-control-label") }}
+        {% if form.closing_price.errors %}
+            {{ form.closing_price(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+                {% for error in form.closing_price.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% else %}
+            {{ form.closing_price(class="form-control form-control-lg") }}
+        {% endif %}
+    </div>
+
+    <div class="form-group mb-3" id="profit_loss_group">
+        {{ form.profit_loss.label(class_="form-control-label") }}
+        {% if form.profit_loss.errors %}
+            {{ form.profit_loss(class="form-control form-control-lg is-invalid readonly") }}
+            <div class="invalid-feedback">
+                {% for error in form.profit_loss.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% else %}
+            {{ form.profit_loss(class="form-control form-control-lg", readonly=true) }}
+        {% endif %}
+        <small class="form-text text-muted">Profit/Loss will update automatically when you change the amount, price, closing price or trade type.</small>
+    </div>
+</div>
+
+<script>
+    // When the page loads, check if status is closed and show/hide closing fields
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleClosingFields();
+        
+        // Add event listener to status field
+        document.getElementById('status').addEventListener('change', toggleClosingFields);
+        
+        // Auto-calculate P/L when any of these fields change
+        document.getElementById('amount').addEventListener('input', calculateProfitLoss);
+        document.getElementById('price').addEventListener('input', calculateProfitLoss);
+        document.getElementById('closing_price').addEventListener('input', calculateProfitLoss);
+        document.getElementById('trade_type').addEventListener('change', calculateProfitLoss);
+        
+        // Initial calculation if all values are present
+        calculateProfitLoss();
+        
+        // Initialize Tempus Dominus for the date fields within this form
+        // We do this here to ensure it applies even when included
+        $('#openingDateTimePicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss',
+            icons: {
+                    time: 'far fa-clock',
+                    date: 'far fa-calendar',
+                    up: 'fas fa-arrow-up',
+                    down: 'fas fa-arrow-down',
+                    previous: 'fas fa-chevron-left',
+                    next: 'fas fa-chevron-right',
+                    today: 'far fa-calendar-check',
+                    clear: 'far fa-trash-alt',
+                    close: 'far fa-times'
+                }
+        });
+        $('#closingDateTimePicker').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:ss',
+            icons: {
+                    time: 'far fa-clock',
+                    date: 'far fa-calendar',
+                    up: 'fas fa-arrow-up',
+                    down: 'fas fa-arrow-down',
+                    previous: 'fas fa-chevron-left',
+                    next: 'fas fa-chevron-right',
+                    today: 'far fa-calendar-check',
+                    clear: 'far fa-trash-alt',
+                    close: 'far fa-times'
+                }
+        });
+    });
+    
+    // Function to toggle closing price field visibility
+    function toggleClosingFields() {
+        var statusField = document.getElementById('status');
+        var closingFields = document.getElementById('closing_fields');
+        
+        if (statusField.value === 'closed') {
+            closingFields.style.display = 'block';
+            calculateProfitLoss(); // Calculate P/L when fields become visible
+        } else {
+            closingFields.style.display = 'none';
+        }
+    }
+    
+    // Function to calculate profit/loss based on price and closing price
+    function calculateProfitLoss() {
+        var amount = parseFloat(document.getElementById('amount').value);
+        var price = parseFloat(document.getElementById('price').value);
+        var closingPrice = parseFloat(document.getElementById('closing_price').value);
+        var tradeType = document.getElementById('trade_type').value;
+        var profitLossField = document.getElementById('profit_loss');
+        var statusField = document.getElementById('status');
+        
+        // Only calculate if we're in closed status and have all necessary values
+        if (statusField.value !== 'closed' || 
+            isNaN(amount) || 
+            isNaN(price) || 
+            isNaN(closingPrice)) {
+            return; // Exit silently if values aren't valid or status isn't closed
+        }
+        
+        var profitLoss;
+        if (tradeType === 'buy') { // Long position
+            profitLoss = (closingPrice - price) * amount;
+        } else { // Short position
+            profitLoss = (price - closingPrice) * amount;
+        }
+        
+        // Update the profit/loss field with the calculated value
+        profitLossField.value = profitLoss.toFixed(2);
+        
+        // Visual feedback - change the input background color based on profit/loss
+        if (profitLoss > 0) {
+            profitLossField.style.backgroundColor = 'rgba(40, 167, 69, 0.1)'; // Light green
+        } else if (profitLoss < 0) {
+            profitLossField.style.backgroundColor = 'rgba(220, 53, 69, 0.1)'; // Light red
+        } else {
+            profitLossField.style.backgroundColor = ''; // Default
+        }
+    }
+</script>
+{% endif %}

@@ -1,0 +1,197 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">Edit Task</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('tasks.task_list') }}">
+            <span data-feather="arrow-left"></span>
+            Back to Tasks
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Task Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('tasks.update_task', task_id=task.id) }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        {{ form.title(class="form-control", id="title", placeholder="Task Title") }}
+                        {% if form.title.errors %}
+                            {% for error in form.title.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        {{ form.description(class="form-control", id="description", rows="4", placeholder="Task Description") }}
+                        {% if form.description.errors %}
+                            {% for error in form.description.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="due_date" class="form-label">Due Date</label>
+                                {{ form.due_date(class="form-control", id="due_date") }}
+                                {% if form.due_date.errors %}
+                                    {% for error in form.due_date.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="priority" class="form-label">Priority</label>
+                                {{ form.priority(class="form-control", id="priority") }}
+                                {% if form.priority.errors %}
+                                    {% for error in form.priority.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                {{ form.status(class="form-control", id="status") }}
+                                {% if form.status.errors %}
+                                    {% for error in form.status.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="assignee_id" class="form-label">Assigned To</label>
+                                {{ form.assignee_id(class="form-control", id="assignee_id") }}
+                                {% if form.assignee_id.errors %}
+                                    {% for error in form.assignee_id.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="lead_id" class="form-label">Related Lead</label>
+                        {{ form.lead_id(class="form-control form-select", id="lead_id") }}
+                        {% if form.lead_id.errors %}
+                            {% for error in form.lead_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="deal_id" class="form-label">Related Deal</label>
+                        {{ form.deal_id(class="form-control form-select", id="deal_id") }}
+                        {% if form.deal_id.errors %}
+                            {% for error in form.deal_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="account_id" class="form-label">Related Account</label>
+                        {{ form.account_id(class="form-control form-select", id="account_id") }}
+                        {% if form.account_id.errors %}
+                            {% for error in form.account_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="contact_id" class="form-label">Related Contact</label>
+                        {{ form.contact_id(class="form-control form-select", id="contact_id") }}
+                        {% if form.contact_id.errors %}
+                            {% for error in form.contact_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="client_id" class="form-label">Related Client</label>
+                        {{ form.client_id(class="form-control form-select", id="client_id") }}
+                        {% if form.client_id.errors %}
+                            {% for error in form.client_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('tasks.task_list') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Additional Information</h5>
+            </div>
+            <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Created By</label>
+                    <p class="mb-0">{{ creator.first_name }} {{ creator.last_name }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Date Created</label>
+                    <p class="mb-0">{{ task.created_on.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                
+                {% if task.is_overdue and task.status not in ['completed', 'cancelled'] %}
+                <div class="alert alert-danger" role="alert">
+                    <strong>Warning:</strong> This task is overdue!
+                            </div>
+                            {% endif %} 
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Format the datetime-local input with the current value
+    var dueDateInput = document.getElementById('due_date');
+    if (dueDateInput) {
+        // Add type="datetime-local" to the input
+        dueDateInput.setAttribute('type', 'datetime-local');
+    }
+    
+    // Initialize select2 for better dropdown experience (if available)
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('#lead_id, #deal_id, #account_id, #contact_id, #client_id, #assignee_id').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Select an option',
+            allowClear: true
+        });
+    }
+});
+</script>
+{% endblock %} 

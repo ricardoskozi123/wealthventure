@@ -1,0 +1,71 @@
+# Database files
+*.db
+dev.db
+app.db
+omcrm.db
+*.sqlite
+*.sqlite3
+
+# Environment variables and sensitive configuration
+.env
+.flaskenv
+*.env
+config_vars.py
+local_settings.py
+instance/
+
+# Python virtual environments
+venv/
+.venv/
+virtualenv/
+env/
+ENV/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.~*
+
+# Log files
+logs/
+*.log
+
+# Temporary files and compiled code
+*.bak
+*.tmp
+*.temp
+.webassets-cache/
+*.so
+dist/
+build/
+*.egg-info/
+
+# Local deployment and testing
+.pytest_cache/
+.vagrant/
+.ipynb_checkpoints
+
+# Compiled frontend assets (if using webpack/gulp/etc)
+node_modules/
+bower_components/
+static/dist/
+static/.webassets-cache
+static/gen
+
+# Migration specific files we don't want to commit
+migrations/versions/*.py
+!migrations/versions/de1f187d2bb7_add_api_key_and_affiliate_id_to_.py

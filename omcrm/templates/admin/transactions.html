@@ -1,0 +1,428 @@
+{% extends "layout.html" %}
+
+{% block styles %}
+<style>
+    /* Ensure proper modal stacking */
+    .modal {
+        z-index: 1055;
+    }
+    .modal-backdrop {
+        z-index: 1050;
+    }
+    /* Prevent modal flickering */
+    .modal-backdrop.show {
+        opacity: 0.5;
+    }
+    body {
+        padding-right: 0 !important;
+        overflow: auto !important;
+    }
+    /* Ensure buttons have proper spacing */
+    .btn-group .btn {
+        margin-right: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pending Deposits</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if pending_deposits %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for deposit in pending_deposits %}
+                                    <tr>
+                                        <td>{{ deposit.id }}</td>
+                                        <td>
+                                            {% if leads[deposit.lead_id] %}
+                                                <a href="{{ url_for('leads.get_lead_view', lead_id=deposit.lead_id) }}">
+                                                    {{ leads[deposit.lead_id].first_name }} {{ leads[deposit.lead_id].last_name }}
+                                                </a>
+                                            {% else %}
+                                                Unknown Client
+                                            {% endif %}
+                                        </td>
+                                        <td>${{ "%.2f"|format(deposit.amount) }}</td>
+                                        <td>
+                                            {{ deposit.method|capitalize }}
+                                            {% if deposit.crypto_type %}
+                                            ({{ deposit.crypto_type }})
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ deposit.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td><span class="badge badge-warning">Pending</span></td>
+                                        <td>
+                                            <form method="POST" action="{{ url_for('transactions.approve_deposit', deposit_id=deposit.id) }}" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('transactions.reject_deposit', deposit_id=deposit.id) }}" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p>No pending deposits at this time.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pending Withdrawals</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if pending_withdrawals %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for withdrawal in pending_withdrawals %}
+                                    <tr>
+                                        <td>{{ withdrawal.id }}</td>
+                                        <td>
+                                            {% if leads[withdrawal.lead_id] %}
+                                                <a href="{{ url_for('leads.get_lead_view', lead_id=withdrawal.lead_id) }}">
+                                                    {{ leads[withdrawal.lead_id].first_name }} {{ leads[withdrawal.lead_id].last_name }}
+                                                </a>
+                                            {% else %}
+                                                Unknown Client
+                                            {% endif %}
+                                        </td>
+                                        <td>${{ "%.2f"|format(withdrawal.amount) }}</td>
+                                        <td>
+                                            {{ withdrawal.method|capitalize }}
+                                            {% if withdrawal.crypto_type %}
+                                            ({{ withdrawal.crypto_type }})
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ withdrawal.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td><span class="badge badge-warning">Pending</span></td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#approveModal{{ withdrawal.id }}">
+                                                Approve
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#rejectModal{{ withdrawal.id }}">
+                                                Reject
+                                            </button>
+                                            
+                                            <!-- Approve Modal for this Withdrawal -->
+                                            <div class="modal fade" id="approveModal{{ withdrawal.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Approve Withdrawal #{{ withdrawal.id }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form method="POST" action="{{ url_for('transactions.approve_withdrawal', withdrawal_id=withdrawal.id) }}">
+                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label for="reference{{ withdrawal.id }}" class="form-label">Transaction Reference (optional)</label>
+                                                                    <input type="text" class="form-control" id="reference{{ withdrawal.id }}" name="reference" placeholder="Enter transaction ID or reference">
+                                                                </div>
+                                                                
+                                                                <div class="alert alert-info">
+                                                                    <p><strong>Withdrawal Details:</strong></p>
+                                                                    <p>Amount: ${{ "%.2f"|format(withdrawal.amount) }}</p>
+                                                                    <p>Method: {{ withdrawal.method|capitalize }}</p>
+                                                                    
+                                                                    {% if withdrawal.method == 'crypto' %}
+                                                                    <p>Crypto Type: {{ withdrawal.crypto_type }}</p>
+                                                                    <p>Wallet Address: {{ withdrawal.wallet_address }}</p>
+                                                                    {% elif withdrawal.method == 'wire' %}
+                                                                    <p>Bank Name: {{ withdrawal.bank_name }}</p>
+                                                                    <p>Account Holder: {{ withdrawal.account_holder }}</p>
+                                                                    <p>Account Number: {{ withdrawal.account_number }}</p>
+                                                                    <p>SWIFT Code: {{ withdrawal.swift_code }}</p>
+                                                                    {% endif %}
+                                                                    
+                                                                    {% if withdrawal.notes %}
+                                                                    <p>Notes: {{ withdrawal.notes }}</p>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-success">Approve Withdrawal</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Reject Modal for this Withdrawal -->
+                                            <div class="modal fade" id="rejectModal{{ withdrawal.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Reject Withdrawal #{{ withdrawal.id }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form method="POST" action="{{ url_for('transactions.reject_withdrawal', withdrawal_id=withdrawal.id) }}">
+                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label for="reason{{ withdrawal.id }}" class="form-label">Rejection Reason (optional)</label>
+                                                                    <textarea class="form-control" id="reason{{ withdrawal.id }}" name="reason" rows="3" placeholder="Enter reason for rejection"></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-danger">Reject Withdrawal</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p>No pending withdrawals at this time.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">All Transactions</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="transactionTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="deposits-tab" data-bs-toggle="tab" data-bs-target="#deposits" type="button" role="tab" aria-controls="deposits" aria-selected="true" style="color: #495057; font-weight: 600;">Deposits</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="withdrawals-tab" data-bs-toggle="tab" data-bs-target="#withdrawals" type="button" role="tab" aria-controls="withdrawals" aria-selected="false" style="color: #495057; font-weight: 600;">Withdrawals</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="transactionTabsContent">
+                            <div class="tab-pane fade show active" id="deposits" role="tabpanel" aria-labelledby="deposits-tab">
+                                {% if deposits %}
+                                <div class="table-responsive mt-4">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Client</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Approved By</th>
+                                                <th>Processed Date</th>
+                                                <th>Reference</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for deposit in deposits %}
+                                            <tr>
+                                                <td>{{ deposit.id }}</td>
+                                                <td>
+                                                    {% if leads[deposit.lead_id] %}
+                                                        <a href="{{ url_for('leads.get_lead_view', lead_id=deposit.lead_id) }}">
+                                                            {{ leads[deposit.lead_id].first_name }} {{ leads[deposit.lead_id].last_name }}
+                                                        </a>
+                                                    {% else %}
+                                                        Unknown Client
+                                                    {% endif %}
+                                                </td>
+                                                <td>${{ "%.2f"|format(deposit.amount) }}</td>
+                                                <td>
+                                                    {{ deposit.method|capitalize }}
+                                                    {% if deposit.crypto_type %}
+                                                    ({{ deposit.crypto_type }})
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ deposit.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                <td>
+                                                    {% if deposit.status == 'pending' %}
+                                                    <span class="badge badge-warning">Pending</span>
+                                                    {% elif deposit.status == 'approved' %}
+                                                    <span class="badge badge-success">Approved</span>
+                                                    {% elif deposit.status == 'rejected' %}
+                                                    <span class="badge badge-danger">Rejected</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if deposit.processed_by and users[deposit.processed_by] %}
+                                                        {{ users[deposit.processed_by].username }}
+                                                    {% elif deposit.status != 'pending' %}
+                                                        Unknown
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if deposit.processed_date %}
+                                                        {{ deposit.processed_date.strftime('%Y-%m-%d %H:%M') }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ deposit.reference or '-' }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="mt-4">No deposits found.</p>
+                                {% endif %}
+                            </div>
+                            <div class="tab-pane fade" id="withdrawals" role="tabpanel" aria-labelledby="withdrawals-tab">
+                                {% if withdrawals %}
+                                <div class="table-responsive mt-4">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Client</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Approved By</th>
+                                                <th>Processed Date</th>
+                                                <th>Reference</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for withdrawal in withdrawals %}
+                                            <tr>
+                                                <td>{{ withdrawal.id }}</td>
+                                                <td>
+                                                    {% if leads[withdrawal.lead_id] %}
+                                                        <a href="{{ url_for('leads.get_lead_view', lead_id=withdrawal.lead_id) }}">
+                                                            {{ leads[withdrawal.lead_id].first_name }} {{ leads[withdrawal.lead_id].last_name }}
+                                                        </a>
+                                                    {% else %}
+                                                        Unknown Client
+                                                    {% endif %}
+                                                </td>
+                                                <td>${{ "%.2f"|format(withdrawal.amount) }}</td>
+                                                <td>
+                                                    {{ withdrawal.method|capitalize }}
+                                                    {% if withdrawal.crypto_type %}
+                                                    ({{ withdrawal.crypto_type }})
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ withdrawal.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                <td>
+                                                    {% if withdrawal.status == 'pending' %}
+                                                    <span class="badge badge-warning">Pending</span>
+                                                    {% elif withdrawal.status == 'approved' %}
+                                                    <span class="badge badge-success">Approved</span>
+                                                    {% elif withdrawal.status == 'rejected' %}
+                                                    <span class="badge badge-danger">Rejected</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if withdrawal.processed_by and users[withdrawal.processed_by] %}
+                                                        {{ users[withdrawal.processed_by].username }}
+                                                    {% elif withdrawal.status != 'pending' %}
+                                                        Unknown
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if withdrawal.processed_date %}
+                                                        {{ withdrawal.processed_date.strftime('%Y-%m-%d %H:%M') }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ withdrawal.reference or '-' }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="mt-4">No withdrawals found.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tabs
+        var triggerTabList = [].slice.call(document.querySelectorAll('#transactionTabs a'));
+        triggerTabList.forEach(function(triggerEl) {
+            var tabTrigger = new bootstrap.Tab(triggerEl);
+            
+            triggerEl.addEventListener('click', function(event) {
+                event.preventDefault();
+                tabTrigger.show();
+            });
+        });
+
+        // Fix modal backdrop issues
+        document.querySelectorAll('.modal').forEach(function(modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                // Remove any leftover backdrops
+                document.querySelectorAll('.modal-backdrop').forEach(function(backdrop) {
+                    backdrop.remove();
+                });
+                document.body.classList.remove('modal-open');
+                document.body.style.paddingRight = '';
+            });
+        });
+    });
+</script>
+{% endblock %} 

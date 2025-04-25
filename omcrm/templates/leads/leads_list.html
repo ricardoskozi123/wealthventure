@@ -1,0 +1,243 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">{% if title %}{{title}}{% else %}No Title{% endif %}</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+
+          <div class="dropdown">
+              <button class="btn btn-sm btn-outline-primary mr-2 dropdown-toggle bulk_assign disabled"
+                      type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                      aria-expanded="false">
+                  <span data-feather="settings"></span> Bulk Actions
+              </button>
+              <div class="dropdown-menu dd-sm" aria-labelledby="dropdownMenuButton">
+                  {% if current_user.is_admin %}
+                <a class="dropdown-item " href="#" data-toggle="modal" data-target="#leadOwnerAssignModal">Assign Owner</a>
+                  <a class="dropdown-item" href="#" data-toggle="modal" data-target="#leadSourceAssignModal">Assign Source</a>
+                  <a class="dropdown-item" href="#" data-toggle="modal" data-target="#leadStatusAssignModal">Assign Status</a>
+                    <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" data-toggle="modal" data-target="#leadsDeleteModal" href="#">Delete</a>
+                  <div class="dropdown-divider"></div>
+                  {% endif %}
+                <a class="dropdown-item" id="export_leads_to_csv" href="#">Export to CSV</a>
+              </div>
+            </div>
+
+            {% if current_user.is_admin %}
+            <a class="btn btn-sm btn-outline-secondary mr-2" role="button" href="{{ url_for('leads.import_bulk_leads') }}">
+                <span data-feather="upload"></span>
+                  import leads ...
+            </a>
+            {% endif %}
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('leads.new_lead') }}" role="button">
+            <span data-feather="plus"></span>
+            New Lead
+        </a>
+    </div>
+</div>
+{% include "leads/filters.html" %}
+{% if leads.items()|length > 0 %}
+    <div class="table-responsive">
+        <table class="table table-hover border">
+            <thead class="table-light">
+                <tr>
+                    <th width="40" scope="col">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select_all" value="all" />
+                        </div>
+                    </th>
+                    <th width="100" scope="col">Actions</th>
+                    <th width="150" scope="col">First Name</th>
+                    <th width="150" scope="col">Last Name</th>
+                    <th width="180" scope="col">Company</th>
+                    <th width="220" scope="col">Email</th>
+                    <th width="150" scope="col">Phone</th>
+                    <th width="150" scope="col">Country</th>
+                    <th width="180" scope="col">Owner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead, last_comment in leads.items() %}
+                <tr>
+                    <td>
+                        <div class="form-check">
+                            <input class="form-check-input cb" type="checkbox" value="{{ lead.id }}" />
+                        </div>
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('leads.update_lead', lead_id=lead.id) }}"
+                               class="btn btn-sm btn-outline-primary" title="Edit">
+                                <i data-feather="edit" class="icon-sm"></i>
+                            </a>
+                            <a href="#" data-toggle="modal" data-target="#singleLeadDeleteModal_{{ lead.id }}"
+                               class="btn btn-sm btn-outline-danger" title="Delete">
+                                <i data-feather="trash-2" class="icon-sm"></i>
+                            </a>
+                            <a href="{{ url_for('leads.get_lead_view', lead_id=lead.id) }}"
+                               class="btn btn-sm btn-outline-info" title="View">
+                                <i data-feather="eye" class="icon-sm"></i>
+                            </a>
+                        </div>
+                        {% with lead_id=lead.id %}
+                            {% include 'leads/single_lead_delete_modal.html' %}
+                        {% endwith %}
+                    </td>
+                    <td>{{ lead.first_name }}</td>
+                    <td>{{ lead.last_name }}</td>
+                    <td>
+                        {% if lead.company_name %}
+                            <span>{{ lead.company_name }}</span>
+                        {% else %}
+                            <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if lead.email %}
+                            <a href="mailto:{{ lead.email }}" class="text-decoration-none">
+                                <i data-feather="mail" class="icon-sm text-primary me-1"></i> {{ lead.email }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if lead.phone %}
+                            <a href="tel:{{ lead.phone }}" class="text-decoration-none">
+                                <i data-feather="phone" class="icon-sm text-primary me-1"></i> {{ lead.phone }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if lead.country %}
+                            {% set country_code = lead.country|lower|replace(' ', '') %}
+                            {% if country_code == 'unitedstates' %}{% set country_code = 'us' %}
+                            {% elif country_code == 'unitedkingdom' %}{% set country_code = 'gb' %}
+                            {% elif country_code == 'japan' %}{% set country_code = 'jp' %}
+                            {% elif country_code == 'china' %}{% set country_code = 'cn' %}
+                            {% elif country_code == 'india' %}{% set country_code = 'in' %}
+                            {% elif country_code == 'brazil' %}{% set country_code = 'br' %}
+                            {% elif country_code == 'russia' %}{% set country_code = 'ru' %}
+                            {% elif country_code == 'germany' %}{% set country_code = 'de' %}
+                            {% elif country_code == 'france' %}{% set country_code = 'fr' %}
+                            {% elif country_code == 'spain' %}{% set country_code = 'es' %}
+                            {% elif country_code == 'italy' %}{% set country_code = 'it' %}
+                            {% elif country_code == 'canada' %}{% set country_code = 'ca' %}
+                            {% elif country_code == 'australia' %}{% set country_code = 'au' %}
+                            {% endif %}
+                            <img src="https://flagcdn.com/24x18/{{ country_code }}.png" alt="{{ lead.country }}" class="country-flag"> {{ lead.country }}
+                        {% else %}
+                            <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td>{% with owner=lead.owner %}{% include 'common/owner_cell.html' %}{% endwith %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- pagination -->
+    {% if leads.total_records > 10 %}
+        {% with view_id="leads.get_leads_view", items=leads %}
+            {% include "common/pagination.html" %}
+        {% endwith %}
+    {% endif %}
+{% else %}
+    <div class="empty-state">
+        <div><span data-feather="eye-off"></span></div>
+        <p>No leads found. Please create your first lead.</p>
+        <a href="{{ url_for('leads.new_lead') }}" class="btn btn-primary">
+            <i data-feather="plus" class="me-1"></i> Create Lead
+        </a>
+    </div>
+{%  endif %}
+<script>
+    $(document).ready(function() {
+        var items = [];
+
+        $('#select_all').on('click', function() {
+            if ($(this).is(':checked')) {
+                $('.cb').prop('checked', true);
+            } else {
+                $('.cb').prop('checked', false);
+            }
+            toggle_convert_lead_btn();
+        });
+
+        $('.cb').on('click', function() {
+            toggle_convert_lead_btn();
+        });
+
+        function toggle_convert_lead_btn() {
+            items = [];
+            $('.cb').each(function() {
+                if ($(this).is(':checked')) {
+                    items.push($(this).val());
+                }
+            });
+
+            if (items.length > 0) {
+                $('#convert_lead').removeClass('disabled');
+                $('.bulk_assign').removeClass('disabled');
+            } else {
+                $('#convert_lead').addClass('disabled');
+                $('.bulk_assign').addClass('disabled');
+            }
+        }
+
+        $('.ba_modal').on('show.bs.modal', function (e) {
+          // do something...
+          $('.modal-notif-area').html(`
+                <div class="alert alert-success" role="alert">
+                  You have selected <strong>${items.length}</strong> leads for bulk assignment.
+                </div>`);
+
+          // store the values
+          console.log(items);
+          $('.leads_data').val(items);
+        });
+
+        $('#export_leads_to_csv').on('click', function(e) {
+            e.preventDefault();
+            window.location = "{{ url_for('leads.write_to_csv') }}?lead_ids=" + items
+        });
+
+    });
+</script>
+
+<!-- Lead Owner Assign Modal -->
+{% include "leads/bulk_owner_assign_modal.html" %}
+
+<!-- Lead Source Assign Modal -->
+{% include "leads/bulk_lead_source_assign_modal.html" %}
+
+<!-- Lead Status Assign Modal -->
+{% include "leads/bulk_lead_status_assign_modal.html" %}
+
+<!-- Lead Bulk Delete Modal -->
+{% include "leads/bulk_lead_delete_modal.html" %}
+
+<style>
+    /* Country flag styling */
+    .country-flag {
+        vertical-align: middle;
+        margin-right: 5px;
+        border: 1px solid #eee;
+    }
+    
+    /* Make icons smaller */
+    .icon-sm {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Improve table hover effect */
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
+
+{% endblock %}

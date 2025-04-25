@@ -1,0 +1,228 @@
+{% extends "client_layout.html" %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">Withdraw Funds</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{{ url_for('client.dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Withdraw</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Make a Withdrawal</h3>
+                    </div>
+                    <form id="withdrawalForm" method="POST" action="{{ url_for('client.process_withdrawal') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-2"></i> Available Balance: <strong>${{ "%.2f"|format(current_user.current_balance) }}</strong>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="amount">Withdrawal Amount (USD)</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount" step="0.01" min="100" max="{{ current_user.current_balance }}" required>
+                                </div>
+                                <small class="form-text text-muted">Minimum withdrawal: $100</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Withdrawal Method</label>
+                                <div class="d-flex">
+                                    <div class="custom-control custom-radio mr-4">
+                                        <input class="custom-control-input" type="radio" id="crypto" name="withdrawal_method" value="crypto" checked>
+                                        <label for="crypto" class="custom-control-label">Cryptocurrency</label>
+                                    </div>
+                                    <div class="custom-control custom-radio">
+                                        <input class="custom-control-input" type="radio" id="wire" name="withdrawal_method" value="wire">
+                                        <label for="wire" class="custom-control-label">Wire Transfer</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="cryptoOptions" class="payment-details">
+                                <div class="form-group">
+                                    <label>Select Cryptocurrency</label>
+                                    <select class="form-control" name="crypto_currency">
+                                        <option value="BTC">Bitcoin (BTC)</option>
+                                        <option value="ETH">Ethereum (ETH)</option>
+                                        <option value="USDT">Tether (USDT)</option>
+                                        <option value="USDC">USD Coin (USDC)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="crypto_address">Wallet Address</label>
+                                    <input type="text" class="form-control" id="crypto_address" name="crypto_address" placeholder="Enter your wallet address">
+                                    <small class="form-text text-muted">Please double-check your wallet address carefully.</small>
+                                </div>
+                            </div>
+                            
+                            <div id="wireOptions" class="payment-details" style="display: none;">
+                                <div class="form-group">
+                                    <label for="bank_name">Bank Name</label>
+                                    <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="Enter bank name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="account_holder">Account Holder Name</label>
+                                    <input type="text" class="form-control" id="account_holder" name="account_holder" placeholder="Enter account holder name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="account_number">Account Number / IBAN</label>
+                                    <input type="text" class="form-control" id="account_number" name="account_number" placeholder="Enter account number or IBAN">
+                                </div>
+                                <div class="form-group">
+                                    <label for="swift_code">SWIFT / BIC Code</label>
+                                    <input type="text" class="form-control" id="swift_code" name="swift_code" placeholder="Enter SWIFT/BIC code">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="notes">Additional Notes (Optional)</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Add any additional information about your withdrawal"></textarea>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">Submit Withdrawal Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Withdrawal History</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                        <th>Approved By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if withdrawal_history %}
+                                        {% for withdrawal in withdrawal_history %}
+                                        <tr>
+                                            <td>{{ withdrawal.date.strftime('%Y-%m-%d') }}</td>
+                                            <td>${{ "%.2f"|format(withdrawal.amount) }}</td>
+                                            <td>{{ withdrawal.method|capitalize }}</td>
+                                            <td>
+                                                {% if withdrawal.status == 'pending' %}
+                                                <span class="badge badge-warning">Pending</span>
+                                                {% elif withdrawal.status == 'approved' %}
+                                                <span class="badge badge-success">Approved</span>
+                                                {% elif withdrawal.status == 'rejected' %}
+                                                <span class="badge badge-danger">Rejected</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if withdrawal.processor and withdrawal.status != 'pending' %}
+                                                    {{ withdrawal.processor.username }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center">No withdrawal history available</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal for Withdrawal Confirmation -->
+<div class="modal fade" id="withdrawalConfirmationModal" tabindex="-1" aria-labelledby="withdrawalConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="withdrawalConfirmationModalLabel">Withdrawal Request Submitted</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 64px;"></i>
+                </div>
+                <p class="text-center">Your withdrawal request has been submitted successfully.</p>
+                <p class="text-center">Your account manager will contact you soon to confirm the details.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Handle payment method toggle
+        $('input[name="withdrawal_method"]').change(function() {
+            $('.payment-details').hide();
+            if (this.value === 'crypto') {
+                $('#cryptoOptions').show();
+            } else if (this.value === 'wire') {
+                $('#wireOptions').show();
+            }
+        });
+        
+        // Handle form submission
+        $('#withdrawalForm').on('submit', function(e) {
+            // Get form element
+            const form = this;
+            
+            // Validate amount
+            const amount = parseFloat($('#amount').val());
+            const availableBalance = parseFloat('{{ current_user.current_balance }}');
+            
+            if (amount > availableBalance) {
+                e.preventDefault();
+                alert('Withdrawal amount cannot exceed your available balance.');
+                return false;
+            }
+            
+            // If validation passes, show the confirmation modal first
+            e.preventDefault();
+            const withdrawalModal = new bootstrap.Modal(document.getElementById('withdrawalConfirmationModal'));
+            withdrawalModal.show();
+            
+            // When the OK button in the modal is clicked, submit the form
+            $('#withdrawalConfirmationModal .btn-primary').one('click', function() {
+                form.submit();
+            });
+        });
+    });
+</script>
+{% endblock %} 
