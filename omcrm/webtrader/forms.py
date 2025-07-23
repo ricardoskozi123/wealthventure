@@ -1,12 +1,7 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed
-from wtforms.fields.core import SelectField, IntegerField
-from wtforms.fields.html5 import DateField, DateTimeField
-from wtforms import StringField, SubmitField, FloatField, BooleanField
-from wtforms.fields.simple import TextAreaField
-from wtforms.widgets import TextArea
-from wtforms.validators import DataRequired, Email, Optional
-from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
+from wtforms import SelectField, IntegerField
+from wtforms import StringField, SubmitField, FloatField, DecimalField
+from wtforms.validators import DataRequired, NumberRange, Optional
 
 from omcrm.leads.models import LeadSource, LeadStatus
 from omcrm.users.models import User

@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms.fields.core import SelectField
-from wtforms.fields.html5 import DateField, DateTimeField
+from wtforms import SelectField, DateField, DateTimeField
 from wtforms import StringField, SubmitField, FloatField, BooleanField, HiddenField
 from wtforms.fields.simple import TextAreaField, PasswordField
 from wtforms.widgets import TextArea
