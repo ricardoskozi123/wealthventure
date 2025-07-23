@@ -32,14 +32,15 @@ def home():
     if isinstance(current_user, Lead) and current_user.is_client:
         return redirect(url_for('client.dashboard'))
     
+    # DISABLED FOR SINGLE SERVER DEPLOYMENT
     # Check if we're on the client domain but accessing admin pages
-    from flask import request
-    host = request.host.lower()
-    
-    # Skip domain redirects for local development
-    if not host.startswith('crm.') and host not in ['127.0.0.1:5000', 'localhost:5000']:
-        # Redirect to crm. subdomain for admin pages
-        return redirect(f"http://crm.{host}{request.path}")
+    # from flask import request
+    # host = request.host.lower()
+    # 
+    # # Skip domain redirects for local development
+    # if not host.startswith('crm.') and host not in ['127.0.0.1:5000', 'localhost:5000']:
+    #     # Redirect to crm. subdomain for admin pages
+    #     return redirect(f"http://crm.{host}{request.path}")
         
     # Get upcoming tasks for the user or all tasks if admin
     upcoming_date = datetime.utcnow() + timedelta(days=7)
