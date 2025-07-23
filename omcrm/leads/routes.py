@@ -1047,7 +1047,7 @@ def edit_lead_status(status_id):
     
     # If it's a GET request, render a form
     from flask_wtf import FlaskForm
-    from wtforms import StringField, TextAreaField, StringField, SubmitField, HiddenField
+    from wtforms import StringField, TextAreaField, SubmitField, HiddenField
     from wtforms.validators import DataRequired
     
     class EditStatusForm(FlaskForm):
