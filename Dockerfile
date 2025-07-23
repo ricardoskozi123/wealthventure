@@ -30,6 +30,9 @@ RUN pip install gunicorn
 # Copy the rest of the project
 COPY . .
 
+# Create database directory with proper permissions
+RUN mkdir -p /app/db && chmod 777 /app/db
+
 # Expose app port
 EXPOSE 5000
 
