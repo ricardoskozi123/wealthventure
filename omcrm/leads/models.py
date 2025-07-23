@@ -116,11 +116,8 @@ class Lead(db.Model, UserMixin):
     def is_authenticated(self):
         return True
 
-    @property
-    def is_active(self):
-        # Always return True to bypass the conflicting column name
-        return True
-
+    # Removed is_active property override - using database column directly
+    
     @property
     def is_anonymous(self):
         return False
