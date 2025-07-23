@@ -25,7 +25,7 @@ services:
     restart: always
     environment:
       - FLASK_ENV=production
-      - FLASK_DEBUG=0
+      - FLASK_DEBUG=1
       - SECRET_KEY=${SECRET_KEY:-your-super-secret-production-key-change-this-immediately}
       - DATABASE_URL=postgresql://omcrm_user:omcrm_password_2024@db:5432/omcrm_trading
       - PLATFORM_NAME=OMCRM Trading

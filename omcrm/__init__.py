@@ -155,57 +155,65 @@ def create_app(config_class=DevelopmentConfig):
                 app.logger.info("Added last_updated column to TradingInstrument table")
 
         # Check and handle different domains/subdomains
-        @app.before_request
-        def handle_domains():
-            from flask import request, redirect, url_for
-            
-            # Extract the domain/host from the request
-            host = request.host.lower()
-            
-            # Skip for static file requests and special admin login route
-            if request.path.startswith('/static/') or request.path == '/admin_login':
-                return None
-                
-            # For local development (localhost/127.0.0.1)
-            if host == '127.0.0.1:5000' or host == 'localhost:5000':
-                # Special case to allow local development without domain routing
-                return None
-                
-            # If accessing the CRM subdomain (crm.example.com)
-            if host.startswith('crm.'):
-                # If trying to access client routes from CRM subdomain, redirect to main site
-                if request.path.startswith('/client/') and not request.path.startswith('/client/login'):
-                    # Extract the main domain (remove 'crm.' prefix)
-                    main_domain = host[4:]  # Skip 'crm.'
-                    # Only redirect if this isn't a local development environment
-                    if main_domain not in ['127.0.0.1:5000', 'localhost:5000']:
-                        return redirect(f"http://{main_domain}{request.path}")
-                    
-                # If accessing client login from CRM subdomain, redirect to admin login
-                if request.path == '/client/login':
-                    return redirect(url_for('users.login'))
-            
-            # If accessing the main domain (example.com)
-            elif not host.startswith('crm.'):
-                # If trying to access admin routes, redirect to CRM subdomain
-                if (request.path == '/login' or
-                    request.path.startswith('/users/') or
-                    request.path.startswith('/leads/') or
-                    request.path.startswith('/deals/') or
-                    request.path.startswith('/settings/') or
-                    request.path.startswith('/reports/') or
-                    request.path == '/'):
-                    
-                    # If not explicitly trying to access client login, redirect to client login
-                    if request.path == '/login':
-                        return redirect(url_for('users.client_login'))
-                    
-                    # Only redirect to CRM subdomain if not in local development
-                    if host not in ['127.0.0.1:5000', 'localhost:5000']:
-                        return redirect(f"http://crm.{host}{request.path}")
-            
-            # For all other cases, proceed normally
-            return None
+        # DISABLED FOR SINGLE SERVER DEPLOYMENT
+        # @app.before_request
+        # def handle_domains():
+        #     from flask import request, redirect, url_for
+        #     
+        #     # Extract the domain/host from the request
+        #     host = request.host.lower()
+        #     
+        #     # Skip for static file requests and special admin login route
+        #     if request.path.startswith('/static/') or request.path == '/admin_login':
+        #         return None
+        #         
+        #     # For local development (localhost/127.0.0.1)
+        #     if host == '127.0.0.1:5000' or host == 'localhost:5000':
+        #         # Special case to allow local development without domain routing
+        #         return None
+        #         
+        #     # If accessing the CRM subdomain (crm.example.com)
+        #     if host.startswith('crm.'):
+        #         # If trying to access client routes from CRM subdomain, redirect to main site
+        #         if request.path.startswith('/client/') and not request.path.startswith('/client/login'):
+        #             # Extract the main domain (remove 'crm.' prefix)
+        #             main_domain = host[4:]  # Skip 'crm.'
+        #             # Only redirect if this isn't a local development environment
+        #             if main_domain not in ['127.0.0.1:5000', 'localhost:5000']:
+        #                 return redirect(f"http://{main_domain}{request.path}")
+        #             
+        #         # If accessing client login from CRM subdomain, redirect to admin login
+        #         if request.path == '/client/login':
+        #             return redirect(url_for('users.login'))
+        #     
+        #     # If accessing the main domain (example.com)
+        #     elif not host.startswith('crm.'):
+        #         # If trying to access admin routes, redirect to CRM subdomain
+        #         if (request.path == '/login' or
+        #             request.path.startswith('/users/') or
+        #             request.path.startswith('/leads/') or
+        #             request.path.startswith('/deals/') or
+        #             request.path.startswith('/settings/') or
+        #             request.path.startswith('/reports/') or
+        #             request.path == '/'):
+        #             
+        #             # If not explicitly trying to access client login, redirect to client login
+        #             if request.path == '/login':
+        #                 return redirect(url_for('users.client_login'))
+        #             
+        #             # Only redirect to CRM subdomain if not in local development
+        #             if host not in ['127.0.0.1:5000', 'localhost:5000']:
+        #                 return redirect(f"http://crm.{host}{request.path}")
+        #     
+        #     # For all other cases, proceed normally
+        #     return None
+
+        # Add a route to clear problematic session
+        @app.route('/clear_session')
+        def clear_session():
+            from flask import session, redirect, url_for
+            session.clear()
+            return redirect(url_for('main.home'))
 
         # include the routes
         from omcrm.main.routes import main
