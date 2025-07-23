@@ -76,7 +76,13 @@ def create_app(config_class=DevelopmentConfig):
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
-    # Initialize Socket.IO with the app (only if not disabled)    if not os.getenv('DISABLE_SOCKETIO'):        socketio.init_app(app, cors_allowed_origins="*", async_mode='threading')    else:        print("⚠️  Socket.IO disabled - running in simplified mode")
+    
+    # Initialize Socket.IO with the app (only if not disabled)
+    if not os.getenv('DISABLE_SOCKETIO'):
+        socketio.init_app(app, cors_allowed_origins="*", async_mode='threading')
+    else:
+        print("⚠️  Socket.IO disabled - running in simplified mode")
+    
     # Set the custom unauthorized handler
     login_manager.unauthorized_handler(unauthorized_handler)
     init_csrf(app)  # Initialize CSRF protection
@@ -86,15 +92,29 @@ def create_app(config_class=DevelopmentConfig):
     app.jinja_env.filters['timeago'] = timeago
 
     with app.app_context():
-        # check if the config table exists, otherwise run install
-        engine = db.get_engine(app)
-        if not engine.dialect.has_table(engine, 'app_config'):
-            return run_install(app)
-        else:
-            from omcrm.settings.models import AppConfig
-            row = AppConfig.query.first()
-            if not row:
+        try:
+            # Ensure database directory exists
+            db_path = app.config.get('SQLALCHEMY_DATABASE_URI', '').replace('sqlite:///', '')
+            if db_path and not os.path.exists(os.path.dirname(db_path)) and os.path.dirname(db_path):
+                os.makedirs(os.path.dirname(db_path), exist_ok=True)
+            
+            # Create all tables first
+            db.create_all()
+            
+            # check if the config table exists, otherwise run install
+            engine = db.get_engine()
+            if not engine.dialect.has_table(engine, 'app_config'):
                 return run_install(app)
+            else:
+                from omcrm.settings.models import AppConfig
+                row = AppConfig.query.first()
+                if not row:
+                    print("No AppConfig found - running installation...")
+                    return run_install(app)
+        except Exception as e:
+            print(f"Database initialization error: {e}")
+            print("Running installation...")
+            return run_install(app)
 
         # application is installed so extends the config
         from omcrm.settings.models import AppConfig, Currency, TimeZone
@@ -132,16 +152,6 @@ def create_app(config_class=DevelopmentConfig):
                     instrument.last_updated = now
                 db.session.commit()
                 app.logger.info("Added last_updated column to TradingInstrument table")
-
-        # Initialize real-time data manager
-        from omcrm.webtrader.realtime_data import real_time_manager
-        
-        # Set up price update callback for Socket.IO
-        def price_update_callback(update_data):
-            """Callback to send price updates to clients via Socket.IO"""
-            socketio.emit('price_update', update_data, namespace='/webtrader')
-        
-        real_time_manager.add_price_callback(price_update_callback)
 
         # Check and handle different domains/subdomains
         @app.before_request
@@ -234,6 +244,49 @@ def create_app(config_class=DevelopmentConfig):
             from datetime import datetime
             return {'now': datetime.utcnow()}
 
+      #  # Register error handlers
+        @app.errorhandler(404)
+        def page_not_found(e):
+            return render_template('errors/404.html'), 404
+
+        @app.errorhandler(403)
+        def forbidden(e):
+            return render_template('errors/403.html'), 403
+
+        @app.errorhandler(500)
+        def internal_server_error(e):
+            return render_template('errors/500.html'), 500
+      
+        # Handler for unauthorized access (when not logged in)
+        @app.errorhandler(401)
+        def unauthorized(e):
+            return render_template('errors/401.html'), 401
+
+      #  # Catch AttributeError exceptions caused by user type mismatches
+        @app.errorhandler(AttributeError)
+        def handle_attribute_error(e):
+            # Return 500 error page for attribute errors
+            return render_template('errors/500.html'), 500
+      
+      #  # Handler for all HTTP exceptions
+        @app.errorhandler(Exception)
+        def handle_exception(e):
+            # Pass through HTTP errors
+            if isinstance(e, HTTPException):
+                code = e.code
+                if code == 404:
+                    return render_template('errors/404.html'), 404
+                elif code == 403:
+                    return render_template('errors/403.html'), 403
+                elif code == 401:
+                    return render_template('errors/401.html'), 401
+                else:
+                    return render_template('errors/500.html'), 500
+            else:
+                # For non-HTTP exceptions, return 500 error
+                app.logger.error(f"Unhandled exception: {str(e)}")
+                return render_template('errors/500.html'), 500
+            
         # Catch-all route handler as the last route to handle any unmatched routes
         @app.route('/<path:path>')
         def catch_all(path):
