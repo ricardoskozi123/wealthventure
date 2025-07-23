@@ -253,53 +253,53 @@ def create_app(config_class=DevelopmentConfig):
             from datetime import datetime
             return {'now': datetime.utcnow()}
 
-      #  # Register error handlers
-        @app.errorhandler(404)
-        def page_not_found(e):
-            return render_template('errors/404.html'), 404
+        # ERROR HANDLERS DISABLED FOR DEBUGGING - ENABLE AFTER FIXING ISSUES
+        # @app.errorhandler(404)
+        # def page_not_found(e):
+        #     return render_template('errors/404.html'), 404
 
-        @app.errorhandler(403)
-        def forbidden(e):
-            return render_template('errors/403.html'), 403
+        # @app.errorhandler(403)
+        # def forbidden(e):
+        #     return render_template('errors/403.html'), 403
 
-        @app.errorhandler(500)
-        def internal_server_error(e):
-            return render_template('errors/500.html'), 500
+        # @app.errorhandler(500)
+        # def internal_server_error(e):
+        #     return render_template('errors/500.html'), 500
       
-        # Handler for unauthorized access (when not logged in)
-        @app.errorhandler(401)
-        def unauthorized(e):
-            return render_template('errors/401.html'), 401
+        # # Handler for unauthorized access (when not logged in)
+        # @app.errorhandler(401)
+        # def unauthorized(e):
+        #     return render_template('errors/401.html'), 401
 
-      #  # Catch AttributeError exceptions caused by user type mismatches
-        @app.errorhandler(AttributeError)
-        def handle_attribute_error(e):
-            # Return 500 error page for attribute errors
-            return render_template('errors/500.html'), 500
+        # # Catch AttributeError exceptions caused by user type mismatches
+        # @app.errorhandler(AttributeError)
+        # def handle_attribute_error(e):
+        #     # Return 500 error page for attribute errors
+        #     return render_template('errors/500.html'), 500
       
-      #  # Handler for all HTTP exceptions
-        @app.errorhandler(Exception)
-        def handle_exception(e):
-            # Pass through HTTP errors
-            if isinstance(e, HTTPException):
-                code = e.code
-                if code == 404:
-                    return render_template('errors/404.html'), 404
-                elif code == 403:
-                    return render_template('errors/403.html'), 403
-                elif code == 401:
-                    return render_template('errors/401.html'), 401
-                else:
-                    return render_template('errors/500.html'), 500
-            else:
-                # For non-HTTP exceptions, return 500 error
-                app.logger.error(f"Unhandled exception: {str(e)}")
-                return render_template('errors/500.html'), 500
+        # # Handler for all HTTP exceptions
+        # @app.errorhandler(Exception)
+        # def handle_exception(e):
+        #     # Pass through HTTP errors
+        #     if isinstance(e, HTTPException):
+        #         code = e.code
+        #         if code == 404:
+        #             return render_template('errors/404.html'), 404
+        #         elif code == 403:
+        #             return render_template('errors/403.html'), 403
+        #         elif code == 401:
+        #             return render_template('errors/401.html'), 401
+        #         else:
+        #             return render_template('errors/500.html'), 500
+        #     else:
+        #         # For non-HTTP exceptions, return 500 error
+        #         app.logger.error(f"Unhandled exception: {str(e)}")
+        #         return render_template('errors/500.html'), 500
             
-        # Catch-all route handler as the last route to handle any unmatched routes
-        @app.route('/<path:path>')
-        def catch_all(path):
-            # Always return 404 without any additional information
-            return render_template('errors/404.html'), 404
+        # CATCH-ALL ROUTE DISABLED FOR DEBUGGING - ENABLE AFTER FIXING ISSUES
+        # @app.route('/<path:path>')
+        # def catch_all(path):
+        #     # Always return 404 without any additional information
+        #     return render_template('errors/404.html'), 404
 
     return app
