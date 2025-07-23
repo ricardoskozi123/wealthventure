@@ -1,0 +1,231 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">{% if title %}{{title}}{% else %}Sales Forecast{% endif %}</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a class="btn btn-sm btn-outline-secondary me-2" role="button" href="{{ url_for('reports.deal_reports') }}">
+            <i data-feather="arrow-left" class="me-1" style="width: 16px; height: 16px;"></i>
+            Back to Reports
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="timeframeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i data-feather="calendar" class="me-1" style="width: 16px; height: 16px;"></i>
+                <span id="selectedTimeframe">Last 12 Months</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="timeframeDropdown">
+                <li><a class="dropdown-item timeframe-option" href="#" data-period="6">Last 6 Months</a></li>
+                <li><a class="dropdown-item timeframe-option active" href="#" data-period="12">Last 12 Months</a></li>
+                <li><a class="dropdown-item timeframe-option" href="#" data-period="24">Last 24 Months</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i data-feather="info" class="me-2" style="width: 18px; height: 18px;"></i>
+            This report provides sales forecasting based on your historical data and current pipeline. Use this information to plan your sales strategy.
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Current Month Forecast</h6>
+                        <h3 class="mb-0">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(current_month_forecast) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-primary rounded-circle shadow">
+                        <i data-feather="trending-up" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                {% if previous_month_forecast > 0 %}
+                <div class="mt-3 mb-0">
+                    {% set percentage_change = ((current_month_forecast - previous_month_forecast) / previous_month_forecast * 100)|round(1) %}
+                    {% if percentage_change > 0 %}
+                    <span class="text-success me-2">
+                        <i data-feather="arrow-up" style="width: 14px; height: 14px;"></i> {{ percentage_change }}%
+                    </span>
+                    {% else %}
+                    <span class="text-danger me-2">
+                        <i data-feather="arrow-down" style="width: 14px; height: 14px;"></i> {{ percentage_change|abs }}%
+                    </span>
+                    {% endif %}
+                    <span class="text-muted">vs previous month</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Quarter Forecast</h6>
+                        <h3 class="mb-0">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(quarter_forecast) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-success rounded-circle shadow">
+                        <i data-feather="bar-chart" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    <span class="text-muted">Ends {{ quarter_end_date }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Pipeline Value</h6>
+                        <h3 class="mb-0">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(pipeline_value) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-info rounded-circle shadow">
+                        <i data-feather="database" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    <span class="text-muted">From <span class="fw-bold">{{ pipeline_deal_count }}</span> active deals</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Weighted Pipeline</h6>
+                        <h3 class="mb-0">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(weighted_pipeline) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-warning rounded-circle shadow">
+                        <i data-feather="percent" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    <span class="text-muted">Based on deal stages probability</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Sales Trend & Forecast</h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary active" id="viewMonthly">Monthly</button>
+                    <button type="button" class="btn btn-outline-secondary" id="viewQuarterly">Quarterly</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="salesForecastChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Potential Revenue by Stage</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dealStageProbabilityChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Upcoming Deals (Closing within 30 days)</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if upcoming_deals|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Deal</th>
+                                <th>Contact</th>
+                                <th>Stage</th>
+                                <th class="text-end">Value</th>
+                                <th class="text-end">Probability</th>
+                                <th class="text-end">Expected Revenue</th>
+                                <th class="text-center">Closing Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for deal in upcoming_deals %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('deals.deal', deal_id=deal.id) }}" class="text-decoration-none">
+                                        {{ deal.name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if deal.contact %}
+                                    <a href="{{ url_for('contacts.contact', contact_id=deal.contact.id) }}" class="text-decoration-none">
+                                        {{ deal.contact.first_name }} {{ deal.contact.last_name }}
+                                    </a>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ deal.stage.color }}">
+                                        {{ deal.stage.name }}
+                                    </span>
+                                </td>
+                                <td class="text-end">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(deal.price) }}</td>
+                                <td class="text-end">{{ deal.stage.probability }}%</td>
+                                <td class="text-end">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(deal.price * deal.stage.probability / 100) }}</td>
+                                <td class="text-center">{{ deal.end_date.strftime('%b %d, %Y') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i data-feather="calendar" style="width: 48px; height: 48px;" class="text-muted mb-3"></i>
+                    <p class="text-muted">No upcoming deals found in the next 30 days.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block additional_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Pass data from template to JavaScript
+window.reportData = {
+    historicalLabels: {{ historical_labels|tojson }},
+    historicalData: {{ historical_data|tojson }},
+    quarterlyLabels: {{ quarterly_labels|tojson }},
+    quarterlyData: {{ quarterly_data|tojson }},
+    forecastLabels: {{ forecast_labels|tojson }},
+    forecastData: {{ forecast_data|tojson }},
+    quarterlyForecastLabels: {{ quarterly_forecast_labels|tojson }},
+    quarterlyForecastData: {{ quarterly_forecast_data|tojson }},
+    stageLabels: {{ stage_labels|tojson }},
+    stagePotentialData: {{ stage_potential_data|tojson }},
+    stageProbabilities: {{ stage_probabilities|tojson }},
+    currencySymbol: "{{ config.def_currency.symbol }}"
+};
+</script>
+<script src="{{ url_for('static', filename='js/reports/sales_forecast.js') }}"></script>
+{% endblock %}
+{% endblock content %} 

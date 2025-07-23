@@ -6,16 +6,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="leadOwnerAssignModalLabel">Bulk Owner Assign ...</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="modal-notif-area"></div>
                     {{ bulk_form.owner.hidden_tag() }} <!-- security 'csrf' token -->
-                    <div class="form-row">
-                        <div class="form-group col-12">
-                            {{ bulk_form.owner.owners_list.label(class="form-control-label") }}
+                    <div class="row">
+                        <div class="mb-3 col-12">
+                            {{ bulk_form.owner.owners_list.label(class="form-label") }}
                             {% if bulk_form.owner.owners_list.errors %}
                             {{ bulk_form.owner.owners_list(class="form-control form-control-lg required is-invalid") }}
                             <div class="invalid-feedback">
@@ -32,7 +30,7 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 {{ bulk_form.owner.submit(id="bulk-lead-submit", class="btn btn-primary") }}
             </div>
         </div>

@@ -1,0 +1,248 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">{{ task.title }}</h2>
+            <div class="text-muted">Created on {{ task.date_created.strftime('%B %d, %Y') }}</div>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('tasks.task_list') }}" class="btn btn-outline-secondary">
+                <i data-feather="arrow-left"></i> Back to Tasks
+            </a>
+            {% if current_user.is_admin or task.creator_id == current_user.id %}
+            <a href="{{ url_for('tasks.update_task', task_id=task.id) }}" class="btn btn-outline-primary ms-2">
+                <i data-feather="edit"></i> Edit
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Task Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted">Description</h6>
+                        <p>{{ task.description or 'No description provided' }}</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Status</h6>
+                            <span class="badge bg-{{ 'success' if task.status == 'completed' else 'warning' if task.status == 'in_progress' else 'secondary' }}">
+                                {{ task.status|capitalize }}
+                            </span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Priority</h6>
+                            <span class="badge bg-{{ 'danger' if task.priority == 3 else 'warning' if task.priority == 2 else 'success' }}">
+                                {{ 'High' if task.priority == 3 else 'Medium' if task.priority == 2 else 'Low' }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Due Date</h6>
+                            {% if task.due_date %}
+                                <div class="d-flex align-items-center">
+                                    <span class="{{ 'text-danger' if time_info.status == 'overdue' else 'text-success' }}">
+                                        <i data-feather="{{ 'alert-circle' if time_info.status == 'overdue' else 'clock' }}"></i>
+                                    </span>
+                                    <span class="ms-2">
+                                        {{ task.due_date.strftime('%B %d, %Y, %I:%M %p') }}
+                                        <br>
+                                        <small class="{{ 'text-danger' if time_info.status == 'overdue' else 'text-muted' }}">
+                                            {{ time_info.text }}
+                                        </small>
+                                    </span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted">No due date set</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">Assigned To</h6>
+                            {% if task.assignee %}
+                                <div>{{ task.assignee.first_name }} {{ task.assignee.last_name }}</div>
+                                <small class="text-muted">{{ task.assignee.email }}</small>
+                            {% else %}
+                                <span class="text-muted">Not assigned</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if task.status != 'completed' and (current_user.is_admin or task.assignee_id == current_user.id) %}
+                    <div class="mt-3">
+                        <form action="{{ url_for('tasks.complete_task') }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="task_id" value="{{ task.id }}">
+                            <button type="submit" class="btn btn-success">
+                                <i data-feather="check-circle"></i> Mark as Completed
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if comments %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Comments ({{ comments|length }})</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for comment in comments %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>{{ comment.user.first_name }} {{ comment.user.last_name }}</strong>
+                                    <small class="text-muted ms-2">{{ comment.date_created.strftime('%B %d, %Y, %I:%M %p') }}</small>
+                                </div>
+                                {% if current_user.id == comment.user_id %}
+                                <div>
+                                    <button class="btn btn-sm btn-link text-danger">
+                                        <i data-feather="trash-2"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <p class="mb-0">{{ comment.content }}</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Add Comment</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('tasks.add_comment', task_id=task.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-group mb-3">
+                            <textarea class="form-control" name="content" rows="3" placeholder="Type your comment here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="send"></i> Post Comment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Created By</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <img src="{{ url_for('static', filename='imgs/default_avatar.png') }}" alt="Creator Avatar" class="rounded-circle" width="40">
+                        </div>
+                        <div class="ms-3">
+                            <div>{{ task.creator.first_name }} {{ task.creator.last_name }}</div>
+                            <small class="text-muted">{{ task.creator.email }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Task Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-heading">
+                                    <h6 class="mb-0">Task Created</h6>
+                                </div>
+                                <div class="timeline-body">
+                                    <small class="text-muted">{{ task.date_created.strftime('%B %d, %Y, %I:%M %p') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if task.status == 'completed' and task.date_completed %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-heading">
+                                    <h6 class="mb-0">Task Completed</h6>
+                                </div>
+                                <div class="timeline-body">
+                                    <small class="text-muted">{{ task.date_completed.strftime('%B %d, %Y, %I:%M %p') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if task.related_items %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Related Items</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for item in task.related_items %}
+                        <li class="list-group-item">
+                            <a href="{{ item.url }}">{{ item.title }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    
+    .timeline:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0.5rem;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        top: 0;
+        left: -1.5rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+    }
+    
+    .timeline-content {
+        padding-left: 0.5rem;
+    }
+</style>
+{% endblock %} 

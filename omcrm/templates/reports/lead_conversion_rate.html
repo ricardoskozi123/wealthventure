@@ -1,0 +1,475 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">{% if title %}{{title}}{% else %}Lead Conversion Rate{% endif %}</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a class="btn btn-sm btn-outline-secondary me-2" role="button" href="{{ url_for('reports.deal_reports') }}">
+            <i data-feather="arrow-left" class="me-1" style="width: 16px; height: 16px;"></i>
+            Back to Reports
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="timeframeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i data-feather="calendar" class="me-1" style="width: 16px; height: 16px;"></i>
+                <span id="selectedTimeframe">Last 12 Months</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="timeframeDropdown">
+                <li><a class="dropdown-item timeframe-option" href="#" data-period="3">Last 3 Months</a></li>
+                <li><a class="dropdown-item timeframe-option" href="#" data-period="6">Last 6 Months</a></li>
+                <li><a class="dropdown-item timeframe-option active" href="#" data-period="12">Last 12 Months</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i data-feather="info" class="me-2" style="width: 18px; height: 18px;"></i>
+            This report tracks your lead conversion rate over time and provides insights into factors affecting conversion.
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Overall Conversion Rate</h6>
+                        <h3 class="mb-0">{{ conversion_rate|round(1) }}%</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-primary rounded-circle shadow">
+                        <i data-feather="percent" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    <span class="text-muted">Last 12 months</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Total Leads</h6>
+                        <h3 class="mb-0">{{ total_leads }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-success rounded-circle shadow">
+                        <i data-feather="users" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    {% if previous_total_leads > 0 %}
+                    {% set percentage_change = ((total_leads - previous_total_leads) / previous_total_leads * 100)|round(1) %}
+                    {% if percentage_change > 0 %}
+                    <span class="text-success me-2">
+                        <i data-feather="arrow-up" style="width: 14px; height: 14px;"></i> {{ percentage_change }}%
+                    </span>
+                    {% else %}
+                    <span class="text-danger me-2">
+                        <i data-feather="arrow-down" style="width: 14px; height: 14px;"></i> {{ percentage_change|abs }}%
+                    </span>
+                    {% endif %}
+                    <span class="text-muted">vs previous period</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Converted Leads</h6>
+                        <h3 class="mb-0">{{ converted_leads }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-info rounded-circle shadow">
+                        <i data-feather="check-circle" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    {% if previous_converted_leads > 0 %}
+                    {% set percentage_change = ((converted_leads - previous_converted_leads) / previous_converted_leads * 100)|round(1) %}
+                    {% if percentage_change > 0 %}
+                    <span class="text-success me-2">
+                        <i data-feather="arrow-up" style="width: 14px; height: 14px;"></i> {{ percentage_change }}%
+                    </span>
+                    {% else %}
+                    <span class="text-danger me-2">
+                        <i data-feather="arrow-down" style="width: 14px; height: 14px;"></i> {{ percentage_change|abs }}%
+                    </span>
+                    {% endif %}
+                    <span class="text-muted">vs previous period</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Revenue Generated</h6>
+                        <h3 class="mb-0">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(revenue_generated) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-warning rounded-circle shadow">
+                        <i data-feather="dollar-sign" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    <span class="text-muted">From converted leads</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Conversion Rate Over Time</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="conversionRateChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Lead Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="leadStatusChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Conversion Rate by Source</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="sourceConversionChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Conversion Rate by Team Member</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="teamConversionChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Conversion by Lead Source</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Source</th>
+                                <th class="text-end">Total Leads</th>
+                                <th class="text-end">Converted</th>
+                                <th class="text-end">Conversion Rate</th>
+                                <th class="text-end">Avg. Deal Size</th>
+                                <th class="text-end">Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for source in source_stats %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-secondary me-2">{{ loop.index }}</span>
+                                        {{ source.name }}
+                                    </div>
+                                </td>
+                                <td class="text-end">{{ source.total_leads }}</td>
+                                <td class="text-end">{{ source.converted }}</td>
+                                <td class="text-end">
+                                    {% set conversion_rate = (source.converted / source.total_leads * 100) if source.total_leads > 0 else 0 %}
+                                    <span class="badge {% if conversion_rate >= 20 %}bg-success{% elif conversion_rate >= 10 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ conversion_rate|round(1) }}%
+                                    </span>
+                                </td>
+                                <td class="text-end">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(source.avg_deal_size) }}</td>
+                                <td class="text-end">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(source.total_revenue) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block additional_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data for conversion rate over time
+    var timeLabels = {{ time_labels|tojson }};
+    var conversionRates = {{ conversion_rates|tojson }};
+    var leadCounts = {{ lead_counts|tojson }};
+    
+    // Data for lead status distribution
+    var statusLabels = {{ status_labels|tojson }};
+    var statusData = {{ status_data|tojson }};
+    
+    // Data for conversion by source
+    var sourceLabels = {{ source_labels|tojson }};
+    var sourceConversionRates = {{ source_conversion_rates|tojson }};
+    
+    // Data for conversion by team member
+    var teamLabels = {{ team_labels|tojson }};
+    var teamConversionRates = {{ team_conversion_rates|tojson }};
+    var teamLeadCounts = {{ team_lead_counts|tojson }};
+    
+    // Initialize conversion rate chart
+    const conversionCtx = document.getElementById('conversionRateChart').getContext('2d');
+    const conversionChart = new Chart(conversionCtx, {
+        type: 'line',
+        data: {
+            labels: timeLabels,
+            datasets: [
+                {
+                    label: 'Conversion Rate (%)',
+                    data: conversionRates,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    borderWidth: 2,
+                    yAxisID: 'y',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Lead Count',
+                    data: leadCounts,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderWidth: 2,
+                    yAxisID: 'y1',
+                    type: 'bar'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Conversion Rate (%)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Lead Count'
+                    }
+                }
+            }
+        }
+    });
+    
+    // Initialize lead status chart
+    const statusCtx = document.getElementById('leadStatusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusData,
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(255, 159, 64, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 15
+                    }
+                }
+            }
+        }
+    });
+    
+    // Initialize source conversion chart
+    const sourceCtx = document.getElementById('sourceConversionChart').getContext('2d');
+    const sourceChart = new Chart(sourceCtx, {
+        type: 'bar',
+        data: {
+            labels: sourceLabels,
+            datasets: [{
+                label: 'Conversion Rate (%)',
+                data: sourceConversionRates,
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Initialize team conversion chart
+    const teamCtx = document.getElementById('teamConversionChart').getContext('2d');
+    const teamChart = new Chart(teamCtx, {
+        type: 'bar',
+        data: {
+            labels: teamLabels,
+            datasets: [{
+                label: 'Conversion Rate (%)',
+                data: teamConversionRates,
+                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                yAxisID: 'y'
+            },
+            {
+                label: 'Lead Count',
+                data: teamLeadCounts,
+                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Conversion Rate (%)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Lead Count'
+                    }
+                }
+            }
+        }
+    });
+    
+    // Timeframe dropdown functionality
+    document.querySelectorAll('.timeframe-option').forEach(function(option) {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const period = parseInt(this.getAttribute('data-period'));
+            document.getElementById('selectedTimeframe').textContent = 'Last ' + period + ' Months';
+            
+            // Here you would normally fetch new data via AJAX based on the selected period
+            // For now we'll just update the active class
+            document.querySelectorAll('.timeframe-option').forEach(function(opt) {
+                opt.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+    
+    // Initialize feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}
+{% endblock content %} 

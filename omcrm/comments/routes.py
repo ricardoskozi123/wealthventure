@@ -1,4 +1,13 @@
+from flask import request, jsonify
+from flask_login import current_user, login_required
+from datetime import datetime
+
+from omcrm import db
+from omcrm.comments import comments
 from omcrm.activities.models import Activity
+from omcrm.leads.models import Lead, Comment
+from omcrm.deals.models import Deal
+from omcrm.tasks.models import Task
 
 @comments.route('/add_comment', methods=['POST'])
 @login_required

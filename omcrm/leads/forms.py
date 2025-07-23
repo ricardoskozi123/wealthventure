@@ -98,12 +98,12 @@ class ConvertLead(FlaskForm):
     submit = SubmitField('Covert Lead')
 
 class ConvertLeadToClient(FlaskForm):
-    conversion_date = DateField('Conversion Date', format='%Y-%m-%d', validators=[Optional()])
     assignee = QuerySelectField('Assign To', query_factory=User.user_list_query, get_pk=lambda a: a.id,
                                 get_label=User.get_label, default=User.get_current_user)
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Convert to Client')
+
 class BulkOwnerAssign(FlaskForm):
     owners_list = QuerySelectField('Assign Owner', query_factory=User.user_list_query, get_pk=lambda a: a.id,
                                    get_label=User.get_label, default=User.get_current_user, allow_blank=False,
@@ -176,3 +176,23 @@ class LeadSourceForm(FlaskForm):
     affiliate_id = StringField('Affiliate ID', validators=[Optional()])
     is_api_enabled = BooleanField('Enable API Access', default=False)
     submit = SubmitField('Save')
+
+class LeadTeamShuffle(FlaskForm):
+    """Form for shuffling leads among team members randomly or by count"""
+    team_members = QuerySelectMultipleField('Select Team Members', 
+                                           query_factory=User.user_list_query,
+                                           get_pk=lambda a: a.id,
+                                           get_label=User.get_label,
+                                           validators=[DataRequired(message='Please select at least one team member')])
+    distribution_method = SelectField('Distribution Method', 
+                                     choices=[
+                                         ('random', 'Random (Equal Distribution)'),
+                                         ('sequential', 'Sequential (Round Robin)'),
+                                         ('percentage', 'By Percentage')
+                                     ],
+                                     default='random',
+                                     validators=[DataRequired()])
+    percentages = StringField('Percentage Distribution (comma-separated)', 
+                             validators=[Optional()],
+                             description='For percentage distribution, enter comma-separated values, e.g. "30,30,40"')
+    submit = SubmitField('Shuffle Leads')

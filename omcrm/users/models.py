@@ -1,16 +1,22 @@
 from omcrm import db, login_manager
 from flask_login import UserMixin, current_user
+from flask import session
 
 # Avoid circular import by only importing Lead when needed
 @login_manager.user_loader
 def load_user(user_id):
-    # First try to load a User
-    user = User.query.get(int(user_id))
-    if not user:
-        # If no User found, try to load a Lead that is a client
+    """Load the appropriate user or client based on user_id and session data"""
+    
+    # Check if we're in client login mode from the session
+    is_client_login = session.get('login_type') == 'client'
+    
+    if is_client_login:
+        # This is a client login, so only check for Lead
         from omcrm.leads.models import Lead
         return Lead.query.filter_by(id=int(user_id), is_client=True).first()
-    return user
+    else:
+        # This is a user login, so only check for User
+        return User.query.get(int(user_id))
 
 
 class Team(db.Model):

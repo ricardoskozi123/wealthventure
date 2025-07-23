@@ -55,7 +55,7 @@ class Trade(db.Model):
     order_type = db.Column(db.String(20), nullable=False, default='market')  # New field for order type
     target_price = db.Column(db.Float, nullable=True)  # New field for target price
     notes = db.Column(db.Text, nullable=True)  # Add notes field for trade journaling
-    leverage = db.Column(db.Float, nullable=False, default=1.0)  # Default leverage is 1x
+    leverage = db.Column(db.Float, nullable=False, default=5.0)  # Default leverage is 5x
 
     lead = db.relationship('Lead', back_populates='trades')
     instrument = db.relationship('TradingInstrument', backref=db.backref('trades', lazy=True))

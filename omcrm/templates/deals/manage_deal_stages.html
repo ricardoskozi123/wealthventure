@@ -31,12 +31,12 @@
                                 <td>{{ stage.stage_name }}</td>
                                 <td>{{ stage.display_order }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-info edit-stage" data-stage-id="{{ stage.id }}" data-stage-name="{{ stage.stage_name }}">
+                                    <a href="{{ url_for('deals.edit_deal_stage', stage_id=stage.id) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-danger delete-stage" data-stage-id="{{ stage.id }}" data-stage-name="{{ stage.stage_name }}">
+                                    </a>
+                                    <a href="{{ url_for('deals.delete_deal_stage', stage_id=stage.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete stage: {{ stage.stage_name }}?');">
                                         <i class="fas fa-trash"></i> Delete
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -87,7 +87,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" id="editStageForm">
-                {{ form.hidden_tag() }}
+                {{ form.csrf_token }}
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="edit_stage_name" class="form-label">Stage Name</label>
@@ -112,7 +112,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" id="deleteStageForm">
-                {{ form.hidden_tag() }}
+                {{ form.csrf_token }}
                 <div class="modal-body">
                     <p>Are you sure you want to delete the pipeline stage "<span id="deleteStageNameDisplay"></span>"?</p>
                     <div class="alert alert-warning">

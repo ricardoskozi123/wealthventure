@@ -341,3 +341,135 @@ To test the domain separation locally, you can modify your hosts file:
 - Configure a firewall to limit access
 - Set up fail2ban to prevent brute force attacks
 - Regularly back up your database and configuration 
+
+# Docker Deployment Guide
+
+This guide provides instructions for deploying the application using Docker and docker-compose.
+
+## Prerequisites
+
+- Docker installed on your server
+- Docker Compose installed on your server
+- Access to your server via SSH or terminal
+
+## Deployment Steps
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-repo-url>
+cd letstrythis
+```
+
+### 2. Configuration
+
+Edit the `.env` file to set your production environment variables:
+
+```
+FLASK_APP=run.py
+FLASK_ENV=production
+FLASK_DEBUG=0  # Set to 0 in production
+SECRET_KEY=<your-secure-random-key>
+DATABASE_URI=sqlite:///instance/site.db
+ALPHA_VANTAGE_API_KEY=<your-api-key>
+```
+
+For security in production, make sure to:
+- Generate a strong SECRET_KEY
+- Set FLASK_DEBUG=0
+- Provide actual API keys
+
+### 3. Build and Start the Docker Containers
+
+```bash
+docker-compose up -d --build
+```
+
+This command will:
+- Build the Docker image for your Flask application
+- Start the Flask application container
+- Start the Nginx container as a reverse proxy
+
+### 4. Verify the Deployment
+
+Your application should now be running at:
+- http://your-server-ip
+
+To check container logs:
+```bash
+# For the Flask app
+docker logs letstrythis_app
+
+# For Nginx
+docker logs letstrythis_nginx
+```
+
+### 5. Managing the Application
+
+#### Stopping the containers
+```bash
+docker-compose down
+```
+
+#### Restarting the containers
+```bash
+docker-compose restart
+```
+
+#### Viewing logs
+```bash
+docker-compose logs
+```
+
+#### Updating the application
+```bash
+git pull  # Pull latest changes
+docker-compose up -d --build  # Rebuild and restart containers
+```
+
+## Nginx Configuration
+
+The Nginx configuration is in `nginx/app.conf`. 
+
+If you need to use HTTPS:
+1. Uncomment the HTTPS section in the config
+2. Add your SSL certificates to the appropriate location
+3. Restart the nginx container
+
+## Database Backup
+
+To backup the SQLite database:
+
+```bash
+docker exec letstrythis_app bash -c "sqlite3 /app/instance/site.db .dump > /app/backup/backup_\$(date +%Y%m%d_%H%M%S).sql"
+```
+
+## Troubleshooting
+
+### Container fails to start
+Check the logs:
+```bash
+docker logs letstrythis_app
+```
+
+### Nginx returns 502 Bad Gateway
+Ensure the Flask application is running:
+```bash
+docker ps  # Check if letstrythis_app is running
+```
+
+### Static files not loading
+Verify volume mounts:
+```bash
+docker inspect letstrythis_nginx  # Check Mounts section
+```
+
+## Security Considerations
+
+For a production deployment:
+
+1. Set `FLASK_DEBUG=0` in the `.env` file
+2. Use HTTPS (enable the commented section in nginx config)
+3. Use a strong, unique SECRET_KEY
+4. Consider using environment-specific secrets management
+5. Regularly update dependencies and the base Docker images

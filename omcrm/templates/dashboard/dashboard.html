@@ -1,0 +1,523 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="dashboard-header mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Dashboard</h2>
+    <div class="btn-group" role="group">
+      <button class="btn btn-outline-primary btn-sm active" id="show-today">Today</button>
+      <button class="btn btn-outline-primary btn-sm" id="show-7days">Last 7 Days</button>
+      <button class="btn btn-outline-primary btn-sm" id="show-30days">Last 30 Days</button>
+    </div>
+  </div>
+</div>
+
+<!-- Top Stats Cards -->
+<div class="row g-3 mb-4">
+  <!-- New Leads Card -->
+  <div class="col-md-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="card-subtitle text-muted">New Leads</h6>
+          <div class="icon-circle bg-primary-light">
+            <i data-feather="users" class="text-primary"></i>
+          </div>
+        </div>
+        <h3 class="card-title mb-0 counter-value" id="new-leads-today">{{ today_stats.leads }}</h3>
+        <h3 class="card-title mb-0 counter-value d-none" id="new-leads-7days">{{ last_7days_stats.leads }}</h3>
+        <h3 class="card-title mb-0 counter-value d-none" id="new-leads-30days">{{ last_30days_stats.leads }}</h3>
+        <div class="mt-2">
+          <span class="badge {% if today_stats.leads_change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+            <i data-feather="{% if today_stats.leads_change >= 0 %}trending-up{% else %}trending-down{% endif %}" class="icon-xs"></i>
+            {{ today_stats.leads_change|abs }}%
+          </span>
+          <small class="text-muted ms-1">vs. previous period</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Clients Card -->
+  <div class="col-md-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="card-subtitle text-muted">New Clients</h6>
+          <div class="icon-circle bg-success-light">
+            <i data-feather="user-check" class="text-success"></i>
+          </div>
+        </div>
+        <h3 class="card-title mb-0 counter-value" id="new-clients-today">{{ today_stats.clients }}</h3>
+        <h3 class="card-title mb-0 counter-value d-none" id="new-clients-7days">{{ last_7days_stats.clients }}</h3>
+        <h3 class="card-title mb-0 counter-value d-none" id="new-clients-30days">{{ last_30days_stats.clients }}</h3>
+        <div class="mt-2">
+          <span class="badge {% if today_stats.clients_change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+            <i data-feather="{% if today_stats.clients_change >= 0 %}trending-up{% else %}trending-down{% endif %}" class="icon-xs"></i>
+            {{ today_stats.clients_change|abs }}%
+          </span>
+          <small class="text-muted ms-1">vs. previous period</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deposits Card -->
+  <div class="col-md-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="card-subtitle text-muted">Deposits</h6>
+          <div class="icon-circle bg-info-light">
+            <i data-feather="dollar-sign" class="text-info"></i>
+          </div>
+        </div>
+        <h3 class="card-title mb-0 counter-value" id="deposits-today">${{ "%.2f"|format(today_stats.deposits) }}</h3>
+        <h3 class="card-title mb-0 counter-value d-none" id="deposits-7days">${{ "%.2f"|format(last_7days_stats.deposits) }}</h3>
+        <h3 class="card-title mb-0 counter-value d-none" id="deposits-30days">${{ "%.2f"|format(last_30days_stats.deposits) }}</h3>
+        <div class="mt-2">
+          <span class="badge {% if today_stats.deposits_change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+            <i data-feather="{% if today_stats.deposits_change >= 0 %}trending-up{% else %}trending-down{% endif %}" class="icon-xs"></i>
+            {{ today_stats.deposits_change|abs }}%
+          </span>
+          <small class="text-muted ms-1">vs. previous period</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trades Card -->
+  <div class="col-md-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="card-subtitle text-muted">Trades</h6>
+          <div class="icon-circle bg-warning-light">
+            <i data-feather="trending-up" class="text-warning"></i>
+          </div>
+        </div>
+        <h3 class="card-title mb-0 counter-value" id="trades-today">{{ today_stats.trades }}</h3>
+        <h3 class="card-title mb-0 counter-value d-none" id="trades-7days">{{ last_7days_stats.trades }}</h3>
+        <h3 class="card-title mb-0 counter-value d-none" id="trades-30days">{{ last_30days_stats.trades }}</h3>
+        <div class="mt-2">
+          <span class="badge {% if today_stats.trades_change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+            <i data-feather="{% if today_stats.trades_change >= 0 %}trending-up{% else %}trending-down{% endif %}" class="icon-xs"></i>
+            {{ today_stats.trades_change|abs }}%
+          </span>
+          <small class="text-muted ms-1">vs. previous period</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts & Reports Section -->
+<div class="row g-3 mb-4">
+  <!-- Conversion Chart -->
+  <div class="col-md-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-0">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Conversion Rate</h5>
+          <div class="btn-group btn-group-sm" role="group">
+            <button class="btn btn-outline-secondary active conversion-period" data-period="week">Week</button>
+            <button class="btn btn-outline-secondary conversion-period" data-period="month">Month</button>
+            <button class="btn btn-outline-secondary conversion-period" data-period="year">Year</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 300px;">
+          <canvas id="conversionChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deals Status -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="card-title mb-0">Deals Status</h5>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 250px;">
+          <canvas id="dealsPieChart"></canvas>
+        </div>
+        <div class="mt-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="d-inline-block" style="width: 12px; height: 12px; background-color: #4e73df; border-radius: 50%;"></span>
+            <span class="text-muted">New</span>
+            <span class="fw-bold">{{ deals_status.new }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="d-inline-block" style="width: 12px; height: 12px; background-color: #1cc88a; border-radius: 50%;"></span>
+            <span class="text-muted">In Progress</span>
+            <span class="fw-bold">{{ deals_status.in_progress }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="d-inline-block" style="width: 12px; height: 12px; background-color: #36b9cc; border-radius: 50%;"></span>
+            <span class="text-muted">Closed</span>
+            <span class="fw-bold">{{ deals_status.closed }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activities and Leads List -->
+<div class="row g-3">
+  <!-- Recent Activities -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Recent Activities</h5>
+        <a href="#" class="btn btn-sm btn-link">View All</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          {% for activity in recent_activities %}
+          <div class="list-group-item border-0 py-3">
+            <div class="d-flex">
+              <div class="activity-icon me-3">
+                <div class="icon-circle bg-{{ activity.type_color }}-light">
+                  <i data-feather="{{ activity.icon }}" class="text-{{ activity.type_color }}"></i>
+                </div>
+              </div>
+              <div class="activity-content">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h6 class="mb-0">{{ activity.title }}</h6>
+                  <small class="text-muted">{{ activity.time_ago }}</small>
+                </div>
+                <p class="text-muted small mb-0">{{ activity.description }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Leads -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">New Leads</h5>
+        <a href="{{ url_for('leads.get_leads_view') }}" class="btn btn-sm btn-link">View All</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Lead Source</th>
+                <th>Status</th>
+                <th>Owner</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for lead in latest_leads %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar me-2 bg-light rounded-circle">
+                      <span class="text-muted">{{ lead.first_name[0] }}{{ lead.last_name[0] }}</span>
+                    </div>
+                    <div>
+                      <a href="{{ url_for('leads.get_lead_view', lead_id=lead.id) }}" class="text-decoration-none text-body fw-medium">
+                        {{ lead.first_name }} {{ lead.last_name }}
+                      </a>
+                      <div class="small text-muted">
+                        <i data-feather="mail" class="icon-xxs"></i> {{ lead.email }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  {% if lead.lead_source %}
+                  <span class="badge bg-light text-dark">{{ lead.lead_source.source_name }}</span>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if lead.lead_status %}
+                  <span class="badge {% if lead.lead_status.status_name == 'New' %}bg-primary{% elif lead.lead_status.status_name == 'Qualified' %}bg-success{% elif lead.lead_status.status_name == 'Prospect' %}bg-info{% else %}bg-secondary{% endif %}">
+                    {{ lead.lead_status.status_name }}
+                  </span>
+                  {% else %}
+                  <span class="badge bg-secondary">New</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if lead.owner %}
+                  <div class="d-flex align-items-center">
+                    <span class="avatar-xs me-2 bg-primary text-white rounded-circle">
+                      {{ lead.owner.first_name[0] | upper }}
+                    </span>
+                    <span>{{ lead.owner.first_name }}</span>
+                  </div>
+                  {% else %}
+                  <span class="text-muted">Unassigned</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group">
+                    <a href="{{ url_for('leads.get_lead_view', lead_id=lead.id) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Lead">
+                      <i data-feather="eye" class="icon-sm"></i>
+                    </a>
+                    <a href="{{ url_for('leads.update_lead', lead_id=lead.id) }}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Edit Lead">
+                      <i data-feather="edit" class="icon-sm"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.icon-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.bg-primary-light {
+  background-color: rgba(78, 115, 223, 0.15);
+}
+
+.bg-success-light {
+  background-color: rgba(28, 200, 138, 0.15);
+}
+
+.bg-info-light {
+  background-color: rgba(54, 185, 204, 0.15);
+}
+
+.bg-warning-light {
+  background-color: rgba(246, 194, 62, 0.15);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.avatar-xs {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.icon-xs {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-xxs {
+  width: 12px;
+  height: 12px;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+  // Initialize feather icons
+  feather.replace();
+  
+  // Initialize tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  });
+  
+  // Period toggle for the top stats cards
+  $('#show-today').click(function() {
+    $('.btn-group button').removeClass('active');
+    $(this).addClass('active');
+    togglePeriodDisplay('today');
+  });
+  
+  $('#show-7days').click(function() {
+    $('.btn-group button').removeClass('active');
+    $(this).addClass('active');
+    togglePeriodDisplay('7days');
+  });
+  
+  $('#show-30days').click(function() {
+    $('.btn-group button').removeClass('active');
+    $(this).addClass('active');
+    togglePeriodDisplay('30days');
+  });
+  
+  function togglePeriodDisplay(period) {
+    $('.counter-value').addClass('d-none');
+    $('#new-leads-' + period).removeClass('d-none');
+    $('#new-clients-' + period).removeClass('d-none');
+    $('#deposits-' + period).removeClass('d-none');
+    $('#trades-' + period).removeClass('d-none');
+  }
+  
+  // Conversion Chart
+  var conversionCtx = document.getElementById('conversionChart').getContext('2d');
+  var conversionChart = new Chart(conversionCtx, {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{
+        label: 'Leads',
+        data: [12, 19, 3, 5, 2, 3, 9],
+        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+        borderColor: 'rgba(78, 115, 223, 1)',
+        pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+        pointBorderColor: '#fff',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      }, {
+        label: 'Conversions',
+        data: [2, 4, 1, 3, 1, 2, 5],
+        backgroundColor: 'rgba(28, 200, 138, 0.05)',
+        borderColor: 'rgba(28, 200, 138, 1)',
+        pointBackgroundColor: 'rgba(28, 200, 138, 1)',
+        pointBorderColor: '#fff',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            boxWidth: 12,
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            drawBorder: false
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+  
+  // Period toggle for conversion chart
+  $('.conversion-period').click(function() {
+    $('.conversion-period').removeClass('active');
+    $(this).addClass('active');
+    
+    var period = $(this).data('period');
+    
+    // Sample data for different periods - in real app, this would come from server
+    if (period === 'week') {
+      updateConversionChart(
+        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        [12, 19, 3, 5, 2, 3, 9],
+        [2, 4, 1, 3, 1, 2, 5]
+      );
+    } else if (period === 'month') {
+      updateConversionChart(
+        ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        [45, 52, 38, 41],
+        [12, 15, 9, 14]
+      );
+    } else if (period === 'year') {
+      updateConversionChart(
+        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        [150, 135, 180, 190, 210, 175, 165, 150, 200, 220, 190, 215],
+        [45, 40, 55, 50, 60, 45, 40, 35, 55, 65, 50, 70]
+      );
+    }
+  });
+  
+  function updateConversionChart(labels, leadsData, conversionsData) {
+    conversionChart.data.labels = labels;
+    conversionChart.data.datasets[0].data = leadsData;
+    conversionChart.data.datasets[1].data = conversionsData;
+    conversionChart.update();
+  }
+  
+  // Deals Pie Chart
+  var dealsCtx = document.getElementById('dealsPieChart').getContext('2d');
+  var dealsPieChart = new Chart(dealsCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['New', 'In Progress', 'Closed'],
+      datasets: [{
+        data: [{{ deals_status.new }}, {{ deals_status.in_progress }}, {{ deals_status.closed }}],
+        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              var label = context.label || '';
+              var value = context.raw || 0;
+              var total = context.dataset.data.reduce(function(acc, val) {
+                return acc + val;
+              }, 0);
+              var percentage = Math.round((value / total) * 100);
+              return label + ': ' + value + ' (' + percentage + '%)';
+            }
+          }
+        }
+      }
+    }
+  });
+});
+</script>
+{% endblock %} 

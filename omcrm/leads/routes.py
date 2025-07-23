@@ -1,11 +1,13 @@
 from datetime import datetime
+import io
+import csv
 
 import pandas as pd
 from sqlalchemy import or_
 from wtforms import Label
 
 from flask import Blueprint, session, Response, jsonify
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, logout_user
 from flask import render_template, flash, url_for, redirect, request
 
 from omcrm import db
@@ -15,11 +17,11 @@ from omcrm.common.filters import CommonFilters
 from .filters import set_date_filters, set_source, set_status
 from .forms import NewLead, ImportLeads, ConvertLead, \
     FilterLeads, BulkOwnerAssign, BulkLeadSourceAssign, BulkLeadStatusAssign, BulkDelete, CommentForm, \
-    ConvertLeadToClient, ChangePasswordForm, UpdateBalanceForm, ApplyBonusForm, LeadSourceForm, CreditBalanceForm
+    ConvertLeadToClient, ChangePasswordForm, UpdateBalanceForm, ApplyBonusForm, LeadSourceForm, CreditBalanceForm, LeadTeamShuffle
 
 from omcrm.rbac import check_access, is_admin, get_visible_leads_query, get_visible_clients_query
 from ..webtrader.forms import TradeForm, EditTradeForm
-from omcrm.leads.models import Comment
+from omcrm.leads.models import Comment, LeadStatus
 from omcrm.users.models import User
 from omcrm.webtrader.models import TradingInstrument, Trade
 from omcrm.activities.models import Activity
@@ -106,10 +108,7 @@ def get_leads_view():
     ).limit(1).subquery()
 
     query = db.session.query(
-        Lead,
-        last_comment_subquery.c.last_comment
-    ).outerjoin(
-        last_comment_subquery, Lead.id == last_comment_subquery.c.lead_id
+        Lead
     ).filter(
         Lead.is_client == False  # Only show non-converted leads
     )
@@ -147,14 +146,40 @@ def get_leads_view():
     # Order by newest first
     query = query.order_by(Lead.date_created.desc())
 
+    # Prepare bulk action forms
     bulk_form = {
         'owner': BulkOwnerAssign(),
         'lead_source': BulkLeadSourceAssign(),
         'lead_status': BulkLeadStatusAssign(),
         'delete': BulkDelete()
     }
-    return render_template("leads/leads_list.html", title="Leads View", leads=Paginate(query), form=form,
-                           bulk_form=bulk_form)
+    
+    # Add shuffle form for team redistribution
+    shuffle_form = LeadTeamShuffle()
+    
+    page = request.args.get('page', 1, type=int)
+    
+    paginator = Paginate(query, page=page, per_page=10)
+    leads_to_template = paginator.items()
+    total_leads = paginator.total_records
+    
+    # Get all statuses for the dropdown
+    statuses = LeadStatus.query.all()
+    
+    # Get unique countries from the database
+    countries_query = db.session.query(Lead.country).filter(Lead.country != None, Lead.country != '').distinct()
+    countries = [country[0] for country in countries_query]
+
+    return render_template("leads/leads_list.html",
+                           title="Leads",
+                           leads=leads_to_template,
+                           total_leads=total_leads,
+                           paginator=paginator,
+                           bulk_form=bulk_form,
+                           shuffle_form=shuffle_form,
+                           statuses=statuses,
+                           countries=countries,
+                           form=FilterLeads())
 
 @leads.route("/leads/new", methods=['GET', 'POST'])
 @login_required
@@ -265,9 +290,31 @@ def get_lead_view(lead_id):
         # Get the lead by ID
         lead = Lead.query.get_or_404(lead_id)
         
+        # Check if lead has a status, if not, try to assign a default one
+        if not lead.lead_status_id:
+            # Try to get the first available status
+            default_status = LeadStatus.query.first()
+            if default_status:
+                lead.lead_status_id = default_status.id
+                db.session.commit()
+                flash('A default status has been assigned to this lead/client.', 'info')
+        
         # Prepare comment form
         form = CommentForm()
         form.lead_id.data = lead_id
+        
+        # Handle form submission for comment
+        if form.validate_on_submit():
+            comment = Comment(
+                content=form.content.data,
+                lead_id=lead_id,
+                user_id=current_user.id,
+                date_posted=datetime.utcnow()
+            )
+            db.session.add(comment)
+            db.session.commit()
+            flash('Comment added successfully!', 'success')
+            return redirect(url_for('leads.get_lead_view', lead_id=lead_id))
         
         # Get comments - use date_posted, not date_created
         comments = Comment.query.filter_by(lead_id=lead_id).order_by(Comment.date_posted.desc()).all()
@@ -314,7 +361,7 @@ def convert_lead(lead_id):
     if form.validate_on_submit():
         lead.is_client = True
         lead.is_active = True  # Set the client as active
-        lead.conversion_date = form.conversion_date.data or datetime.utcnow()
+        lead.conversion_date = datetime.utcnow()  # Always use current date
         lead.owner = form.assignee.data
         lead.set_password(form.password.data)
         db.session.commit()
@@ -470,6 +517,54 @@ def get_clients_view():
     source_filter = set_source(filters, 'lead_source')
     status_filter = set_status(filters, 'lead_status')
 
+    # Debug information
+    print(f"Status filter: {status_filter}")
+    print(f"Request method: {request.method}")
+    print(f"Form data: {request.form}")
+    
+    # Get selected status from form directly if it's a direct POST
+    direct_status_id = request.form.get('status')
+    if direct_status_id and direct_status_id.strip():
+        try:
+            direct_status_id = int(direct_status_id)
+            status_filter = (Lead.lead_status_id == direct_status_id)
+            print(f"Direct status filter applied: {direct_status_id}")
+        except (ValueError, TypeError):
+            print(f"Invalid status ID: {direct_status_id}")
+
+    # Get selected source from form directly if it's a direct POST
+    direct_source_id = request.form.get('source')
+    if direct_source_id and direct_source_id.strip():
+        try:
+            direct_source_id = int(direct_source_id)
+            source_filter = (Lead.lead_source_id == direct_source_id)
+            print(f"Direct source filter applied: {direct_source_id}")
+        except (ValueError, TypeError):
+            print(f"Invalid source ID: {direct_source_id}")
+            
+    # Get selected owner from form directly if it's a direct POST
+    direct_owner_id = request.form.get('owner')
+    if direct_owner_id and direct_owner_id.strip():
+        try:
+            direct_owner_id = int(direct_owner_id)
+            owner = (Lead.owner_id == direct_owner_id)
+            print(f"Direct owner filter applied: {direct_owner_id}")
+        except (ValueError, TypeError):
+            print(f"Invalid owner ID: {direct_owner_id}")
+            
+    # Get search query directly
+    direct_search = request.form.get('name')
+    if direct_search and direct_search.strip():
+        search = direct_search
+        print(f"Direct search applied: {direct_search}")
+
+    # Get country filter directly
+    direct_country = request.form.get('country')
+    country_filter = True
+    if direct_country and direct_country.strip():
+        country_filter = (Lead.country == direct_country)
+        print(f"Direct country filter applied: {direct_country}")
+    
     query = db.session.query(Lead).filter(
         Lead.is_client == True  # Only show converted leads (clients)
     ).filter(
@@ -489,12 +584,15 @@ def get_clients_view():
     ).filter(
         owner
     ).filter(
+        country_filter
+    ).filter(
         advanced_filters
     ).order_by(Lead.date_created.desc())
     
     # Apply team-based permissions to the query
     query = get_visible_clients_query(query)
 
+    # Prepare bulk action forms for clients view
     bulk_form = {
         'owner': BulkOwnerAssign(),
         'lead_source': BulkLeadSourceAssign(),
@@ -502,12 +600,36 @@ def get_clients_view():
         'delete': BulkDelete()
     }
     
+    # Add shuffle form for team redistribution
+    shuffle_form = LeadTeamShuffle()
+    
+    page = request.args.get('page', 1, type=int)
+    
+    paginator = Paginate(query, page=page, per_page=10)
+    leads_to_template = paginator.items()
+    total_leads = paginator.total_records
+    
     # Get all sources and users for dropdown filters
     sources = LeadSource.query.all()
     users = User.query.filter_by(is_user_active=True).all()
+    
+    # Get all statuses for the dropdown
+    statuses = LeadStatus.query.all()
+    
+    # Get unique countries from the database
+    countries_query = db.session.query(Lead.country).filter(Lead.country != None, Lead.country != '').distinct()
+    countries = [country[0] for country in countries_query]
 
-    return render_template("leads/clients_list.html", title="Clients View", leads=Paginate(query), filters=filters,
-                           bulk_form=bulk_form, sources=sources, users=users)
+    return render_template("leads/clients_list.html",
+                          title="Clients",
+                          leads=leads_to_template,
+                          total_leads=total_leads,
+                          paginator=paginator,
+                          bulk_form=bulk_form,
+                          shuffle_form=shuffle_form,
+                          statuses=statuses,
+                          users=users,
+                          sources=sources)
 
 @leads.route("/leads/edit_trade/<int:trade_id>", methods=['GET', 'POST'])
 @login_required
@@ -740,25 +862,37 @@ def regenerate_api_key(source_id):
 @leads.route("/login_as_client/<int:client_id>", methods=['POST'])
 @login_required
 def login_as_client(client_id):
-    from flask import session, abort
+    """Login as client for support purposes"""
+    from flask import session
     from flask_login import login_user, current_user
     
     # Get the client
     client = Lead.query.get_or_404(client_id)
     
-    # Ensure the user is actually a client
+    # Basic validation
     if not client.is_client:
         flash('This lead has not been converted to a client yet.', 'warning')
         return redirect(url_for('leads.get_lead_view', lead_id=client_id))
     
-    # Store admin/agent user info for later return
+    # Debug output
+    print(f"[DEBUG] Admin {current_user.id} impersonating client {client.id}")
+    print(f"[DEBUG] Client details: is_client={client.is_client}, is_active={client.is_active}")
+    
+    # Store admin ID in session and set login type to client
     session['admin_user_id'] = current_user.id
+    session['login_type'] = 'client'
     
     # Log in as the client
     login_user(client)
     
-    # Redirect to WebTrader
+    # Debug output after login
+    print(f"[DEBUG] Current user after impersonation: {current_user.id}, {current_user.__class__.__name__}")
+    print(f"[DEBUG] Current session: {session}")
+    
+    # Notify and redirect to webtrader
     flash(f'You are now logged in as {client.first_name} {client.last_name}.', 'success')
+    
+    # Return directly to webtrader dashboard
     return redirect(url_for('webtrader.webtrader_dashboard'))
 
 @leads.route("/toggle_trade_status", methods=['POST'])
@@ -808,24 +942,517 @@ def toggle_trade_status():
 @leads.route("/return_to_admin", methods=['GET', 'POST'])
 @login_required
 def return_to_admin():
+    """Return from client impersonation back to admin account"""
     from flask import session
-    from flask_login import login_user
+    from flask_login import login_user, logout_user
     from omcrm.users.models import User
     
-    # Only process if there's an admin_user_id in session
-    if 'admin_user_id' not in session:
-        flash('No admin session found.', 'warning')
-        return redirect(url_for('main.home'))
+    try:
+        # Check for admin session
+        if 'admin_user_id' not in session:
+            print("[DEBUG] No admin_user_id in session")
+            flash('No admin session found.', 'warning')
+            return redirect(url_for('main.home'))
+        
+        # Get the admin ID
+        admin_id = session.pop('admin_user_id')
+        print(f"[DEBUG] Found admin_user_id: {admin_id}")
+        
+        # Clear login_type - will be set again when logging back in
+        session.pop('login_type', None)
+        
+        # Log out current client user first
+        logout_user()
+        
+        # Get admin user
+        admin_user = User.query.get(admin_id)
+        if not admin_user:
+            print(f"[DEBUG] Admin user not found: {admin_id}")
+            flash('Admin user not found.', 'danger')
+            session.clear()
+            return redirect(url_for('users.login'))
+        
+        # Log back in as admin and set login_type
+        login_user(admin_user)
+        session['login_type'] = 'admin'
+        
+        print(f"[DEBUG] Logged back in as admin: {admin_user.id}, login_type: {session.get('login_type')}")
+        
+        # Success
+        flash('Successfully returned to admin account.', 'success')
+        return redirect(url_for('leads.get_clients_view'))
+    except Exception as e:
+        print(f"[ERROR] Exception in return_to_admin: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Clear session and go to login on any error
+        session.clear()
+        flash('Error returning to admin account.', 'danger')
+        return redirect(url_for('users.login'))
+
+@leads.route("/lead_statuses", methods=['GET', 'POST'])
+@login_required
+@is_admin
+def manage_lead_statuses():
+    """Manage lead/client statuses"""
+    from flask_wtf import FlaskForm
     
-    admin_id = session.pop('admin_user_id')
-    admin_user = User.query.get(admin_id)
+    form = FlaskForm()
+    if request.method == 'POST' and form.validate_on_submit():
+        status_name = request.form.get('status_name')
+        description = request.form.get('description')
+        color = request.form.get('color', '#4361ee')  # Default blue color if not specified
+        
+        if status_name:
+            new_status = LeadStatus(
+                status_name=status_name,
+                description=description,
+                color=color
+            )
+            db.session.add(new_status)
+            db.session.commit()
+            flash('Client/Lead status added successfully!', 'success')
+        else:
+            flash('Status name cannot be empty.', 'danger')
     
-    if not admin_user:
-        flash('Admin user not found.', 'danger')
-        return redirect(url_for('main.home'))
+    statuses = LeadStatus.query.all()
+    return render_template("leads/manage_lead_statuses.html", 
+                           title="Manage Client/Lead Statuses", 
+                           statuses=statuses, 
+                           form=form)
+
+@leads.route("/lead_statuses/edit/<int:status_id>", methods=['GET', 'POST'])
+@login_required
+@is_admin
+def edit_lead_status(status_id):
+    """Edit an existing lead/client status"""
+    status = LeadStatus.query.get_or_404(status_id)
     
-    # Log back in as admin
-    login_user(admin_user)
-    flash('Returned to admin account.', 'success')
+    # If it's a POST request, process the form data
+    if request.method == 'POST':
+        status_name = request.form.get('status_name')
+        description = request.form.get('description')
+        color = request.form.get('color', status.color)  # Keep existing color if none provided
+        
+        if status_name:
+            status.status_name = status_name
+            status.description = description
+            status.color = color
+            db.session.commit()
+            flash('Status updated successfully!', 'success')
+        else:
+            flash('Status name cannot be empty.', 'danger')
+        return redirect(url_for('leads.manage_lead_statuses'))
     
-    return redirect(url_for('leads.get_clients_view'))
+    # If it's a GET request, render a form
+    from flask_wtf import FlaskForm
+    from wtforms import StringField, TextAreaField, StringField, SubmitField, HiddenField
+    from wtforms.validators import DataRequired
+    
+    class EditStatusForm(FlaskForm):
+        status_name = StringField('Status Name', validators=[DataRequired()])
+        description = TextAreaField('Description')
+        color = StringField('Color', default='#4361ee')
+        submit = SubmitField('Update Status')
+    
+    form = EditStatusForm()
+    
+    # Pre-fill the form with existing data
+    form.status_name.data = status.status_name
+    form.description.data = status.description
+    form.color.data = status.color or '#4361ee'
+    
+    return render_template("leads/edit_status.html", 
+                           form=form, 
+                           status=status, 
+                           title="Edit Status")
+
+@leads.route("/lead_statuses/delete/<int:status_id>", methods=['GET', 'POST'])
+@login_required
+@is_admin
+def delete_lead_status(status_id):
+    """Delete a lead/client status"""
+    status = LeadStatus.query.get_or_404(status_id)
+    
+    # For GET requests, show a confirmation page
+    if request.method == 'GET':
+        # Check if any leads are using this status
+        has_leads = status.leads and len(status.leads) > 0
+        return render_template("leads/delete_status.html", 
+                              status=status, 
+                              has_leads=has_leads,
+                              lead_count=len(status.leads) if status.leads else 0,
+                              title="Confirm Delete Status")
+    
+    # For POST requests, process the deletion
+    # Check if any leads are using this status
+    if status.leads and len(status.leads) > 0:
+        flash(f'Cannot delete status - it is currently used by {len(status.leads)} leads/clients.', 'danger')
+    else:
+        db.session.delete(status)
+        db.session.commit()
+        flash('Status deleted successfully!', 'success')
+    
+    return redirect(url_for('leads.manage_lead_statuses'))
+
+@leads.route("/update_client_status", methods=['POST'])
+@login_required
+@check_access('leads', 'update')
+def update_client_status():
+    """AJAX endpoint to update a client's status"""
+    client_id = request.form.get('client_id')
+    status_id = request.form.get('status_id')
+    
+    if not client_id or not status_id:
+        return jsonify({'success': False, 'message': 'Missing required parameters'})
+    
+    try:
+        client = Lead.query.get_or_404(client_id)
+        status = LeadStatus.query.get_or_404(status_id)
+        
+        client.lead_status_id = status.id
+        db.session.commit()
+        
+        # Log the activity
+        Activity.log(
+            action_type='status_updated',
+            description=f'Client status updated to "{status.status_name}"',
+            user=current_user,
+            lead=client,
+            target_type='lead',
+            target_id=client.id
+        )
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@leads.route("/leads/shuffle", methods=['POST'])
+@login_required
+@is_admin
+def shuffle_leads():
+    """Shuffle selected leads among team members"""
+    if 'leads_to_shuffle' not in request.form or not request.form['leads_to_shuffle']:
+        flash('No leads selected for shuffling', 'warning')
+        return redirect(url_for('leads.get_leads_view'))
+        
+    team_members = request.form.getlist('team_members')
+    if not team_members:
+        flash('No team members selected for assigning leads', 'warning')
+        return redirect(url_for('leads.get_leads_view'))
+        
+    distribution_method = request.form.get('distribution_method', 'random')
+    
+    # Parse lead IDs
+    try:
+        ids = [int(x) for x in request.form['leads_to_shuffle'].split(',')]
+    except (ValueError, TypeError):
+        flash('Invalid lead selection', 'danger')
+        return redirect(url_for('leads.get_leads_view'))
+    
+    if not ids:
+        flash('No leads selected for shuffling', 'warning')
+        return redirect(url_for('leads.get_leads_view'))
+    
+    # Fetch the selected users
+    selected_team_members = User.query.filter(User.id.in_(team_members)).all()
+    if not selected_team_members:
+        flash('Selected team members not found', 'danger')
+        return redirect(url_for('leads.get_leads_view'))
+    
+    # Get the leads to shuffle
+    leads_to_shuffle = Lead.query.filter(Lead.id.in_(ids)).all()
+    if not leads_to_shuffle:
+        flash('No leads found with the selected IDs', 'warning')
+        return redirect(url_for('leads.get_leads_view'))
+    
+    try:
+        # Track assignments for reporting
+        teams = {member.id: [] for member in selected_team_members}
+        
+        if distribution_method == 'random':
+            # Random distribution (equal distribution)
+            import random
+            random.shuffle(leads_to_shuffle)
+            
+            # Distribute leads equally among team members
+            for i, lead in enumerate(leads_to_shuffle):
+                member_index = i % len(selected_team_members)
+                member = selected_team_members[member_index]
+                lead.owner_id = member.id
+                teams[member.id].append(lead.id)
+                
+        elif distribution_method == 'sequential':
+            # Sequential distribution (round robin)
+            for i, lead in enumerate(leads_to_shuffle):
+                member_index = i % len(selected_team_members)
+                member = selected_team_members[member_index]
+                lead.owner_id = member.id
+                teams[member.id].append(lead.id)
+                
+        elif distribution_method == 'percentage':
+            # Percentage distribution
+            percentages = request.form.get('percentages')
+            if not percentages:
+                flash('Percentages are required for percentage distribution', 'warning')
+                return redirect(url_for('leads.get_leads_view'))
+                
+            try:
+                # Parse percentages
+                percentages = [float(p.strip()) for p in percentages.split(',')]
+                
+                # Validate that percentages sum to 100 and match team members count
+                if len(percentages) != len(selected_team_members):
+                    flash(f'Number of percentages ({len(percentages)}) must match number of team members ({len(selected_team_members)})', 'warning')
+                    return redirect(url_for('leads.get_leads_view'))
+                    
+                if abs(sum(percentages) - 100) > 0.01:  # Allow for minor floating-point errors
+                    flash('Percentages must sum to 100', 'warning')
+                    return redirect(url_for('leads.get_leads_view'))
+                
+                # Calculate how many leads each team member gets
+                total_leads = len(leads_to_shuffle)
+                
+                lead_counts = []
+                for percentage in percentages:
+                    # Calculate number of leads based on percentage
+                    count = int(round(percentage * total_leads / 100))
+                    lead_counts.append(count)
+                
+                # Adjust for rounding errors
+                total_assigned = sum(lead_counts)
+                if total_assigned != total_leads:
+                    # Add or subtract the difference from the team with the most leads
+                    diff = total_leads - total_assigned
+                    if diff > 0:
+                        max_index = lead_counts.index(max(lead_counts))
+                        lead_counts[max_index] += diff
+                    else:
+                        max_index = lead_counts.index(max(lead_counts))
+                        lead_counts[max_index] += diff  # diff is negative
+                
+                # Assign leads based on calculated counts
+                lead_index = 0
+                for i, member in enumerate(selected_team_members):
+                    count = lead_counts[i]
+                    for j in range(count):
+                        if lead_index < len(leads_to_shuffle):
+                            lead = leads_to_shuffle[lead_index]
+                            lead.owner_id = member.id
+                            teams[member.id].append(lead.id)
+                            lead_index += 1
+                
+            except ValueError:
+                flash('Invalid percentages. Please enter comma-separated numbers that sum to 100.', 'danger')
+                return redirect(url_for('leads.get_leads_view'))
+        
+        # Save changes to database
+        db.session.commit()
+        
+        # Generate assignment report
+        assignment_report = []
+        for member in selected_team_members:
+            member_name = f"{member.first_name} {member.last_name}"
+            assigned_count = len(teams[member.id])
+            assignment_report.append(f"{member_name}: {assigned_count} leads")
+        
+        assignment_report_str = ", ".join(assignment_report)
+        flash(f'Successfully shuffled {len(leads_to_shuffle)} leads! {assignment_report_str}', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error shuffling leads: {str(e)}', 'danger')
+        
+    # Redirect to appropriate view based on whether we're working with leads or clients
+    referrer = request.referrer or url_for('leads.get_leads_view')
+    if 'clients' in referrer:
+        return redirect(url_for('leads.get_clients_view'))
+    else:
+        return redirect(url_for('leads.get_leads_view'))
+
+@leads.route("/leads/update_status", methods=['POST'])
+@login_required
+def update_status():
+    """Update the status of a lead or client via AJAX"""
+    if not request.is_json and not request.form:
+        return jsonify({"success": False, "message": "Invalid request format"}), 400
+    
+    # Get data from either JSON or form data
+    data = request.get_json() if request.is_json else request.form
+    
+    if 'lead_id' not in data or 'status_id' not in data:
+        return jsonify({"success": False, "message": "Missing required fields"}), 400
+    
+    try:
+        lead_id = int(data['lead_id'])
+        status_id = int(data['status_id']) if data['status_id'] else None  # Allow null status
+    except ValueError:
+        return jsonify({"success": False, "message": "Invalid ID format"}), 400
+    
+    # Find the lead
+    lead = Lead.query.get(lead_id)
+    if not lead:
+        return jsonify({"success": False, "message": "Lead not found"}), 404
+    
+    # Check permissions
+    if not current_user.is_admin and lead.owner_id != current_user.id:
+        return jsonify({"success": False, "message": "You don't have permission to update this lead's status"}), 403
+    
+    # If status_id is None, set lead_status_id to None
+    if status_id is None:
+        lead.lead_status_id = None
+        db.session.commit()
+        return jsonify({"success": True})
+    
+    # Otherwise, verify status exists
+    status = LeadStatus.query.get(status_id)
+    if not status:
+        return jsonify({"success": False, "message": "Status not found"}), 404
+    
+    # Update the lead status
+    lead.lead_status_id = status_id
+    db.session.commit()
+    
+    return jsonify({"success": True})
+
+@leads.route("/leads/export_csv", methods=['GET'])
+@login_required
+def export_leads_csv():
+    """Export leads to CSV"""
+    # Get IDs from query parameters if provided
+    ids_param = request.args.get('ids')
+    
+    # Base query for non-client leads
+    query = Lead.query.filter_by(is_client=False)
+    
+    # If specific IDs were provided, filter by those
+    if ids_param:
+        try:
+            ids = [int(x) for x in ids_param.split(',')]
+            query = query.filter(Lead.id.in_(ids))
+        except ValueError:
+            flash('Invalid ID format in export request', 'danger')
+            return redirect(url_for('leads.get_leads_view'))
+    
+    # Get all leads based on query
+    leads = query.all()
+    
+    if not leads:
+        flash('No leads found to export', 'warning')
+        return redirect(url_for('leads.get_leads_view'))
+    
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header row
+    writer.writerow([
+        'ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Mobile',
+        'Company', 'Status', 'Source', 'Owner', 'Country', 'State',
+        'City', 'Address', 'Postal Code', 'Date Created', 'Notes'
+    ])
+    
+    # Write data rows
+    for lead in leads:
+        writer.writerow([
+            lead.id,
+            lead.first_name,
+            lead.last_name,
+            lead.email,
+            lead.phone,
+            lead.mobile,
+            lead.company_name,
+            lead.status.status_name if lead.status else '',
+            lead.source.source_name if lead.source else '',
+            f"{lead.owner.first_name} {lead.owner.last_name}" if lead.owner else '',
+            lead.country,
+            lead.addr_state,
+            lead.addr_city,
+            lead.address_line,
+            lead.post_code,
+            lead.date_created.strftime('%Y-%m-%d %H:%M:%S') if lead.date_created else '',
+            lead.notes
+        ])
+    
+    # Prepare response
+    output.seek(0)
+    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment;filename=leads_export_{timestamp}.csv"}
+    )
+
+@leads.route("/clients/export_csv", methods=['GET'])
+@login_required
+def export_clients_csv():
+    """Export clients to CSV"""
+    # Get IDs from query parameters if provided
+    ids_param = request.args.get('ids')
+    
+    # Base query for client leads
+    query = Lead.query.filter_by(is_client=True)
+    
+    # If specific IDs were provided, filter by those
+    if ids_param:
+        try:
+            ids = [int(x) for x in ids_param.split(',')]
+            query = query.filter(Lead.id.in_(ids))
+        except ValueError:
+            flash('Invalid ID format in export request', 'danger')
+            return redirect(url_for('leads.get_clients_view'))
+    
+    # Get all clients based on query
+    clients = query.all()
+    
+    if not clients:
+        flash('No clients found to export', 'warning')
+        return redirect(url_for('leads.get_clients_view'))
+    
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header row
+    writer.writerow([
+        'ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Mobile',
+        'Company', 'Status', 'Source', 'Owner', 'Country', 'State',
+        'City', 'Address', 'Postal Code', 'Conversion Date', 
+        'Current Balance', 'Bonus Balance', 'Credit Balance', 'Available to Trade'
+    ])
+    
+    # Write data rows
+    for client in clients:
+        writer.writerow([
+            client.id,
+            client.first_name,
+            client.last_name,
+            client.email,
+            client.phone,
+            client.mobile,
+            client.company_name,
+            client.status.status_name if client.status else '',
+            client.source.source_name if client.source else '',
+            f"{client.owner.first_name} {client.owner.last_name}" if client.owner else '',
+            client.country,
+            client.addr_state,
+            client.addr_city,
+            client.address_line,
+            client.post_code,
+            client.conversion_date.strftime('%Y-%m-%d %H:%M:%S') if client.conversion_date else '',
+            f"{client.current_balance:.2f}" if client.current_balance is not None else '0.00',
+            f"{client.bonus_balance:.2f}" if client.bonus_balance is not None else '0.00',
+            f"{client.credit_balance:.2f}" if client.credit_balance is not None else '0.00',
+            'Yes' if client.available_to_trade else 'No'
+        ])
+    
+    # Prepare response
+    output.seek(0)
+    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment;filename=clients_export_{timestamp}.csv"}
+    )

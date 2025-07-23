@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_socketio import SocketIO
 import os
 from datetime import datetime
 from werkzeug.exceptions import HTTPException
@@ -31,6 +32,9 @@ bcrypt = Bcrypt()
 migrate = Migrate()
 # manage user login
 login_manager = LoginManager()
+
+# Initialize Socket.IO
+socketio = SocketIO()
 
 # function name of the login route that
 # tells the path which facilitates authentication
@@ -72,6 +76,7 @@ def create_app(config_class=DevelopmentConfig):
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
+    # Initialize Socket.IO with the app (only if not disabled)    if not os.getenv('DISABLE_SOCKETIO'):        socketio.init_app(app, cors_allowed_origins="*", async_mode='threading')    else:        print("⚠️  Socket.IO disabled - running in simplified mode")
     # Set the custom unauthorized handler
     login_manager.unauthorized_handler(unauthorized_handler)
     init_csrf(app)  # Initialize CSRF protection
@@ -127,6 +132,16 @@ def create_app(config_class=DevelopmentConfig):
                     instrument.last_updated = now
                 db.session.commit()
                 app.logger.info("Added last_updated column to TradingInstrument table")
+
+        # Initialize real-time data manager
+        from omcrm.webtrader.realtime_data import real_time_manager
+        
+        # Set up price update callback for Socket.IO
+        def price_update_callback(update_data):
+            """Callback to send price updates to clients via Socket.IO"""
+            socketio.emit('price_update', update_data, namespace='/webtrader')
+        
+        real_time_manager.add_price_callback(price_update_callback)
 
         # Check and handle different domains/subdomains
         @app.before_request
@@ -185,8 +200,6 @@ def create_app(config_class=DevelopmentConfig):
         from omcrm.main.routes import main
         from omcrm.users.routes import users
         from omcrm.leads.routes import leads
-        # from omcrm.accounts.routes import accounts - Removed accounts
-        # from omcrm.contacts.routes import contacts - Removed contacts
         from omcrm.deals.routes import deals
         from omcrm.settings.routes import settings
         from omcrm.settings.app_routes import app_config
@@ -197,6 +210,7 @@ def create_app(config_class=DevelopmentConfig):
         from omcrm.transactions.routes import transactions
         from omcrm.api.routes import api
         from omcrm.activities.routes import activities
+        from omcrm.comments import comments
         # register routes with blueprint
 
         app.register_blueprint(main)
@@ -204,8 +218,6 @@ def create_app(config_class=DevelopmentConfig):
         app.register_blueprint(settings)
         app.register_blueprint(app_config)
         app.register_blueprint(leads)
-        # app.register_blueprint(accounts) - Removed accounts
-        # app.register_blueprint(contacts) - Removed contacts
         app.register_blueprint(deals)
         app.register_blueprint(reports)
         app.register_blueprint(webtrader, url_prefix='/webtrader')
@@ -214,6 +226,7 @@ def create_app(config_class=DevelopmentConfig):
         app.register_blueprint(transactions)
         app.register_blueprint(api)
         app.register_blueprint(activities)
+        app.register_blueprint(comments)
 
         # Add a context processor to provide common variables to all templates
         @app.context_processor
@@ -221,49 +234,6 @@ def create_app(config_class=DevelopmentConfig):
             from datetime import datetime
             return {'now': datetime.utcnow()}
 
-        # Register error handlers
-        @app.errorhandler(404)
-        def page_not_found(e):
-            return render_template('errors/404.html'), 404
-
-        @app.errorhandler(403)
-        def forbidden(e):
-            return render_template('errors/403.html'), 403
-
-        @app.errorhandler(500)
-        def internal_server_error(e):
-            return render_template('errors/500.html'), 500
-        
-        # Handler for unauthorized access (when not logged in)
-        @app.errorhandler(401)
-        def unauthorized(e):
-            return render_template('errors/401.html'), 401
-
-        # Catch AttributeError exceptions caused by user type mismatches
-        @app.errorhandler(AttributeError)
-        def handle_attribute_error(e):
-            # Return 500 error page for attribute errors
-            return render_template('errors/500.html'), 500
-            
-        # Handler for all HTTP exceptions
-        @app.errorhandler(Exception)
-        def handle_exception(e):
-            # Pass through HTTP errors
-            if isinstance(e, HTTPException):
-                code = e.code
-                if code == 404:
-                    return render_template('errors/404.html'), 404
-                elif code == 403:
-                    return render_template('errors/403.html'), 403
-                elif code == 401:
-                    return render_template('errors/401.html'), 401
-                else:
-                    return render_template('errors/500.html'), 500
-            else:
-                # For non-HTTP exceptions, return 500 error
-                app.logger.error(f"Unhandled exception: {str(e)}")
-                return render_template('errors/500.html'), 500
-            
         # Catch-all route handler as the last route to handle any unmatched routes
         @app.route('/<path:path>')
         def catch_all(path):

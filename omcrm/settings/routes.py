@@ -226,7 +226,7 @@ def settings_roles_new():
                 resource.can_create = permission.form.can_create.data
                 resource.can_edit = permission.form.can_edit.data
                 resource.can_delete = permission.form.can_delete.data
-                resource.can_impersonate = permission.form.can_impersonate.data if hasattr(permission.form, 'can_impersonate') else False
+                resource.can_impersonate = False  # We're not using impersonate anymore
                 role.resources.append(resource)
 
             db.session.add(role)
@@ -239,23 +239,23 @@ def settings_roles_new():
     elif request.method == 'GET':
         resources = [
             ResourceForm(name='staff', can_view=False,
-                         can_create=False, can_edit=False, can_delete=False,
-                         can_impersonate=False),
+                         can_create=False, can_edit=False, can_delete=False),
             ResourceForm(name='leads', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True,
-                         can_impersonate=False),
-            ResourceForm(name='accounts', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True,
-                         can_impersonate=False),
-            ResourceForm(name='contacts', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True,
-                         can_impersonate=False),
+                         can_create=True, can_edit=True, can_delete=True),
             ResourceForm(name='deals', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True,
-                         can_impersonate=False),
+                         can_create=True, can_edit=True, can_delete=True),
             ResourceForm(name='clients', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True,
-                         can_impersonate=False)
+                         can_create=True, can_edit=True, can_delete=True),
+            ResourceForm(name='activities', can_view=True,
+                         can_create=True, can_edit=True, can_delete=True),
+            ResourceForm(name='tasks', can_view=True,
+                         can_create=True, can_edit=True, can_delete=True),
+            ResourceForm(name='reports', can_view=True,
+                         can_create=True, can_edit=True, can_delete=True),
+            ResourceForm(name='transactions', can_view=True,
+                         can_create=True, can_edit=True, can_delete=True),
+            ResourceForm(name='instruments', can_view=True,
+                         can_create=True, can_edit=True, can_delete=True)
         ]
 
         for resource in resources:
@@ -321,7 +321,11 @@ def create_resource():
         .filter(Role.name != 'admin') \
         .order_by(Role.id.asc())
 
-    resources = ['staff', 'leads', 'accounts', 'contacts', 'deals']
+    resources = [
+        'staff', 'leads', 'deals', 'clients', 
+        'activities', 'tasks', 'reports', 
+        'transactions', 'instruments'
+    ]
 
     for role in roles:
         for res in resources:

@@ -111,26 +111,6 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="account_id" class="form-label">Related Account</label>
-                        {{ form.account_id(class="form-control form-select", id="account_id") }}
-                        {% if form.account_id.errors %}
-                            {% for error in form.account_id.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="contact_id" class="form-label">Related Contact</label>
-                        {{ form.contact_id(class="form-control form-select", id="contact_id") }}
-                        {% if form.contact_id.errors %}
-                            {% for error in form.contact_id.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
                         <label for="client_id" class="form-label">Related Client</label>
                         {{ form.client_id(class="form-control form-select", id="client_id") }}
                         {% if form.client_id.errors %}
@@ -177,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize select2 for better dropdown experience (if available)
     if (typeof $.fn.select2 !== 'undefined') {
-        $('#lead_id, #deal_id, #account_id, #contact_id, #client_id, #assignee_id').select2({
+        $('#lead_id, #deal_id, #client_id, #assignee_id').select2({
             theme: 'bootstrap4',
             placeholder: 'Select an option',
             allowClear: true

@@ -36,6 +36,11 @@ def client_only(f):
                 return jsonify({'success': False, 'error': 'Access denied'}), 403
             flash("Access denied. This area is only for clients.", 'danger')
             return redirect(url_for('main.home'))
+            
+        # Remove the automatic redirection to webtrader
+        # if request.path == url_for('client.dashboard'):
+        #    return redirect(url_for('webtrader.webtrader_dashboard'))
+            
         return f(*args, **kwargs)
     return decorated_function
 

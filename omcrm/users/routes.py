@@ -14,6 +14,14 @@ users = Blueprint('users', __name__)
 @users.route("/login", methods=['GET', 'POST'])
 def login():
     """Admin/Agent login route for CRM access"""
+    # Clear any existing session data to avoid conflicts
+    session.clear()
+    
+    # Set login type to admin/user
+    session['login_type'] = 'admin'
+    
+    print(f"[DEBUG] Admin login route accessed. Session: {session}")
+    
     if current_user.is_authenticated:
         if isinstance(current_user, Lead) and current_user.is_client:
             return redirect(url_for('client.dashboard'))
@@ -21,6 +29,7 @@ def login():
 
     form = Login()
     if form.validate_on_submit():
+        # Only look for User objects (admins/agents), not Leads
         user = User.query.filter_by(email=form.email.data).first()
         if user:
             if not user.is_user_active:
@@ -28,13 +37,14 @@ def login():
             elif not bcrypt.check_password_hash(user.password, form.password.data):
                 flash('Invalid Password!', 'danger')
             else:
+                # Successfully authenticated admin/agent
+                print(f"[DEBUG] Admin login successful: {user.id}, {user.email}")
                 login_user(user, remember=form.remember.data)
+                print(f"[DEBUG] Current user after login: {current_user.id}, type: {type(current_user)}")
                 next_page = request.args.get('next')
-                if next_page:
-                    # Make sure next_page URL is safe (starts with /)
-                    if not next_page.startswith('/'):
-                        next_page = None
-                return redirect(next_page or url_for('main.home'))
+                if next_page and next_page.startswith('/'):
+                    return redirect(next_page)
+                return redirect(url_for('main.home'))
         else:
             flash('Invalid email or password', 'danger')
 
@@ -44,6 +54,14 @@ def login():
 @users.route("/client/login", methods=['GET', 'POST'])
 def client_login():
     """Client login route for client portal access"""
+    # Clear any existing session data to avoid conflicts
+    session.clear()
+    
+    # Set login type to client
+    session['login_type'] = 'client'
+    
+    print(f"[DEBUG] Client login route accessed. Session: {session}")
+    
     if current_user.is_authenticated:
         if isinstance(current_user, Lead) and current_user.is_client:
             return redirect(url_for('client.dashboard'))
@@ -51,17 +69,17 @@ def client_login():
 
     form = Login()
     if form.validate_on_submit():
-        # First check if this is a client
+        # Only look for Lead objects that are clients, not users
         client = Lead.query.filter_by(email=form.email.data, is_client=True).first()
         if client and client.check_password(form.password.data):
             if client.is_active:
+                print(f"[DEBUG] Client login successful: {client.id}, {client.email}")
                 login_user(client, remember=form.remember.data)
+                print(f"[DEBUG] Current user after login: {current_user.id}, type: {type(current_user)}, login_type: {session.get('login_type')}")
                 next_page = request.args.get('next')
-                if next_page:
-                    # Make sure next_page URL is safe (starts with /)
-                    if not next_page.startswith('/'):
-                        next_page = None
-                return redirect(next_page or url_for('client.dashboard'))
+                if next_page and next_page.startswith('/'):
+                    return redirect(next_page)
+                return redirect(url_for('client.dashboard'))
             else:
                 flash('This account is inactive. Please contact support.', 'danger')
         else:
@@ -119,13 +137,32 @@ def register():
     return render_template("register.html", title="TradingCRM - Register New User", form=form, 
                           is_first_user=not users_exist)
 
-
 @users.route("/logout")
 def logout():
+    print(f"[DEBUG] Logout route called. Current user: {current_user}, Session: {session}")
+    
+    # Check if this is an impersonation session (admin logged in as client)
+    if 'admin_user_id' in session:
+        admin_id = session.pop('admin_user_id')
+        print(f"[DEBUG] Admin impersonation detected. Admin ID: {admin_id}")
+        
+        # Store the redirect URL before clearing session
+        redirect_url = url_for('leads.return_to_admin')
+        
+        # Log out current user and clear session
+        logout_user()
+        session.clear()
+        
+        flash('Redirected back to admin account.', 'info')
+        return redirect(redirect_url)
+    
+    # Normal logout process
+    user_type = 'client' if isinstance(current_user, Lead) and current_user.is_client else 'admin'
     logout_user()
     session.clear()
-    # Determine where to redirect based on user type
-    if isinstance(current_user, Lead) and current_user.is_client:
+    print(f"[DEBUG] Logout complete - user was {user_type}")
+    
+    if user_type == 'client':
         return redirect(url_for('users.client_login'))
     return redirect(url_for('users.login'))
 

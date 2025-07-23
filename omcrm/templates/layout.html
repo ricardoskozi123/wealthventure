@@ -32,10 +32,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
     <!-- Tempus Dominus Date/Time Picker CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css">
+    
+    <!-- Toast Notification CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notification-popup.css') }}">
 
-    <!-- Custom styles -->
-    <link href="{{ url_for('static', filename='stylesheets/style.css') }}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
   </head>
   <body class="{% if request.endpoint and 'webtrader.' in request.endpoint %}webtrader-page{% else %}standard-page{% endif %}">
     <div class="dashboard-container">
@@ -73,11 +76,11 @@
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'deals.' in request.endpoint %}active{% endif %}" href="{{ url_for('deals.get_deals_view') }}">
                 <i data-feather="dollar-sign"></i>
-                <span>Deals</span>
+                <span>Pipeline</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">
+              <a class="nav-link {% if request.endpoint and 'activities.' in request.endpoint %}active{% endif %}" href="{{ url_for('activities.activities_list') }}">
                 <i data-feather="calendar"></i>
                 <span>Activities</span>
               </a>
@@ -92,6 +95,12 @@
               <a class="nav-link {% if request.endpoint and request.endpoint == 'leads.lead_sources' %}active{% endif %}" href="{{ url_for('leads.lead_sources') }}">
                 <i data-feather="list"></i>
                 <span>Lead Sources</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint and request.endpoint == 'leads.manage_lead_statuses' %}active{% endif %}" href="{{ url_for('leads.manage_lead_statuses') }}">
+                <i data-feather="tag"></i>
+                <span>Client Statuses</span>
               </a>
             </li>
             <li class="nav-item">
@@ -115,7 +124,7 @@
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('deals.manage_deal_stages') }}">
                 <i class="fas fa-tasks"></i>
-                Manage Deal Stages
+                Manage Pipeline Stages
               </a>
             </li>
             {% if current_user.is_admin %}
@@ -299,8 +308,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
 
     <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/notification.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/notification.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/toast-notification.js') }}"></script>
 
     <!-- Initialize Feather Icons -->
     <script>

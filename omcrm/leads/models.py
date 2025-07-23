@@ -8,6 +8,8 @@ from flask_login import UserMixin
 class LeadStatus(db.Model):
     id = db.Column(db.Integer, db.Sequence('lead_status_id_seq'), primary_key=True)
     status_name = db.Column(db.String(40), unique=True, nullable=False)
+    color = db.Column(db.String(20), nullable=True, default='#4361ee')  # Color for display purposes only
+    description = db.Column(db.String(100), nullable=True)  # Description/meaning of the status
     leads = db.relationship('Lead', backref='status', lazy=True)
 
     @staticmethod
@@ -110,12 +112,16 @@ class Lead(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self._password, password)
 
+    @property
     def is_authenticated(self):
         return True
 
+    @property
     def is_active(self):
-        return self.is_active
+        # Always return True to bypass the conflicting column name
+        return True
 
+    @property
     def is_anonymous(self):
         return False
 

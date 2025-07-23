@@ -30,6 +30,15 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 notificationList.innerHTML = ''; // Clear existing notifications
                 
+                if (data.error) {
+                    notificationList.innerHTML = `
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">${data.error}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 if (data.notifications && data.notifications.length > 0) {
                     data.notifications.forEach(notification => {
                         const notificationItem = document.createElement('div');
@@ -46,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${notification.description || ''}
                             </div>
                             <div class="notification-time">
-                                ${notification.time_ago || ''}
+                                ${notification.time_ago || notification.time_remaining || ''}
                             </div>
                         `;
                         

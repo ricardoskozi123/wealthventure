@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Edit Status: {{ status.status_name }}</h3>
+                    <div class="card-tools">
+                        <a href="{{ url_for('leads.manage_lead_statuses') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Statuses
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('leads.edit_lead_status', status_id=status.id) }}">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            <label for="status_name" class="form-label">Status Name</label>
+                            <input type="text" class="form-control" id="status_name" name="status_name" value="{{ status.status_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ status.description }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="color" class="form-label">Color</label>
+                            <div class="input-group">
+                                <input type="color" class="form-control form-control-color" id="color" name="color" value="{{ status.color or '#4361ee' }}">
+                                <input type="text" class="form-control" id="colorHex" value="{{ status.color or '#4361ee' }}" readonly>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('leads.manage_lead_statuses') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sync color picker with hex value display
+        document.getElementById('color').addEventListener('input', function() {
+            document.getElementById('colorHex').value = this.value;
+        });
+    });
+</script>
+{% endblock %} 

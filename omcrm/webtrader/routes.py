@@ -9,6 +9,7 @@ from omcrm.webtrader.models import TradingInstrument
 import logging
 import random
 import time  # Add time import for delays
+import json
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -235,20 +236,16 @@ def get_real_time_price(symbol, name, instrument_type):
          # Only use DB price if it's less than ~5 minutes old, otherwise it's too stale
          if time_since_update.total_seconds() < 300: 
              logging.warning(f"Using recent database price {instrument.current_price} for {symbol}")
-             # Apply very small random movement to simulate activity if needed, but prefer stale price
-             # change = (1 + (random.random() * 0.1 - 0.05) / 100) # +/- 0.05%
-             # return round(instrument.current_price * change, 6 if instrument_type == 'crypto' else (4 if instrument_type == 'forex' else 2))
              return instrument.current_price # Return the stale price directly
          else:
              logging.warning(f"Database price for {symbol} is too old ({time_since_update}).")
 
-    # Fallback 2: Use hardcoded dictionary values (as defined in get_crypto/stock_price)
+    # Fallback 2: Use hardcoded dictionary values
     logging.warning(f"Database fallback failed for {symbol}. Trying final hardcoded dictionary.")
     final_fallback_price = None
     if instrument_type == 'crypto':
         crypto_fallback_prices = {
             'bitcoin': 65337.34, 'ethereum': 3430.85, 'solana': 147.42,
-            # ... add others from get_crypto_price ...
         }
         crypto_id = None
         crypto_mappings = { 'bitcoin': ['btc', 'bitcoin'], 'ethereum': ['eth', 'ethereum'], 'solana': ['sol', 'solana']}
@@ -265,20 +262,17 @@ def get_real_time_price(symbol, name, instrument_type):
     elif instrument_type == 'stock':
         stock_fallback_prices = {
             'AAPL': 214.09, 'MSFT': 428.52, 'GOOGL': 174.57, 'AMZN': 186.85,
-             # ... add others from get_stock_price ...
         }
         if symbol.upper() in stock_fallback_prices:
              final_fallback_price = stock_fallback_prices[symbol.upper()]
-             
-    # Add similar fallback logic for forex/commodities if needed
 
     if final_fallback_price is not None:
          logging.warning(f"Using final hardcoded dictionary price {final_fallback_price} for {symbol}")
          return final_fallback_price
 
-    # Last resort: return a default/None if absolutely nothing works
+    # Last resort: return None
     logging.error(f"Could not determine price for {symbol} using any method.")
-    return None # Or maybe a default like 1.00? Returning None is safer.
+    return None
 
 # Placeholder functions for Forex/Commodities - replace with actual API calls
 def get_forex_price_fallback(symbol):
@@ -293,7 +287,7 @@ def get_commodity_price_fallback(symbol):
 @webtrader.route("/get_price/")
 @login_required
 def get_price():
-    """Get current price for an instrument, using API first with 60s cache."""
+    """Get current price for an instrument, prioritizing WebSocket data over HTTP APIs."""
     instrument_id = request.args.get('instrument_id')
     instrument = TradingInstrument.query.get_or_404(instrument_id)
     
@@ -306,10 +300,21 @@ def get_price():
             'current_price': instrument.current_price,
             'change': instrument.change or 0.0
         })
+
+    logging.debug(f"Cache expired or no recent price for {instrument.symbol}. Checking WebSocket first.")
     
-    logging.debug(f"Cache expired or no recent price for {instrument.symbol}. Fetching live price.")
-    # Get fresh price from API (or fallbacks)
-    new_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
+    # FIRST: Try to get price from our direct WebSocket cache
+    new_price = None
+    if instrument.type == 'crypto':
+        new_price = get_cached_crypto_price(instrument.symbol)
+        if new_price:
+            logging.info(f"💰 Using WebSocket price for {instrument.symbol}: ${new_price} (unlimited Binance)")
+        else:
+            logging.warning(f"⚠️  No WebSocket data for {instrument.symbol}, falling back to HTTP API")
+    
+    # FALLBACK: Only use HTTP API if WebSocket data not available
+    if new_price is None:
+        new_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
     
     # Update the instrument in the database if a valid price was obtained
     if new_price is not None:
@@ -374,6 +379,36 @@ def webtrader_dashboard():
 
     form = TradeForm()
     instruments = TradingInstrument.query.all()
+    
+    # 🚀 AUTO-START BINANCE WEBSOCKET FOR ALL CRYPTO INSTRUMENTS
+    try:
+        # Get all crypto instruments from database
+        crypto_instruments = TradingInstrument.query.filter_by(type='crypto').all()
+        
+        if crypto_instruments:
+            # Extract symbols and convert to Binance format (lowercase + usdt)
+            binance_symbols = []
+            for instrument in crypto_instruments:
+                symbol = instrument.symbol
+                if '/' in symbol:
+                    # Convert BTC/USD -> btcusdt
+                    base_symbol = symbol.split('/')[0].lower()
+                    binance_symbol = f"{base_symbol}usdt"
+                    binance_symbols.append(binance_symbol)
+                    logging.info(f"📈 Mapping {symbol} → {binance_symbol}")
+            
+            if binance_symbols:
+                # Start WebSocket connection using the EXACT working pattern
+                start_crypto_websocket(binance_symbols)
+                logging.info(f"🎉 Started Binance WebSocket for {len(binance_symbols)} crypto instruments!")
+                logging.info(f"🔗 Symbols: {', '.join(binance_symbols)}")
+            else:
+                logging.warning("⚠️  No valid crypto symbols found for WebSocket")
+        else:
+            logging.warning("⚠️  No crypto instruments found in database")
+            
+    except Exception as e:
+        logging.error(f"Error starting crypto WebSocket: {e}")
     
     # Ensure all instruments have valid values
     for instrument in instruments:
@@ -446,6 +481,102 @@ def webtrader_dashboard():
                           open_trades=open_trades, closed_trades=closed_trades, pending_orders=pending_orders,
                           available_to_trade=available_to_trade)
 
+# Global variables to store WebSocket connection and cache
+crypto_ws = None
+crypto_price_cache = {}
+
+def start_crypto_websocket(binance_symbols):
+    """Start crypto WebSocket using the EXACT working pattern from simple_websocket_test.py"""
+    global crypto_ws, crypto_price_cache
+    
+    if crypto_ws is not None:
+        logging.info("🔄 WebSocket already running, skipping...")
+        return
+    
+    # Create WebSocket URL for multiple symbols (exact same pattern)
+    streams = [f"{symbol}@ticker" for symbol in binance_symbols]
+    ws_url = f"wss://stream.binance.com:9443/ws/{'/'.join(streams)}"
+    
+    logging.info(f"🔗 Connecting to Binance WebSocket...")
+    logging.info(f"📊 Subscribing to: {', '.join(binance_symbols)}")
+    logging.info(f"🌐 URL: {ws_url}")
+    
+    def on_message(ws, message):
+        try:
+            data = json.loads(message)
+            
+            # Handle single stream data (exact same pattern)
+            if 'stream' in data and 'data' in data:
+                ticker_data = data['data']
+            else:
+                ticker_data = data
+            
+            symbol = ticker_data.get('s', 'UNKNOWN')
+            price = float(ticker_data.get('c', 0))
+            change_24h = float(ticker_data.get('P', 0))
+            
+            # Convert BTCUSDT -> BTC/USD for database lookup
+            if symbol.endswith('USDT'):
+                base_symbol = symbol.replace('USDT', '')
+                db_symbol = f"{base_symbol}/USD"
+                
+                # Cache the price data
+                crypto_price_cache[db_symbol] = {
+                    'price': price,
+                    'change_24h': change_24h,
+                    'timestamp': time.time()
+                }
+                
+                color = "🟢" if change_24h >= 0 else "🔴"
+                logging.info(f"{color} {db_symbol}: ${price:,.6f} ({change_24h:+.2f}%)")
+                
+        except Exception as e:
+            logging.error(f"❌ Error parsing WebSocket message: {e}")
+    
+    def on_error(ws, error):
+        logging.error(f"❌ WebSocket Error: {error}")
+    
+    def on_close(ws, close_status_code, close_msg):
+        global crypto_ws
+        crypto_ws = None
+        logging.info(f"🔌 WebSocket Closed: {close_status_code} - {close_msg}")
+    
+    def on_open(ws):
+        logging.info(f"✅ WebSocket Connected Successfully!")
+        logging.info(f"💰 Receiving unlimited free real-time crypto prices...")
+    
+    # Create WebSocket connection (exact same pattern)
+    import websocket
+    crypto_ws = websocket.WebSocketApp(
+        ws_url,
+        on_message=on_message,
+        on_error=on_error,
+        on_close=on_close,
+        on_open=on_open
+    )
+    
+    # Run WebSocket in background thread
+    def run_websocket():
+        crypto_ws.run_forever()
+    
+    import threading
+    ws_thread = threading.Thread(target=run_websocket, daemon=True)
+    ws_thread.start()
+    
+    logging.info("🚀 WebSocket thread started!")
+
+def get_cached_crypto_price(symbol):
+    """Get cached price from WebSocket data"""
+    global crypto_price_cache
+    
+    cached_data = crypto_price_cache.get(symbol)
+    if cached_data:
+        # Check if data is recent (less than 30 seconds old)
+        age = time.time() - cached_data['timestamp']
+        if age < 30:
+            return cached_data['price']
+    
+    return None
 
 def execute_market_order(user, instrument, amount, current_price, trade_type):
     """Execute a market order for buying or selling"""
@@ -516,113 +647,56 @@ def store_order(user, instrument, amount, order_type, target_price, trade_type):
     flash(f'{order_type.replace("_", " ").title()} {trade_type} order placed successfully!', 'success')
     return True
 
-@webtrader.route("/execute_trade", methods=['POST'])
+@webtrader.route("/start_realtime_feeds", methods=['POST'])
 @login_required
-def execute_trade():
-    # Check if the user is allowed to trade
-    if hasattr(current_user, 'available_to_trade') and not current_user.available_to_trade:
-        flash('Your account is currently not allowed to open new trades. Please contact support.', 'danger')
-        return redirect(url_for('webtrader.webtrader_dashboard'))
+def start_realtime_feeds():
+    """Start real-time WebSocket data feeds"""
+    try:
+        from omcrm.webtrader.realtime_data import real_time_manager
         
-    form = TradeForm()
-    if form.validate_on_submit():
-        instrument_id = form.instrument_id.data
-        amount = form.amount.data
-        trade_type = form.trade_type.data
-        order_type = form.order_type.data
-        target_price = form.target_price.data if form.target_price.data else None
-
-        instrument = TradingInstrument.query.get(instrument_id)
-        if not instrument:
-            flash('Invalid instrument selected.', 'danger')
-            return redirect(url_for('webtrader.webtrader_dashboard'))
+        # Get all instruments for real-time feeds
+        instruments = TradingInstrument.query.all()
+        instrument_data = []
+        
+        for instrument in instruments:
+            instrument_data.append({
+                'id': instrument.id,
+                'symbol': instrument.symbol,
+                'name': instrument.name,
+                'type': instrument.type
+            })
+        
+        if not real_time_manager.is_running and instrument_data:
+            real_time_manager.start_real_time_feeds(instrument_data)
+            logging.info(f"✅ Started real-time WebSocket feeds for {len(instrument_data)} instruments")
             
-        # Ensure amount is positive
-        if amount <= 0:
-            flash('Amount must be greater than zero.', 'danger')
-            return redirect(url_for('webtrader.webtrader_dashboard'))
-
-        # Get latest price
-        current_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
-        if not current_price:
-            flash('Unable to get current price. Please try again.', 'danger')
-            return redirect(url_for('webtrader.webtrader_dashboard'))
-
-        # Execute different order types
-        if order_type == 'market':
-            execute_market_order(current_user, instrument, amount, current_price, trade_type)
-        elif order_type in ['limit', 'stop_loss', 'take_profit']:
-            if not target_price or target_price <= 0:
-                flash('Target price is required for limit, stop-loss, and take-profit orders.', 'danger')
-                return redirect(url_for('webtrader.webtrader_dashboard'))
-                
-            store_order(current_user, instrument, amount, order_type, target_price, trade_type)
+            return jsonify({
+                'success': True,
+                'message': f'Real-time feeds started for {len(instrument_data)} instruments',
+                'instruments_count': len(instrument_data),
+                'crypto_symbols': [i['symbol'] for i in instrument_data if i['type'] == 'crypto'],
+                'stock_symbols': [i['symbol'] for i in instrument_data if i['type'] == 'stock']
+            })
+        elif real_time_manager.is_running:
+            return jsonify({
+                'success': True,
+                'message': 'Real-time feeds are already running',
+                'status': 'already_running'
+            })
         else:
-            flash('Invalid order type.', 'danger')
+            return jsonify({
+                'success': False,
+                'message': 'No instruments found to start feeds for'
+            })
+            
+    except Exception as e:
+        logging.error(f"Error starting real-time feeds: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Failed to start real-time feeds: {str(e)}'
+        })
 
-    else:
-        # Form validation failed
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f"{getattr(form, field).label.text}: {error}", 'danger')
-                
-    return redirect(url_for('webtrader.webtrader_dashboard'))
-
-@webtrader.route("/close_trade", methods=['POST'])
-@login_required
-def close_trade():
-    trade_id = request.form.get('trade_id')
-    trade = Trade.query.get_or_404(trade_id)
-    
-    # Verify ownership
-    if trade.lead_id != current_user.id:
-        flash('Access denied. This is not your trade.', 'danger')
-        return redirect(url_for('webtrader.webtrader_dashboard'))
-    
-    # Verify trade is still open
-    if trade.status != 'open':
-        flash('This trade is already closed.', 'warning')
-        return redirect(url_for('webtrader.webtrader_dashboard'))
-
-    # Get current price for the instrument
-    current_price = get_real_time_price(trade.instrument.symbol, trade.instrument.name, trade.instrument.type)
-    if not current_price:
-        flash('Unable to get current price. Please try again.', 'danger')
-        return redirect(url_for('webtrader.webtrader_dashboard'))
-    
-    # Update trade with closing info
-    trade.closing_price = round(current_price, 6)
-    trade.status = 'closed'
-    
-    # Calculate profit/loss
-    trade.calculate_profit_loss()
-    db.session.commit()
-
-    # Calculate initial investment and profit/loss
-    initial_investment = trade.amount * trade.price  # Units * price per unit
-    profit_loss = trade.profit_loss if trade.profit_loss is not None else 0.0
-    
-    # Log trade details for debugging
-    logging.info(f"Closing trade {trade_id}: {trade.trade_type} {trade.amount} {trade.instrument.symbol} at {trade.price}, " + 
-                 f"closing at {trade.closing_price}, P/L: {profit_loss}")
-
-    # Return funds to user with profit/loss
-    if trade.trade_type == 'buy':
-        # For buy trades, we add the original value + profit/loss
-        amount_to_return = initial_investment + profit_loss
-    elif trade.trade_type == 'sell':
-        # For sell trades, we add the original investment + profit/loss
-        amount_to_return = initial_investment + profit_loss
-    else:
-        flash('Invalid trade type.', 'danger')
-        return redirect(url_for('webtrader.webtrader_dashboard'))
-    
-    # Update user balance
-    current_user.update_balance(round(amount_to_return, 2))
-    
-    flash(f'Trade closed successfully! {"Profit" if profit_loss > 0 else "Loss"}: {abs(profit_loss):.2f}', 'success')
-    return redirect(url_for('webtrader.webtrader_dashboard'))
-
+# Add remaining routes here - keeping this short to avoid file being too long
 @webtrader.route("/instruments")
 @login_required
 def list_instruments():
@@ -759,34 +833,37 @@ def update_all_prices():
 @login_required
 def cancel_order():
     """Cancel a pending order and refund the reserved amount"""
-    order_id = request.form.get('order_id')
-    if not order_id:
-        flash('No order ID provided', 'danger')
-        return redirect(url_for('webtrader.webtrader_dashboard'))
-        
-    order = Trade.query.get_or_404(order_id)
+    trade_id = request.form.get('trade_id')
+    trade = Trade.query.get_or_404(trade_id)
     
     # Verify ownership
-    if order.lead_id != current_user.id:
-        flash('Access denied. This is not your order.', 'danger')
+    if trade.lead_id != current_user.id:
+        flash('Access denied. This is not your trade.', 'danger')
         return redirect(url_for('webtrader.webtrader_dashboard'))
-        
-    # Verify order is still pending
-    if order.status != 'pending':
-        flash('This order is not pending.', 'warning')
+    
+    # Verify trade is still open
+    if trade.status != 'open':
+        flash('This trade is already closed.', 'warning')
         return redirect(url_for('webtrader.webtrader_dashboard'))
-        
-    # Calculate amount to refund (amount of units * target price)
-    refund_amount = round(order.amount * order.price, 2)
-    
-    # Refund the amount to the user's balance
-    current_user.current_balance = round(current_user.current_balance + refund_amount, 2)
-    
-    # Delete the order
-    db.session.delete(order)
-    db.session.commit()
-    
-    flash(f'Order canceled and ${refund_amount} has been refunded to your balance.', 'success')
+
+    # Get latest price
+    current_price = get_real_time_price(trade.instrument.symbol, trade.instrument.name, trade.instrument.type)
+    if not current_price:
+        flash('Unable to get current price. Please try again.', 'danger')
+        return redirect(url_for('webtrader.webtrader_dashboard'))
+
+    # Execute different order types
+    if trade.order_type == 'market':
+        execute_market_order(current_user, trade.instrument, trade.amount, current_price, trade.trade_type)
+    elif trade.order_type in ['limit', 'stop_loss', 'take_profit']:
+        if not trade.target_price or trade.target_price <= 0:
+            flash('Target price is required for limit, stop-loss, and take-profit orders.', 'danger')
+            return redirect(url_for('webtrader.webtrader_dashboard'))
+            
+        store_order(current_user, trade.instrument, trade.amount, trade.order_type, trade.target_price, trade.trade_type)
+    else:
+        flash('Invalid order type.', 'danger')
+
     return redirect(url_for('webtrader.webtrader_dashboard'))
 
 @webtrader.route("/check_pending_orders", methods=['GET', 'POST'])
@@ -845,3 +922,223 @@ def check_pending_orders():
     
     flash(f'Executed {executed_count} out of {len(pending_orders)} pending orders', 'success')
     return redirect(url_for('webtrader.list_instruments'))
+
+@webtrader.route("/stop_realtime_feeds", methods=['POST'])
+@login_required
+def stop_realtime_feeds():
+    try:
+        from omcrm.webtrader.realtime_data import real_time_manager
+        
+        if real_time_manager.is_running:
+            real_time_manager.stop_real_time_feeds()
+            logging.info("🛑 Stopped real-time WebSocket feeds")
+            
+            return jsonify({
+                'success': True,
+                'status': 'stopped'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'status': 'already_stopped'
+            })
+            
+    except Exception as e:
+        logging.error(f"Error stopping real-time feeds: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Failed to stop real-time feeds: {str(e)}'
+        })
+
+@webtrader.route("/close_trade", methods=['POST'])
+@login_required
+def close_trade():
+    """Close an open trade"""
+    trade_id = request.form.get('trade_id')
+    
+    if not trade_id:
+        flash('No trade ID provided', 'error')
+        return redirect(url_for('webtrader.webtrader_dashboard'))
+    
+    # Get the trade
+    trade = Trade.query.filter_by(id=trade_id, user_id=current_user.id, status='open').first()
+    
+    if not trade:
+        flash('Trade not found or already closed', 'error')
+        return redirect(url_for('webtrader.webtrader_dashboard'))
+    
+    try:
+        # Get current price for the instrument
+        current_price = get_cached_crypto_price(trade.instrument.symbol.replace('/', '').lower() + 'usdt')
+        
+        if not current_price:
+            # Fallback to database cached price or API
+            instrument = trade.instrument
+            instrument.update_price()
+            current_price = instrument.price
+        
+        # Calculate profit/loss
+        if trade.trade_type == 'buy':
+            # For buy trades: profit = (current_price - entry_price) * amount
+            profit_loss = (current_price - trade.price) * trade.amount
+        else:
+            # For sell trades: profit = (entry_price - current_price) * amount
+            profit_loss = (trade.price - current_price) * trade.amount
+        
+        # Update trade
+        trade.status = 'closed'
+        trade.close_price = current_price
+        trade.profit_loss = profit_loss
+        trade.close_date = datetime.utcnow()
+        
+        # Update user balance
+        current_user.current_balance += profit_loss
+        
+        db.session.commit()
+        
+        if profit_loss >= 0:
+            flash(f'Trade closed successfully! Profit: ${profit_loss:.2f}', 'success')
+        else:
+            flash(f'Trade closed. Loss: ${abs(profit_loss):.2f}', 'warning')
+            
+    except Exception as e:
+        db.session.rollback()
+        flash('Error closing trade: ' + str(e), 'error')
+    
+    return redirect(url_for('webtrader.webtrader_dashboard'))
+
+@webtrader.route("/execute_trade", methods=['POST'])
+@login_required
+def execute_trade():
+    """Execute a trade order"""
+    if not current_user.is_client:
+        flash('Access denied. This area is for clients only.', 'danger')
+        return redirect(url_for('main.home'))
+
+    # Check if the user is allowed to trade
+    if hasattr(current_user, 'available_to_trade') and not current_user.available_to_trade:
+        flash('Your account is currently not allowed to open new trades. Please contact support.', 'danger')
+        return redirect(url_for('webtrader.webtrader_dashboard'))
+        
+    instrument_id = request.form.get('instrument_id')
+    amount = float(request.form.get('amount', 0))
+    trade_type = request.form.get('trade_type')
+    order_type = request.form.get('order_type', 'market')
+    target_price = request.form.get('target_price')
+
+    # Validate inputs
+    if amount <= 0:
+        flash('Amount must be greater than zero.', 'danger')
+        return redirect(url_for('webtrader.webtrader_dashboard'))
+        
+    instrument = TradingInstrument.query.get(instrument_id)
+    if not instrument:
+        flash('Invalid instrument selected.', 'danger')
+        return redirect(url_for('webtrader.webtrader_dashboard'))
+
+    # Get current price - prioritize WebSocket data
+    current_price = None
+    if instrument.type == 'crypto':
+        current_price = get_cached_crypto_price(instrument.symbol)
+        if current_price:
+            logging.info(f"💰 Using WebSocket price for trade: {instrument.symbol} at ${current_price}")
+    
+    if not current_price:
+        current_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
+    
+    if not current_price:
+        flash('Unable to get current price. Please try again.', 'danger')
+        return redirect(url_for('webtrader.webtrader_dashboard'))
+
+    if order_type == 'market':
+        success = execute_market_order(current_user, instrument, amount, current_price, trade_type)
+        if success:
+            flash(f'{trade_type.capitalize()} order executed successfully!', 'success')
+        else:
+            flash('Failed to execute order.', 'danger')
+    elif order_type in ['limit', 'stop_loss', 'take_profit']:
+        if not target_price or float(target_price) <= 0:
+            flash('Target price is required for limit, stop-loss, and take-profit orders.', 'danger')
+            return redirect(url_for('webtrader.webtrader_dashboard'))
+            
+        success = store_order(current_user, instrument, amount, order_type, float(target_price), trade_type)
+        if success:
+            flash(f'{order_type.replace("_", " ").title()} order placed successfully!', 'success')
+        else:
+            flash('Failed to place order.', 'danger')
+    else:
+        flash('Invalid order type.', 'danger')
+        
+    return redirect(url_for('webtrader.webtrader_dashboard'))
+
+@webtrader.route("/liquidate_account", methods=['POST'])
+@login_required
+def liquidate_account():
+    """Liquidate all open trades for the current user"""
+    if not current_user.is_client:
+        flash('Access denied. This area is for clients only.', 'danger')
+        return redirect(url_for('main.home'))
+
+    try:
+        # Get all open trades for the user
+        open_trades = Trade.query.filter_by(lead_id=current_user.id, status='open').all()
+        
+        if not open_trades:
+            flash('No open trades to liquidate.', 'info')
+            return redirect(url_for('webtrader.webtrader_dashboard'))
+        
+        liquidated_count = 0
+        total_pnl = 0.0
+        
+        for trade in open_trades:
+            try:
+                # Get current price for the instrument - prioritize WebSocket
+                current_price = None
+                if trade.instrument.type == 'crypto':
+                    current_price = get_cached_crypto_price(trade.instrument.symbol)
+                
+                if not current_price:
+                    current_price = get_real_time_price(trade.instrument.symbol, trade.instrument.name, trade.instrument.type)
+                
+                if not current_price:
+                    # Fallback to last known price
+                    current_price = trade.instrument.current_price
+                
+                if current_price:
+                    # Calculate profit/loss
+                    if trade.trade_type == 'buy':
+                        profit_loss = (current_price - trade.price) * trade.amount
+                    else:
+                        profit_loss = (trade.price - current_price) * trade.amount
+                    
+                    # Close the trade
+                    trade.status = 'closed'
+                    trade.close_price = current_price
+                    trade.profit_loss = profit_loss
+                    trade.close_date = datetime.utcnow()
+                    
+                    total_pnl += profit_loss
+                    liquidated_count += 1
+                    
+                    logging.info(f"Liquidated trade {trade.id}: {trade.instrument.symbol} P/L: ${profit_loss:.2f}")
+                    
+            except Exception as e:
+                logging.error(f"Error liquidating trade {trade.id}: {str(e)}")
+                continue
+        
+        # Update user balance
+        current_user.current_balance += total_pnl
+        
+        db.session.commit()
+        
+        if total_pnl >= 0:
+            flash(f'Account liquidated! {liquidated_count} trades closed. Total Profit: ${total_pnl:.2f}', 'success')
+        else:
+            flash(f'Account liquidated! {liquidated_count} trades closed. Total Loss: ${abs(total_pnl):.2f}', 'warning')
+            
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error during liquidation: {str(e)}', 'error')
+        logging.error(f"Account liquidation error: {str(e)}")
+    
+    return redirect(url_for('webtrader.webtrader_dashboard'))

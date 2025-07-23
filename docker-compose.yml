@@ -1,18 +1,49 @@
-version: '3'
+version: '3.8'
 
 services:
-  db:
-    image: postgres
-    # volumes:
-    #   - /home/db:/var/lib/postgresql/data
-
   web:
     build: .
-    command: python run.py
+    container_name: omcrm_trading_app
+    restart: always
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - SECRET_KEY=${SECRET_KEY:-your-super-secret-production-key-change-this-immediately}
+      - DATABASE_URL=sqlite:///instance/site.db
+      - PLATFORM_NAME=OMCRM Trading
     volumes:
-      - .:/app
-    image: jsingh/eeazycrm
+      - ./logs:/app/logs
+      - ./instance:/app/instance
+      - ./omcrm/static:/app/static
+      - ./backup:/app/backup
     ports:
       - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  nginx:
+    image: nginx:alpine
+    container_name: omcrm_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./omcrm/static:/usr/share/nginx/html/static
+      - ./ssl:/etc/nginx/ssl  # For SSL certificates
     depends_on:
-      - db
+      - web
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  app_data:
+    driver: local

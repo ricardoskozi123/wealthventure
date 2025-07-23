@@ -72,6 +72,16 @@
                                 <span class="badge bg-primary">Lead</span>
                             {% endif %}
                             
+                            {% if lead.status %}
+                                <div class="mt-2">
+                                    <span class="badge bg-info">{{ lead.status.status_name }}</span>
+                                </div>
+                            {% else %}
+                                <div class="mt-2">
+                                    <span class="badge bg-secondary">No Status</span>
+                                </div>
+                            {% endif %}
+                            
                             <!-- Balance Information (for clients) -->
                             {% if lead.is_client %}
                             <div class="card mt-3">

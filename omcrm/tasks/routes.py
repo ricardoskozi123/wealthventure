@@ -81,12 +81,6 @@ def create_task():
         if form.deal_id.data and form.deal_id.data > 0:
             task.deal_id = form.deal_id.data
         
-        if form.account_id.data and form.account_id.data > 0:
-            task.account_id = form.account_id.data
-        
-        if form.contact_id.data and form.contact_id.data > 0:
-            task.contact_id = form.contact_id.data
-        
         if form.client_id.data and form.client_id.data > 0:
             task.client_id = form.client_id.data
         
@@ -140,16 +134,6 @@ def update_task(task_id):
         else:
             task.deal_id = None
             
-        if form.account_id.data and form.account_id.data > 0:
-            task.account_id = form.account_id.data
-        else:
-            task.account_id = None
-            
-        if form.contact_id.data and form.contact_id.data > 0:
-            task.contact_id = form.contact_id.data
-        else:
-            task.contact_id = None
-            
         if form.client_id.data and form.client_id.data > 0:
             task.client_id = form.client_id.data
         else:
@@ -175,10 +159,6 @@ def update_task(task_id):
         form.lead_id.data = task.lead_id
     if task.deal_id:
         form.deal_id.data = task.deal_id
-    if task.account_id:
-        form.account_id.data = task.account_id
-    if task.contact_id:
-        form.contact_id.data = task.contact_id
     if task.client_id:
         form.client_id.data = task.client_id
     
@@ -229,12 +209,22 @@ def view_task(task_id):
     if task.assignee_id:
         assignee = User.query.get(task.assignee_id)
     
+    # Get client if client_id exists
+    client = None
+    if task.client_id:
+        from omcrm.leads.models import Lead
+        client = Lead.query.get(task.client_id)
+    
+    # Create a form to include CSRF token 
+    form = TaskQuickCompleteForm()
+    
     return render_template('tasks/view_task.html',
                           title='Task Details',
-                          task=task,
+                          task=task, 
                           creator=creator,
                           assignee=assignee,
-                          timedelta=timedelta)
+                          client=client,
+                          form=form)
 
 @tasks.route("/tasks/complete", methods=['POST'])
 @login_required
@@ -386,7 +376,7 @@ def get_notifications():
             'time_ago': time_ago,
             'is_read': False,  # Assume unread for now
             'priority': priority,
-            'url': url_for('tasks.task_details', task_id=task.id)
+            'url': url_for('tasks.view_task', task_id=task.id)
         }
         notifications.append(notification)
     

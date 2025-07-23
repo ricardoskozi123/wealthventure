@@ -1,6 +1,6 @@
 from flask import session, request
 from .forms import filter_deals_adv_filters_query, filter_deals_price_query
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from sqlalchemy import text
 from .models import DealStage
 
@@ -9,32 +9,37 @@ def set_filters(f_id, module):
     today = date.today()
     filter_d = True
     if f_id == 1:
-        filter_d = text("current_timestamp > Deal.expected_close_date")
+        filter_d = text("datetime('now') > Deal.expected_close_date")
     elif f_id == 2:
-        filter_d = text("current_timestamp <= Deal.expected_close_date OR "
-                        "Date(Deal.expected_close_date) IS NULL")
+        filter_d = text("datetime('now') <= Deal.expected_close_date OR "
+                        "Deal.expected_close_date IS NULL")
     elif f_id == 3:
-        filter_d = text("expected_close_date "
-                        "BETWEEN date_trunc('day', current_timestamp) AND "
-                        "date_trunc('day', current_timestamp) + "
-                        "interval '1 day' - interval '1 second'")
+        # Today
+        today_start = datetime.now().strftime('%Y-%m-%d 00:00:00')
+        today_end = datetime.now().strftime('%Y-%m-%d 23:59:59')
+        filter_d = text(f"expected_close_date BETWEEN '{today_start}' AND '{today_end}'")
     elif f_id == 4:
-        filter_d = text("expected_close_date "
-                        "BETWEEN date_trunc('day', current_timestamp) + interval '1 day' AND "
-                        "date_trunc('day', current_timestamp) + interval '7 day' - interval '1 second'")
+        # Next 7 days
+        tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')
+        week_later = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d 23:59:59')
+        filter_d = text(f"expected_close_date BETWEEN '{tomorrow}' AND '{week_later}'")
     elif f_id == 5:
-        filter_d = text("expected_close_date "
-                        "BETWEEN date_trunc('day', current_timestamp) + interval '1 day' AND "
-                        "date_trunc('day', current_timestamp)"
-                        " + interval '30 day' - interval '1 second'")
+        # Next 30 days
+        tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')
+        month_later = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d 23:59:59')
+        filter_d = text(f"expected_close_date BETWEEN '{tomorrow}' AND '{month_later}'")
     elif f_id == 6:
-        filter_d = text("date(%s.date_created)='%s'" % (module, today))
+        today_str = today.strftime('%Y-%m-%d')
+        filter_d = text(f"date({module}.date_created)='{today_str}'")
     elif f_id == 7:
-        filter_d = text("date(%s.date_created)='%s'" % (module, (today - timedelta(1))))
+        yesterday = (today - timedelta(1)).strftime('%Y-%m-%d')
+        filter_d = text(f"date({module}.date_created)='{yesterday}'")
     elif f_id == 8:
-        filter_d = text("date(%s.date_created) > current_date - interval '7' day" % module)
+        week_ago = (today - timedelta(7)).strftime('%Y-%m-%d')
+        filter_d = text(f"date({module}.date_created) >= '{week_ago}'")
     elif f_id == 9:
-        filter_d = text("date(%s.date_created) > current_date - interval '30' day" % module)
+        month_ago = (today - timedelta(30)).strftime('%Y-%m-%d')
+        filter_d = text(f"date({module}.date_created) >= '{month_ago}'")
     return filter_d
 
 

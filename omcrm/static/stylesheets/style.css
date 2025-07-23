@@ -2120,4 +2120,46 @@ body {
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+/* Empty state styling for consistent design between leads and clients views */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  background-color: white;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--gray-200);
+  margin: 1rem 0;
+}
+
+.empty-state svg,
+.empty-state span[data-feather] {
+  width: 48px;
+  height: 48px;
+  color: var(--gray-400);
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  color: var(--gray-600);
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+/* Icon styling for table cells */
+.icon-sm {
+  width: 16px;
+  height: 16px;
+  vertical-align: text-bottom;
+}
+
+/* Country flag styling */
+.country-flag {
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
 

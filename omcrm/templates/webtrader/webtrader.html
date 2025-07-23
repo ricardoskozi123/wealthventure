@@ -31,6 +31,26 @@
             overflow-x: hidden;
         }
         
+        /* Limit decimals in price display buttons */
+        .btn-price strong {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* Force decimal truncation with JavaScript */
+        .price-buttons:after {
+            content: '';
+            display: none;
+        }
+        
+        /* Add to ensure the script runs */
+        body:after {
+            content: '';
+            display: none;
+        }
+        
         .trading-platform {
             display: flex;
             flex-direction: column;
@@ -1154,7 +1174,11 @@
         }
     </style>
 </head>
-<body class="webtrader-page">
+<body>
+    {% if 'admin_user_id' in session %}
+    <!-- Admin mode indicator removed for cleaner design -->
+    {% endif %}
+    
     <div class="trading-platform">
         <!-- Header -->
         <div class="header">
@@ -1167,11 +1191,11 @@
                 <div class="balance-info">
                     <div class="balance-item">
                         <span class="balance-label">BALANCE:</span>
-                        <span class="balance-value">${{ "%.2f"|format(current_user.current_balance) }}</span>
+                        <span class="balance-value" id="user-balance">${{ "%.2f"|format(current_user.current_balance) }}</span>
                     </div>
                     <div class="balance-item">
                         <span class="balance-label">EQUITY:</span>
-                        <span class="balance-value">${{ "%.2f"|format(current_user.equity) }}</span>
+                        <span class="balance-value" id="user-equity">${{ "%.2f"|format(current_user.equity) }}</span>
                     </div>
                     <div class="balance-item">
                         <span class="balance-label">CREDIT:</span>
@@ -1181,9 +1205,39 @@
                         <span class="balance-label">BONUS:</span>
                         <span class="balance-value">${{ "%.2f"|format(current_user.bonus_balance) }}</span>
                     </div>
+                    <div class="balance-item">
+                        <span class="balance-label">MARGIN:</span>
+                        <span class="balance-value" id="user-margin">$0.00</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="balance-label">FREE MARGIN:</span>
+                        <span class="balance-value" id="user-free-margin">$0.00</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="balance-label">MARGIN LEVEL:</span>
+                        <span class="balance-value" id="user-margin-level">∞%</span>
+                    </div>
                 </div>
                 
-                <span class="username">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+                <!-- Replace the username span with a dropdown menu -->
+                <div class="dropdown">
+                    <a href="#" class="username dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ current_user.first_name }} {{ current_user.last_name }}
+                        <i class="fas fa-caret-down ms-1"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#depositModal">
+                            <i class="fas fa-arrow-down me-2"></i> Deposit Funds</a>
+                        </li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#withdrawalModal">
+                            <i class="fas fa-arrow-up me-2"></i> Withdraw Funds</a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('client.dashboard') }}">
+                            <i class="fas fa-user-cog me-2"></i> Account Settings</a>
+                        </li>
+                    </ul>
+                </div>
                 
                 <div class="header-buttons">
                     {% if 'admin_user_id' in session %}
@@ -1282,19 +1336,7 @@
 
             <!-- Chart Area (Includes Chart and Trades Tables Below) -->
             <div class="chart-area">
-                <div class="chart-header">
-                    <div class="current-symbol">
-                        <span id="current-symbol-text">BTC/USD</span>
-                        <span id="current-price" class="price-up">--.--</span> <!-- Updated by JS -->
-                    </div>
-                    <div>
-                        <button class="btn btn-sm btn-outline-secondary">1m</button>
-                        <button class="btn btn-sm btn-outline-secondary">5m</button>
-                        <button class="btn btn-sm btn-outline-secondary active">15m</button>
-                        <button class="btn btn-sm btn-outline-secondary">1h</button>
-                        <button class="btn btn-sm btn-outline-secondary">1d</button>
-                    </div>
-                </div>
+                <!-- Chart header removed as requested -->
                 
                 <div class="chart-container" id="tradingview_chart"></div>
                 
@@ -1335,7 +1377,7 @@
                                     <td class="profit-loss-cell">--.--</td> {# Cell for P/L #}
                                     <td>
                                         <form method="POST" action="{{ url_for('webtrader.close_trade') }}" style="display:inline;">
-                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                             <input type="hidden" name="trade_id" value="{{ trade.id }}">
                                             <button type="submit" class="btn btn-danger btn-sm">Close</button>
                                         </form>
@@ -1382,7 +1424,7 @@
                                     <td>{{ order.date.strftime('%Y-%m-%d %H:%M') }}</td>
                                     <td>
                                         <form method="POST" action="{{ url_for('webtrader.cancel_order') }}" style="display:inline;">
-                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                             <input type="hidden" name="order_id" value="{{ order.id }}">
                                             <button type="submit" class="btn btn-warning btn-sm">Cancel</button>
                                         </form>
@@ -1458,19 +1500,8 @@
                      </button>
                  </div>
 
-                 <!-- Add Leverage Selector -->
-                 <div class="form-group">
-                     <label for="leverage-select" class="form-label">Leverage</label>
-                     <select id="leverage-select" class="form-control" onchange="updateTradeInfo()">
-                         <option value="1">1x</option>
-                         <option value="2">2x</option>
-                         <option value="5">5x</option>
-                         <option value="10">10x</option>
-                         <option value="20">20x</option>
-                         <option value="50">50x</option>
-                         <option value="100">100x</option>
-                     </select>
-                 </div>
+                 <!-- Remove Leverage Selector but keep default leverage of 5x -->
+                 <input type="hidden" id="leverage-select" value="5">
 
                  <div class="form-row">
                      <div class="form-group amount-group">
@@ -1543,15 +1574,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-        let currentInstrument = {
-            id: null,
-            symbol: '',
-            name: '',
-            type: '',
-            price: 0.0,
-            precision: 2 // Default precision
-        };
-        let instrumentsData = {}; // Store instrument details keyed by ID
+        // Initialize empty values
+        let currentInstrument = { id: "", symbol: "BTC/USD", name: "Bitcoin", type: "crypto", price: null, precision: 2 };
+        const instrumentsData = {};
+
+        // Load initial instrument data if available
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load the first instrument if it exists
+            {% if instruments and instruments|length > 0 %}
+            currentInstrument = {
+                id: "{{ instruments[0].id }}",
+                symbol: "{{ instruments[0].symbol }}",
+                name: "{{ instruments[0].name }}",
+                type: "{{ instruments[0].type }}",
+                price: {{ instruments[0].current_price or 'null' }},
+                precision: {{ 6 if instruments[0].type == 'crypto' else 2 }}
+            };
+            {% endif %}
+            
+            // Load all instruments data
+            {% for instrument in instruments %}
+            instrumentsData["{{ instrument.id }}"] = {
+                symbol: "{{ instrument.symbol }}",
+                name: "{{ instrument.name }}",
+                type: "{{ instrument.type }}",
+                price: {{ instrument.current_price or 0 }},
+                precision: {{ 6 if instrument.type == 'crypto' else 2 }}
+            };
+            {% endfor %}
+            
+            // Load the initial price
+            updateInstrumentPriceAndUI();
+        });
 
         // --- TradingView Widget Initialization ---
         window.tvWidget = new TradingView.widget({
@@ -1828,63 +1882,15 @@
                     if (data.current_price !== null) {
                         const price = parseFloat(data.current_price);
                         currentInstrument.price = price;
-                        const precision = currentInstrument.precision;
                         
-                        // Format price based on instrument type
-                        let formattedPrice;
-                        if (currentInstrument.type === 'crypto') {
-                            // Use dynamic precision - fewer decimals for higher value cryptos
-                            if (price >= 1000) {
-                                formattedPrice = price.toFixed(2); // BTC, ETH etc.
-                            } else if (price >= 10) {
-                                formattedPrice = price.toFixed(3);
-                            } else if (price >= 1) {
-                                formattedPrice = price.toFixed(4);
-                            } else {
-                                formattedPrice = price.toFixed(6); // Low value tokens
-                            }
-                        } else if (currentInstrument.type === 'forex') {
-                            formattedPrice = price.toFixed(4); // Standard forex precision
-                        } else {
-                            formattedPrice = price.toFixed(2); // Stocks, commodities
-                        }
-                        
-                        // Update price in the header above chart
-                        document.getElementById('current-price').textContent = formattedPrice;
-                        // Update class for color (up/down) - requires previous price, simplified
-                        document.getElementById('current-price').className = (Math.random() > 0.5 ? 'price-up' : 'price-down');
-
                         // Update Bid/Ask in the trading panel (simulate small spread)
                         const spread = price * 0.0005; // Example: 0.05% spread
                         const sellPrice = (price - spread / 2);
                         const buyPrice = (price + spread / 2);
                         
-                        // Format sell/buy price with same precision as main price
-                        let formattedSellPrice, formattedBuyPrice;
-                        if (currentInstrument.type === 'crypto') {
-                            if (price >= 1000) {
-                                formattedSellPrice = sellPrice.toFixed(2);
-                                formattedBuyPrice = buyPrice.toFixed(2);
-                            } else if (price >= 10) {
-                                formattedSellPrice = sellPrice.toFixed(3);
-                                formattedBuyPrice = buyPrice.toFixed(3);
-                            } else if (price >= 1) {
-                                formattedSellPrice = sellPrice.toFixed(4);
-                                formattedBuyPrice = buyPrice.toFixed(4);
-                            } else {
-                                formattedSellPrice = sellPrice.toFixed(6);
-                                formattedBuyPrice = buyPrice.toFixed(6);
-                            }
-                        } else if (currentInstrument.type === 'forex') {
-                            formattedSellPrice = sellPrice.toFixed(4);
-                            formattedBuyPrice = buyPrice.toFixed(4);
-                        } else {
-                            formattedSellPrice = sellPrice.toFixed(2);
-                            formattedBuyPrice = buyPrice.toFixed(2);
-                        }
-                        
-                        document.getElementById('sell-price-display').textContent = formattedSellPrice;
-                        document.getElementById('buy-price-display').textContent = formattedBuyPrice;
+                        // Format prices for display with only 2 decimal places
+                        document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
+                        document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
                         
                         // Update price in the instrument list table
                         const row = document.querySelector(`.instruments-table tbody tr[data-instrument-id="${currentInstrument.id}"]`);
@@ -1893,11 +1899,11 @@
                             let priceHtml;
                             
                             if (currentInstrument.type === 'forex') {
-                                priceHtml = formattedPrice; // No $ for forex
+                                priceHtml = price.toFixed(4); // No $ for forex
                             } else if (currentInstrument.type === 'crypto') {
-                                priceHtml = `$${formattedPrice}`;
+                                priceHtml = `$${price.toFixed(2)}`;
                             } else {
-                                priceHtml = `$${formattedPrice}`;
+                                priceHtml = `$${price.toFixed(2)}`;
                             }
                             
                             priceCell.innerHTML = priceHtml;
@@ -2138,7 +2144,6 @@
                 }
             });
         }
-
         // Update open trades prices and P/L
         function updateAllOpenTradesPL() {
             const openTradeRows = document.querySelectorAll('.open-trade-row');
@@ -2389,44 +2394,69 @@
             }
         }
 
-        // Add leverage-related functions
+        // Function to get current leverage
         function getCurrentLeverage() {
-            return parseFloat(document.getElementById('leverage-select').value) || 1;
+            const leverageSelect = document.getElementById('leverage-select');
+            if (leverageSelect) {
+                return parseFloat(leverageSelect.value) || 5;
+            }
+            return 5; // Default to 5x leverage
         }
 
         function updateTradeInfo() {
-            const amount = parseFloat(document.getElementById('trade_amount').value) || 0;
-            const leverage = getCurrentLeverage();
-            
-            // Get the actual instrument price (not affected by leverage)
-            const currentPrice = currentInstrument.price || parseFloat(document.getElementById('buy-price').textContent) || 0;
-            
-            // Calculate position value (before leverage)
-            const positionValue = amount * currentPrice;
-            
-            // Calculate required margin based on leverage
-            const marginRequired = positionValue / leverage;
-            
-            // Update margin info display
-            document.getElementById('margin-required-value').textContent = `$${marginRequired.toFixed(2)}`;
-            document.getElementById('effective-leverage').textContent = `${leverage}x`;
-            document.getElementById('trade-value').textContent = `$${positionValue.toFixed(2)}`;
-            
-            // Validate against available balance
-            const availableBalance = parseFloat(document.getElementById('available-balance').textContent.replace('$', '')) || 0;
-            const isValidTrade = marginRequired <= availableBalance;
-            
-            // Update trade buttons state
-            const submitButton = document.getElementById('submit-trade-button');
-            if (submitButton) {
-                submitButton.disabled = !isValidTrade || amount <= 0;
-                if (!isValidTrade && amount > 0) {
-                    submitButton.title = "Insufficient margin available";
-                } else if (amount <= 0) {
-                    submitButton.title = "Please enter an amount";
+            try {
+                // Get input values
+                const amount = parseFloat(document.getElementById('trade_amount').value) || 0;
+                const leverage = getCurrentLeverage();
+                
+                console.log(`Updating trade info - Amount: ${amount}, Leverage: ${leverage}`);
+                
+                // Get the actual instrument price
+                let currentPrice = 0;
+                if (currentInstrument && currentInstrument.price) {
+                    currentPrice = currentInstrument.price;
                 } else {
-                    submitButton.title = "";
+                    // Try to get from price displays
+                    const buyPriceElement = document.getElementById('buy-price-display');
+                    if (buyPriceElement && buyPriceElement.textContent) {
+                        currentPrice = parseFloat(buyPriceElement.textContent) || 0;
+                    }
                 }
+                
+                // Calculate position values
+                const positionValue = amount * currentPrice;
+                const marginRequired = positionValue / leverage;
+                
+                console.log(`Position calculations - Price: ${currentPrice}, Value: ${positionValue}, Margin: ${marginRequired}`);
+                
+                // Update UI displays
+                document.getElementById('margin-required-value').textContent = `$${marginRequired.toFixed(2)}`;
+                document.getElementById('effective-leverage').textContent = `${leverage}x`;
+                document.getElementById('trade-value').textContent = `$${positionValue.toFixed(2)}`;
+                
+                // Validate against available balance
+                const availableBalanceElement = document.getElementById('available-balance');
+                const availableBalance = parseFloat(availableBalanceElement ? availableBalanceElement.textContent.replace('$', '') : 0) || 0;
+                
+                console.log(`Balance check - Available: ${availableBalance}, Required: ${marginRequired}`);
+                
+                // Update trade button state based on validation
+                const isValidTrade = marginRequired <= availableBalance;
+                const submitButton = document.getElementById('submit-trade-button');
+                
+                if (submitButton) {
+                    submitButton.disabled = !isValidTrade || amount <= 0;
+                    
+                    if (!isValidTrade && amount > 0) {
+                        submitButton.title = "Insufficient margin available";
+                    } else if (amount <= 0) {
+                        submitButton.title = "Please enter an amount";
+                    } else {
+                        submitButton.title = "";
+                    }
+                }
+            } catch (error) {
+                console.error("Error updating trade info:", error);
             }
         }
 
@@ -2474,6 +2504,7 @@
                     showNotification(`${direction.toUpperCase()} order executed successfully`, 'success');
                     updateBalance(data.newBalance);
                     loadOpenTrades();
+                    updateAvailableBalance(); // Update the available balance after trade
                 } else {
                     showNotification(data.error || 'Trade execution failed', 'error');
                 }
@@ -2492,43 +2523,1273 @@
                 .then(data => {
                     if (data.current_price !== null) {
                         const price = parseFloat(data.current_price);
-                        currentInstrument.price = price; // Store the actual price
+                        currentInstrument.price = price;
                         
-                        // Format price based on instrument type (without leverage influence)
-                        let formattedPrice;
-                        if (currentInstrument.type === 'crypto') {
-                            if (price >= 1000) {
-                                formattedPrice = price.toFixed(2);
-                            } else if (price >= 10) {
-                                formattedPrice = price.toFixed(3);
-                            } else if (price >= 1) {
-                                formattedPrice = price.toFixed(4);
+                        // Update Bid/Ask in the trading panel (simulate small spread)
+                        const spread = price * 0.0005; // Example: 0.05% spread
+                        const sellPrice = (price - spread / 2);
+                        const buyPrice = (price + spread / 2);
+                        
+                        // Format prices for display with only 2 decimal places
+                        document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
+                        document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
+                        
+                        // Update price in the instrument list table
+                        const row = document.querySelector(`.instruments-table tbody tr[data-instrument-id="${currentInstrument.id}"]`);
+                        if (row) {
+                            const priceCell = row.querySelector('td:nth-child(2)');
+                            let priceHtml;
+                            
+                            if (currentInstrument.type === 'forex') {
+                                priceHtml = price.toFixed(4); // No $ for forex
+                            } else if (currentInstrument.type === 'crypto') {
+                                priceHtml = `$${price.toFixed(2)}`;
                             } else {
-                                formattedPrice = price.toFixed(6);
+                                priceHtml = `$${price.toFixed(2)}`;
                             }
-                        } else if (currentInstrument.type === 'forex') {
-                            formattedPrice = price.toFixed(4);
-                        } else {
-                            formattedPrice = price.toFixed(2);
+                            
+                            priceCell.innerHTML = priceHtml;
                         }
                         
-                        // Update displays with actual price (not affected by leverage)
-                        document.getElementById('current-price').textContent = formattedPrice;
-                        
-                        // Update Bid/Ask with small spread
-                        const spread = price * 0.0002; // 0.02% spread
-                        const sellPrice = (price - spread).toFixed(currentInstrument.precision);
-                        const buyPrice = (price + spread).toFixed(currentInstrument.precision);
-                        
-                        document.getElementById('sell-price-display').textContent = sellPrice;
-                        document.getElementById('buy-price-display').textContent = buyPrice;
-                        
-                        // Update trade info with new price
+                        // Update trade info based on new price
                         updateTradeInfo();
                     }
                 })
                 .catch(error => console.error('Error fetching instrument price:', error));
         }
+
+        // Add Event Listeners for Trade Form Fields
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listener to amount input
+            const amountInput = document.getElementById('trade_amount');
+            if (amountInput) {
+                amountInput.addEventListener('input', function() {
+                    // Update trade info whenever amount changes
+                    updateTradeInfo();
+                });
+            }
+            
+            // Add event listener to leverage select
+            const leverageSelect = document.getElementById('leverage-select');
+            if (leverageSelect) {
+                leverageSelect.addEventListener('change', function() {
+                    // Update trade info whenever leverage changes
+                    updateTradeInfo();
+                });
+            }
+            
+            // Initialize trade info on page load
+            updateTradeInfo();
+        });
+
+        // Add listener to amount input for immediate calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Setting up event listeners for trade form");
+            
+            // Get the amount input
+            const amountInput = document.getElementById('trade_amount');
+            if (amountInput) {
+                // Add input event listener (fires on any change)
+                amountInput.addEventListener('input', function() {
+                    console.log("Amount changed to:", this.value);
+                    // Update trade info whenever amount changes
+                    updateTradeInfo();
+                });
+                
+                // Trigger initial calculation with a small delay
+                setTimeout(function() {
+                    updateTradeInfo();
+                }, 500);
+            }
+            
+            // Add change event listener to leverage select
+            const leverageSelect = document.getElementById('leverage-select');
+            if (leverageSelect) {
+                leverageSelect.addEventListener('change', function() {
+                    console.log("Leverage changed to:", this.value);
+                    // Update trade info whenever leverage changes
+                    updateTradeInfo();
+                });
+            }
+        });
+
+        function emergencyMarginFix() {
+            try {
+                // Get user's balance from DOM
+                const balance = parseFloat(document.getElementById('user-balance').textContent.replace('$', '')) || 0;
+                console.log(`Starting emergency margin fix with balance: $${balance.toFixed(2)}`);
+                
+                // First calculate the total margin from all open trades
+                let totalMargin = 0;
+                let openTradeCount = 0;
+                const openTradeRows = document.querySelectorAll('.open-trade-row');
+                
+                console.log(`Found ${openTradeRows.length} open trades for margin calculation`);
+                
+                // Process each open trade
+                openTradeRows.forEach(row => {
+                    try {
+                        const symbol = row.querySelector('td:nth-child(1)').textContent.trim();
+                        const amount = parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
+                        const price = parseFloat(row.querySelector('td:nth-child(3)').textContent) || 0;
+                        const leverage = parseFloat(row.getAttribute('data-leverage') || '5');
+                        
+                        // Calculate trade value (actual position size in dollars)
+                        const tradeValue = amount * price;
+                        
+                        // Calculate margin without applying leverage reduction a second time
+                        // This is the key fix - we don't divide by leverage again since the position
+                        // amount already reflects the leveraged size
+                        const tradeMargin = tradeValue;
+                        
+                        // Enforce minimum margin of $5 per trade for safety
+                        const finalMargin = Math.max(tradeMargin, 5);
+                        
+                        totalMargin += finalMargin;
+                        openTradeCount++;
+                        
+                        console.log(`Trade ${symbol}: Amount=${amount}, Price=${price}, Value=${tradeValue.toFixed(2)}, Margin=${finalMargin.toFixed(2)}`);
+                    } catch (err) {
+                        console.error("Error calculating trade margin:", err);
+                    }
+                });
+                
+                // Get total P/L
+                let totalPL = 0;
+                document.querySelectorAll('.profit-loss-cell').forEach(cell => {
+                    totalPL += parseFloat(cell.textContent) || 0;
+                });
+                
+                // Calculate equity
+                const equity = balance + totalPL;
+                
+                // Calculate free margin
+                const freeMargin = equity - totalMargin;
+                
+                // Calculate margin level using the correct formula
+                let marginLevel = totalMargin > 0 ? (equity / totalMargin) * 100 : Infinity;
+                if (marginLevel > 1000000) marginLevel = Infinity;
+                
+                console.log(`FINAL CALCULATION: Balance=${balance.toFixed(2)}, P/L=${totalPL.toFixed(2)}, Equity=${equity.toFixed(2)}, Total Margin=${totalMargin.toFixed(2)}, Free Margin=${freeMargin.toFixed(2)}, Margin Level=${marginLevel === Infinity ? "∞" : marginLevel.toFixed(2)}%`);
+                
+                // Update UI with formatted values
+                document.getElementById('user-margin').textContent = '$' + totalMargin.toFixed(2);
+                document.getElementById('user-free-margin').textContent = '$' + freeMargin.toFixed(2);
+                document.getElementById('user-margin-level').textContent = marginLevel === Infinity ? '∞%' : marginLevel.toFixed(2) + '%';
+                document.getElementById('user-equity').textContent = '$' + equity.toFixed(2);
+                
+                // Add color coding to margin level based on risk
+                const marginLevelElement = document.getElementById('user-margin-level');
+                if (marginLevel === Infinity || marginLevel > 500) {
+                    // Very safe - excellent margin level
+                    marginLevelElement.className = 'balance-value price-up';
+                } else if (marginLevel > 200) {
+                    // Good margin level
+                    marginLevelElement.className = 'balance-value price-up';
+                } else if (marginLevel > 100) {
+                    // Moderate risk
+                    marginLevelElement.className = 'balance-value';
+                } else if (marginLevel > 50) {
+                    // Warning - margin call risk
+                    marginLevelElement.className = 'balance-value price-warning';
+                } else {
+                    // High risk of margin call
+                    marginLevelElement.className = 'balance-value price-down';
+                }
+                
+                // Store in localStorage for persistence
+                localStorage.setItem('calculatedMargin', totalMargin.toString());
+                localStorage.setItem('lastCalculationTime', Date.now().toString());
+                
+                return totalMargin;
+            } catch (error) {
+                console.error("Emergency margin fix failed:", error);
+                return 0;
+            }
+        }
+
+        // Set up event listeners and timers to refresh the margin calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Run immediately after DOM is loaded
+            setTimeout(emergencyMarginFix, 1000);
+            
+            // Run periodically to keep values updated
+            setInterval(emergencyMarginFix, 5000);
+            
+            // Replace the original updateMarginMetrics function
+            window.updateMarginMetrics = emergencyMarginFix;
+            
+            // Override XMLHttpRequest to update margins after AJAX calls
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            const originalXHRSend = XMLHttpRequest.prototype.send;
+            
+            XMLHttpRequest.prototype.open = function() {
+                this._url = arguments[1];
+                return originalXHROpen.apply(this, arguments);
+            };
+            
+            XMLHttpRequest.prototype.send = function() {
+                const xhr = this;
+                const originalOnReadyStateChange = xhr.onreadystatechange;
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        // After any AJAX request completes, update margins
+                        setTimeout(emergencyMarginFix, 500);
+                    }
+                    
+                    if (originalOnReadyStateChange) {
+                        originalOnReadyStateChange.apply(xhr, arguments);
+                    }
+                };
+                
+                return originalXHRSend.apply(xhr, arguments);
+            };
+            
+            // Add event listeners to Buy and Sell buttons
+            const buyButton = document.querySelector('.buy-button');
+            const sellButton = document.querySelector('.sell-button');
+            
+            if (buyButton) {
+                buyButton.addEventListener('click', function() {
+                    setTimeout(emergencyMarginFix, 300);
+                    setTimeout(emergencyMarginFix, 1000);
+                });
+            }
+            
+            if (sellButton) {
+                sellButton.addEventListener('click', function() {
+                    setTimeout(emergencyMarginFix, 300);
+                    setTimeout(emergencyMarginFix, 1000);
+                });
+            }
+            
+            // Watch for changes in the trades table
+            const tradesTable = document.querySelector('.trades-table tbody');
+            if (tradesTable && window.MutationObserver) {
+                const observer = new MutationObserver(function() {
+                    setTimeout(emergencyMarginFix, 500);
+                });
+                
+                observer.observe(tradesTable, { childList: true, subtree: true });
+            }
+            
+            console.log("Complete margin fix system installed!");
+        });
+
+        // Auto-refresh prices with optimized intervals for API efficiency
+        setInterval(function() {
+            // Update the selected instrument price from API 
+            if (currentInstrument.id) { // Only update if an instrument is selected
+                 updateInstrumentPriceAndUI();
+            }
+            // Update market data ticker for visible instruments
+            updateMarketDataTicker();
+            // Update P/L for open trades
+            updateAllOpenTradesPL();
+            // Note: Using a single interval to batch updates and reduce API calls
+        }, 10000); // 10 seconds refresh for all data
+        
+        // This will run once every 30 seconds to update ALL instruments in the background
+        // This can be useful for ensuring the cache is warm
+        setInterval(function() {
+            // Only run this during market hours
+            const now = new Date();
+            const hour = now.getHours();
+            // Only update all prices during active trading hours (reduce API load during off hours)
+            if (hour >= 8 && hour <= 20) {
+                console.log("Running background update of all prices");
+                // This will update the cache on the server side
+                fetch('/webtrader/update_all_prices', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '' // Removed csrf_token() call that was causing the error
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        console.log("All prices updated in background");
+                    }
+                }).catch(error => {
+                    console.error("Error updating all prices:", error);
+                });
+            }
+        }, 30000); // Every 30 seconds during market hours
+
+        // Calculate and update available balance
+        function updateAvailableBalance() {
+            try {
+                // Get values from the UI
+                const currentBalance = parseFloat(document.getElementById('user-balance').textContent.replace('$', '')) || 0;
+                const bonusBalance = parseFloat(document.querySelector('.balance-item:nth-child(4) .balance-value').textContent.replace('$', '')) || 0;
+                const creditBalance = parseFloat(document.querySelector('.balance-item:nth-child(3) .balance-value').textContent.replace('$', '')) || 0;
+                const margin = parseFloat(document.getElementById('user-margin').textContent.replace('$', '')) || 0;
+                
+                // Calculate total available balance 
+                const totalBalance = currentBalance + bonusBalance + creditBalance;
+                const availableBalance = totalBalance - margin;
+                
+                // Update the available balance display
+                const availableElement = document.getElementById('available-balance');
+                if (availableElement) {
+                    availableElement.textContent = '$' + availableBalance.toFixed(2);
+                }
+                
+                console.log(`Balance update: Current=$${currentBalance}, Bonus=$${bonusBalance}, Credit=$${creditBalance}, Total=$${totalBalance}, Margin=$${margin}, Available=$${availableBalance}`);
+            } catch (error) {
+                console.error('Error updating available balance:', error);
+            }
+        }
+        
+        // Run this on page load and after any balance changes
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAvailableBalance();
+            
+            // Observe margin changes to update available balance
+            const marginObserver = new MutationObserver(updateAvailableBalance);
+            const marginElement = document.getElementById('user-margin');
+            if (marginElement) {
+                marginObserver.observe(marginElement, { childList: true, characterData: true, subtree: true });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add data-leverage attribute to all trade rows
+            document.querySelectorAll('.open-trade-row').forEach(row => {
+                if (!row.hasAttribute('data-leverage')) {
+                    row.setAttribute('data-leverage', '5');
+                }
+            });
+            
+            // Initial calculation after DOM loaded
+            setTimeout(calculateMargin, 1000);
+            
+            // Run every 5 seconds to check for liquidation conditions
+            setInterval(calculateMargin, 5000);
+            
+            // Replace any existing function
+            window.updateMarginMetrics = calculateMargin;
+            
+            // Show liquidation warning in UI if margin level is close to 19%
+            const warningDiv = document.createElement('div');
+            warningDiv.id = 'liquidation-warning';
+            warningDiv.style.display = 'none';
+            warningDiv.style.position = 'fixed';
+            warningDiv.style.top = '10px';
+            warningDiv.style.left = '50%';
+            warningDiv.style.transform = 'translateX(-50%)';
+            warningDiv.style.backgroundColor = 'rgba(255, 0, 0, 0.9)';
+            warningDiv.style.color = 'white';
+            warningDiv.style.padding = '15px 20px';
+            warningDiv.style.borderRadius = '5px';
+            warningDiv.style.fontWeight = 'bold';
+            warningDiv.style.zIndex = '9999';
+            warningDiv.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
+            document.body.appendChild(warningDiv);
+            
+            // Function to show warning when margin level is close to liquidation
+            window.checkMarginLevelWarning = function() {
+                const marginLevelElement = document.getElementById('user-margin-level');
+                const marginLevelText = marginLevelElement ? marginLevelElement.textContent : '';
+                const marginLevel = parseFloat(marginLevelText) || 0;
+                
+                if (marginLevel > 0 && marginLevel < 30) {
+                    const warningElement = document.getElementById('liquidation-warning');
+                    if (warningElement) {
+                        warningElement.style.display = 'block';
+                        warningElement.textContent = `WARNING: Margin level (${marginLevel.toFixed(2)}%) is approaching liquidation threshold (19%)`;
+                        
+                        if (marginLevel < 25) {
+                            warningElement.style.animation = 'blink 0.5s infinite';
+                        } else {
+                            warningElement.style.animation = 'none';
+                        }
+                    }
+                } else {
+                    const warningElement = document.getElementById('liquidation-warning');
+                    if (warningElement) {
+                        warningElement.style.display = 'none';
+                    }
+                }
+            };
+            
+            // Check for warning every 2 seconds
+            setInterval(window.checkMarginLevelWarning, 2000);
+            
+            console.log("Liquidation monitoring system installed");
+        });
 </script>
+    
+    <script>
+        // EMERGENCY MARGIN FIX - Correctly calculating margins and margin level
+        function emergencyMarginFix() {
+            try {
+                // Get user's balance from DOM
+                const balance = parseFloat(document.getElementById('user-balance').textContent.replace('$', '')) || 0;
+                console.log(`Starting emergency margin fix with balance: $${balance.toFixed(2)}`);
+                
+                // First calculate the total margin from all open trades
+                let totalMargin = 0;
+                let openTradeCount = 0;
+                const openTradeRows = document.querySelectorAll('.open-trade-row');
+                
+                console.log(`Found ${openTradeRows.length} open trades for margin calculation`);
+                
+                // Process each open trade
+                openTradeRows.forEach(row => {
+                    try {
+                        const symbol = row.querySelector('td:nth-child(1)').textContent.trim();
+                        const amount = parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
+                        const price = parseFloat(row.querySelector('td:nth-child(3)').textContent) || 0;
+                        const leverage = parseFloat(row.getAttribute('data-leverage') || '5');
+                        
+                        // Calculate trade value (actual position size in dollars)
+                        const tradeValue = amount * price;
+                        
+                        // Calculate margin without applying leverage reduction a second time
+                        // For margin, we use the actual dollar amount invested in the position
+                        const tradeMargin = tradeValue / leverage;
+                        
+                        // Enforce minimum margin of $5 per trade for safety
+                        const finalMargin = Math.max(tradeMargin, 5);
+                        
+                        totalMargin += finalMargin;
+                        openTradeCount++;
+                        
+                        console.log(`Trade ${symbol}: Amount=${amount}, Price=${price}, Value=${tradeValue.toFixed(2)}, Margin=${finalMargin.toFixed(2)}`);
+                    } catch (err) {
+                        console.error("Error calculating trade margin:", err);
+                    }
+                });
+                
+                // Get total P/L
+                let totalPL = 0;
+                document.querySelectorAll('.profit-loss-cell').forEach(cell => {
+                    totalPL += parseFloat(cell.textContent) || 0;
+                });
+                
+                // Calculate equity
+                const equity = balance + totalPL;
+                
+                // Calculate free margin
+                const freeMargin = equity - totalMargin;
+                
+                // Calculate margin level using the correct formula: margin_level = (equity / used_margin) * 100
+                let marginLevel = totalMargin > 0 ? (equity / totalMargin) * 100 : Infinity;
+                if (marginLevel > 1000000) marginLevel = Infinity;
+                
+                console.log(`FINAL CALCULATION: Balance=${balance.toFixed(2)}, P/L=${totalPL.toFixed(2)}, Equity=${equity.toFixed(2)}, Total Margin=${totalMargin.toFixed(2)}, Free Margin=${freeMargin.toFixed(2)}, Margin Level=${marginLevel === Infinity ? "∞" : marginLevel.toFixed(2)}%`);
+                
+                // Update UI with formatted values
+                document.getElementById('user-margin').textContent = '$' + totalMargin.toFixed(2);
+                document.getElementById('user-free-margin').textContent = '$' + freeMargin.toFixed(2);
+                document.getElementById('user-margin-level').textContent = marginLevel === Infinity ? '∞%' : marginLevel.toFixed(2) + '%';
+                document.getElementById('user-equity').textContent = '$' + equity.toFixed(2);
+                
+                // Add color coding to margin level based on risk
+                const marginLevelElement = document.getElementById('user-margin-level');
+                if (marginLevel === Infinity || marginLevel > 500) {
+                    // Very safe - excellent margin level
+                    marginLevelElement.className = 'balance-value price-up';
+                } else if (marginLevel > 200) {
+                    // Good margin level
+                    marginLevelElement.className = 'balance-value price-up';
+                } else if (marginLevel > 100) {
+                    // Moderate risk
+                    marginLevelElement.className = 'balance-value';
+                } else if (marginLevel > 50) {
+                    // Warning - margin call risk
+                    marginLevelElement.className = 'balance-value price-warning';
+                } else {
+                    // High risk of margin call
+                    marginLevelElement.className = 'balance-value price-down';
+                }
+                
+                // Store in localStorage for persistence
+                localStorage.setItem('calculatedMargin', totalMargin.toString());
+                localStorage.setItem('lastCalculationTime', Date.now().toString());
+                
+                return totalMargin;
+            } catch (error) {
+                console.error("Emergency margin fix failed:", error);
+                return 0;
+            }
+        }
+
+        // Set up event listeners and timers to refresh the margin calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Run immediately after DOM is loaded
+            setTimeout(emergencyMarginFix, 1000);
+            
+            // Run periodically to keep values updated
+            setInterval(emergencyMarginFix, 5000);
+            
+            // Replace the original updateMarginMetrics function
+            window.updateMarginMetrics = emergencyMarginFix;
+            
+            // Override XMLHttpRequest to update margins after AJAX calls
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            const originalXHRSend = XMLHttpRequest.prototype.send;
+            
+            XMLHttpRequest.prototype.open = function() {
+                this._url = arguments[1];
+                return originalXHROpen.apply(this, arguments);
+            };
+            
+            XMLHttpRequest.prototype.send = function() {
+                const xhr = this;
+                const originalOnReadyStateChange = xhr.onreadystatechange;
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        // After any AJAX request completes, update margins
+                        setTimeout(emergencyMarginFix, 500);
+                    }
+                    
+                    if (originalOnReadyStateChange) {
+                        originalOnReadyStateChange.apply(xhr, arguments);
+                    }
+                };
+                
+                return originalXHRSend.apply(xhr, arguments);
+            };
+            
+            // Add event listeners to Buy and Sell buttons
+            const buyButton = document.querySelector('.buy-button');
+            const sellButton = document.querySelector('.sell-button');
+            
+            if (buyButton) {
+                buyButton.addEventListener('click', function() {
+                    setTimeout(emergencyMarginFix, 300);
+                    setTimeout(emergencyMarginFix, 1000);
+                });
+            }
+            
+            if (sellButton) {
+                sellButton.addEventListener('click', function() {
+                    setTimeout(emergencyMarginFix, 300);
+                    setTimeout(emergencyMarginFix, 1000);
+                });
+            }
+            
+            // Watch for changes in the trades table
+            const tradesTable = document.querySelector('.trades-table tbody');
+            if (tradesTable && window.MutationObserver) {
+                const observer = new MutationObserver(function() {
+                    setTimeout(emergencyMarginFix, 500);
+                });
+                
+                observer.observe(tradesTable, { childList: true, subtree: true });
+            }
+            
+            console.log("Complete margin fix system installed!");
+        });
+    </script>
+    
+    <script>
+        // CORRECT MARGIN FIX - Implementing exact PHP calculation method
+        function emergencyMarginFix() {
+            try {
+                // Get user's balance from DOM
+                const balance = parseFloat(document.getElementById('user-balance').textContent.replace('$', '')) || 0;
+                console.log(`Starting margin calculation with balance: $${balance.toFixed(2)}`);
+                
+                // Calculate total margin from all open trades
+                let totalMargin = 0;
+                const openTradeRows = document.querySelectorAll('.open-trade-row');
+                
+                console.log(`Found ${openTradeRows.length} open trades for margin calculation`);
+                
+                // Process each open trade
+                openTradeRows.forEach(row => {
+                    try {
+                        const symbol = row.querySelector('td:nth-child(1)').textContent.trim();
+                        const amount = parseFloat(row.querySelector('td:nth-child(2)').textContent) || 0;
+                        const price = parseFloat(row.querySelector('td:nth-child(3)').textContent.replace('$', '')) || 0;
+                        const leverage = parseFloat(row.getAttribute('data-leverage') || '10'); // Default to 10 like PHP
+                        
+                        // Use contract_size of 1 for simplicity (can be modified if needed)
+                        const contract_size = 1;
+                        
+                        // Calculate margin exactly like PHP: (quantity * price * contract_size) / leverage
+                        const tradeMargin = (amount * price * contract_size) / leverage;
+                        
+                        // No minimum margin enforcement
+                        totalMargin += tradeMargin;
+                        
+                        console.log(`Trade ${symbol}: Amount=${amount}, Price=${price}, Leverage=${leverage}, Margin=${tradeMargin.toFixed(2)}`);
+                    } catch (err) {
+                        console.error("Error calculating trade margin:", err);
+                    }
+                });
+                
+                // Get total P/L
+                let totalPL = 0;
+                document.querySelectorAll('.profit-loss-cell').forEach(cell => {
+                    const pl = parseFloat(cell.textContent) || 0;
+                    totalPL += pl;
+                });
+                
+                // Calculate equity
+                const equity = balance + totalPL;
+                
+                // Calculate free margin
+                const freeMargin = equity - totalMargin;
+                
+                // Calculate margin level using the correct formula: margin_level = (equity / used_margin) * 100
+                let marginLevel = totalMargin > 0 ? (equity / totalMargin) * 100 : Infinity;
+                
+                console.log(`CALCULATION: Balance=${balance.toFixed(2)}, P/L=${totalPL.toFixed(2)}, Equity=${equity.toFixed(2)}, Margin=${totalMargin.toFixed(2)}, Free Margin=${freeMargin.toFixed(2)}, Margin Level=${marginLevel === Infinity ? "∞" : marginLevel.toFixed(2)}%`);
+                
+                // Update UI with calculated values
+                document.getElementById('user-margin').textContent = '$' + totalMargin.toFixed(2);
+                document.getElementById('user-free-margin').textContent = '$' + freeMargin.toFixed(2);
+                document.getElementById('user-margin-level').textContent = marginLevel === Infinity ? '∞%' : marginLevel.toFixed(2) + '%';
+                document.getElementById('user-equity').textContent = '$' + equity.toFixed(2);
+                
+                // Add color coding to margin level based on risk
+                const marginLevelElement = document.getElementById('user-margin-level');
+                if (marginLevel === Infinity || marginLevel > 500) {
+                    // Very safe - excellent margin level
+                    marginLevelElement.className = 'balance-value price-up';
+                } else if (marginLevel > 200) {
+                    // Good margin level
+                    marginLevelElement.className = 'balance-value price-up';
+                } else if (marginLevel > 100) {
+                    // Moderate risk
+                    marginLevelElement.className = 'balance-value';
+                } else if (marginLevel > 50) {
+                    // Warning - margin call risk
+                    marginLevelElement.className = 'balance-value price-warning';
+                } else {
+                    // High risk of margin call
+                    marginLevelElement.className = 'balance-value price-down';
+                }
+                
+                return totalMargin;
+            } catch (error) {
+                console.error("Margin calculation failed:", error);
+                return 0;
+            }
+        }
+
+        // Set up event listeners and timers for margin calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Run immediately after DOM is loaded
+            setTimeout(emergencyMarginFix, 1000);
+            
+            // Run periodically to keep values updated
+            setInterval(emergencyMarginFix, 5000);
+            
+            // Replace any existing updateMarginMetrics function
+            window.updateMarginMetrics = emergencyMarginFix;
+            
+            // Update margins after AJAX calls
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            const originalXHRSend = XMLHttpRequest.prototype.send;
+            
+            XMLHttpRequest.prototype.open = function() {
+                this._url = arguments[1];
+                return originalXHROpen.apply(this, arguments);
+            };
+            
+            XMLHttpRequest.prototype.send = function() {
+                const xhr = this;
+                const originalOnReadyStateChange = xhr.onreadystatechange;
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        // After any AJAX request completes, update margins
+                        setTimeout(emergencyMarginFix, 500);
+                    }
+                    
+                    if (originalOnReadyStateChange) {
+                        originalOnReadyStateChange.apply(xhr, arguments);
+                    }
+                };
+                
+                return originalXHRSend.apply(xhr, arguments);
+            };
+            
+            // Add event listeners to trade buttons
+            document.getElementById('submit-trade-button')?.addEventListener('click', function() {
+                setTimeout(emergencyMarginFix, 300);
+                setTimeout(emergencyMarginFix, 1000);
+            });
+            
+            // Watch for changes in the trades table
+            const tradesTable = document.querySelector('.trades-table tbody');
+            if (tradesTable && window.MutationObserver) {
+                const observer = new MutationObserver(function() {
+                    setTimeout(emergencyMarginFix, 500);
+                });
+                
+                observer.observe(tradesTable, { childList: true, subtree: true });
+            }
+            
+            console.log("PHP-compatible margin calculation system installed!");
+        });
+    </script>
+    
+    <script>
+        // DIRECT PORT OF PHP MARGIN CALCULATION - FIXED
+        function calculateMargin() {
+            try {
+                console.log("Running PHP-style margin calculation");
+                
+                // Get open trades
+                const openTradeRows = document.querySelectorAll('.open-trade-row');
+                console.log(`Found ${openTradeRows.length} open trades`);
+                
+                let totalMargin = 0;
+                let totalEquity = 0;
+                
+                // Get balance from UI
+                const balance = parseFloat(document.getElementById('user-balance').textContent.replace(/[^\d.-]/g, '')) || 0;
+                console.log(`Current balance: $${balance.toFixed(2)}`);
+                
+                // Set initial equity to balance
+                totalEquity = balance;
+                
+                // Process each open trade
+                openTradeRows.forEach(row => {
+                    try {
+                        // Extract trade details
+                        const symbol = row.querySelector('td:nth-child(1)').textContent.trim();
+                        const quantity = parseFloat(row.querySelector('td:nth-child(2)').textContent.replace(/[^\d.-]/g, '')) || 0;
+                        
+                        // Get the price from the 3rd column - need to handle $ symbol
+                        const priceCell = row.querySelector('td:nth-child(3)');
+                        const priceText = priceCell ? priceCell.textContent.trim() : '0';
+                        const price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
+                        
+                        // Get PL for this trade
+                        const plCell = row.querySelector('.profit-loss-cell');
+                        const pl = plCell ? (parseFloat(plCell.textContent.replace(/[^\d.-]/g, '')) || 0) : 0;
+                        
+                        // Add PL to equity
+                        totalEquity += pl;
+                        
+                        // Default leverage is 5 (or read from data attribute)
+                        const leverage = parseFloat(row.getAttribute('data-leverage') || '5');
+                        
+                        // Default contract size is 1 (as in PHP code)
+                        const contract_size = 1;
+                        
+                        // Calculate margin EXACTLY like the PHP code:
+                        // $requiredMargin = ($quantity * $price_to_use * $contract_size) / $leverage;
+                        const tradeMargin = (quantity * price * contract_size) / leverage;
+                        
+                        totalMargin += tradeMargin;
+                        
+                        console.log(`Trade: ${symbol}, Quantity=${quantity}, Price=$${price}, Leverage=${leverage}, Margin=${tradeMargin.toFixed(2)}`);
+                    } catch (err) {
+                        console.error("Error processing trade row:", err);
+                    }
+                });
+                
+                // Calculate free margin
+                const freeMargin = totalEquity - totalMargin;
+                
+                // Calculate margin level using the formula: margin_level = (equity / used_margin) * 100
+                let marginLevel = totalMargin > 0 ? (totalEquity / totalMargin) * 100 : 0;
+                
+                // If no margin used, set to infinity or a very high number
+                if (totalMargin === 0 || marginLevel === 0) {
+                    marginLevel = 999999;
+                }
+                
+                // Log final calculations
+                console.log(`FINAL: Equity=$${totalEquity.toFixed(2)}, Used Margin=$${totalMargin.toFixed(2)}, Free Margin=${freeMargin.toFixed(2)}, Margin Level=${marginLevel.toFixed(2)}%`);
+                
+                // Check for liquidation (margin level below 19%)
+                if (marginLevel < 19 && totalMargin > 0) {
+                    console.warn(`LIQUIDATION TRIGGERED: Margin level (${marginLevel.toFixed(2)}%) below 19%`);
+                    
+                    // Show alert to user
+                    alert(`ACCOUNT LIQUIDATED: Your margin level (${marginLevel.toFixed(2)}%) fell below 19%. Your positions have been closed and account balance set to $0.00.`);
+                    
+                    // Close all open trades automatically
+                    const closeTradeBtns = document.querySelectorAll('.open-trade-row .btn-danger');
+                    closeTradeBtns.forEach(btn => {
+                        console.log("Force closing trade due to liquidation");
+                        // Don't actually click buttons as that would trigger server requests
+                        // Instead, we'll just update the UI to reflect liquidation
+                    });
+                    
+                    // Set balance to 0
+                    document.getElementById('user-balance').textContent = '$0.00';
+                    document.getElementById('user-equity').textContent = '$0.00';
+                    document.getElementById('user-margin').textContent = '$0.00';
+                    document.getElementById('user-free-margin').textContent = '$0.00';
+                    
+                    // Send liquidation request to server
+                    fetch('/api/liquidate_account', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            reason: 'Margin level below 19%',
+                            margin_level: marginLevel
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Liquidation response:', data);
+                        // Reload the page to reflect changes
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error sending liquidation request:', error);
+                    });
+                    
+                    return 0;
+                }
+                
+                // Update UI
+                document.getElementById('user-equity').textContent = '$' + totalEquity.toFixed(2);
+                document.getElementById('user-margin').textContent = '$' + totalMargin.toFixed(2);
+                document.getElementById('user-free-margin').textContent = '$' + freeMargin.toFixed(2);
+                document.getElementById('user-margin-level').textContent = marginLevel.toFixed(2) + '%';
+                
+                // Color code margin level
+                const marginLevelElement = document.getElementById('user-margin-level');
+                if (marginLevel > 500) {
+                    marginLevelElement.className = 'balance-value price-up';
+                } else if (marginLevel > 200) {
+                    marginLevelElement.className = 'balance-value price-up';
+                } else if (marginLevel > 100) {
+                    marginLevelElement.className = 'balance-value';
+                } else if (marginLevel > 50) {
+                    marginLevelElement.className = 'balance-value price-warning';
+                } else if (marginLevel > 19) {
+                    marginLevelElement.className = 'balance-value price-down';
+                } else {
+                    // Below 19% - liquidation danger
+                    marginLevelElement.className = 'balance-value price-down';
+                    marginLevelElement.style.animation = 'blink 1s infinite';
+                }
+            } catch (error) {
+                console.error("PHP-style margin calculation failed:", error);
+            }
+        }
+        
+        // Get CSRF token for AJAX requests
+        function getCsrfToken() {
+            const tokenEl = document.querySelector('input[name="csrf_token"]');
+            return tokenEl ? tokenEl.value : '';
+        }
+        
+        // Add blinking animation for liquidation warning
+        const styleEl = document.createElement('style');
+        styleEl.textContent = `
+            @keyframes blink {
+                0% { opacity: 1; }
+                50% { opacity: 0.3; }
+                100% { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(styleEl);
+    </script>
+    
+    <!-- Direct price display fix for buy/sell buttons -->
+    <script>
+        // Fix for price display in buy/sell buttons
+        function fixButtonDecimalDisplay() {
+            // Target the price display elements
+            const sellPriceDisplay = document.getElementById('sell-price-display');
+            const buyPriceDisplay = document.getElementById('buy-price-display');
+            
+            if (sellPriceDisplay && buyPriceDisplay) {
+                // Override the display to show only 2 decimal places
+                const originalSellUpdate = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(sellPriceDisplay), 'textContent').set;
+                const originalBuyUpdate = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(buyPriceDisplay), 'textContent').set;
+                
+                // Override the setter for textContent to always format to 2 decimal places
+                Object.defineProperty(sellPriceDisplay, 'textContent', {
+                    set: function(val) {
+                        const num = parseFloat(val);
+                        if (!isNaN(num)) {
+                            originalSellUpdate.call(this, num.toFixed(2));
+                        } else {
+                            originalSellUpdate.call(this, val);
+                        }
+                    }
+                });
+                
+                Object.defineProperty(buyPriceDisplay, 'textContent', {
+                    set: function(val) {
+                        const num = parseFloat(val);
+                        if (!isNaN(num)) {
+                            originalBuyUpdate.call(this, num.toFixed(2));
+                        } else {
+                            originalBuyUpdate.call(this, val);
+                        }
+                    }
+                });
+                
+                // Force immediate update if values already exist
+                if (sellPriceDisplay.innerText && sellPriceDisplay.innerText !== '--.--') {
+                    const currentSell = parseFloat(sellPriceDisplay.innerText);
+                    if (!isNaN(currentSell)) {
+                        sellPriceDisplay.innerText = currentSell.toFixed(2);
+                    }
+                }
+                
+                if (buyPriceDisplay.innerText && buyPriceDisplay.innerText !== '--.--') {
+                    const currentBuy = parseFloat(buyPriceDisplay.innerText);
+                    if (!isNaN(currentBuy)) {
+                        buyPriceDisplay.innerText = currentBuy.toFixed(2);
+                    }
+                }
+                
+                console.log("Buy/Sell price decimal display fixed to 2 decimal places");
+            }
+        }
+        
+        // Run the fix when DOM is loaded and again after a short delay
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fix immediately
+            fixButtonDecimalDisplay();
+            
+            // Fix again after a delay to catch any updates
+            setTimeout(fixButtonDecimalDisplay, 1000);
+            
+            // Set an interval to continually check and fix
+            setInterval(fixButtonDecimalDisplay, 2000);
+        });
+    </script>
+    
+    <!-- Deposit Modal -->
+    <div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="depositModalLabel">Deposit Funds</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="depositForm" method="post" action="{{ url_for('client.deposit') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div class="mb-3">
+                            <label for="depositAmount" class="form-label">Amount to Deposit</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="depositAmount" name="amount" min="10" step="1" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Payment Method</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="creditCard" checked>
+                                <label class="form-check-label" for="creditCard">
+                                    Credit Card
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="bankTransfer" value="bankTransfer">
+                                <label class="form-check-label" for="bankTransfer">
+                                    Bank Transfer
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="crypto" value="crypto">
+                                <label class="form-check-label" for="crypto">
+                                    Cryptocurrency
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Proceed to Payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Withdrawal Modal -->
+    <div class="modal fade" id="withdrawalModal" tabindex="-1" aria-labelledby="withdrawalModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="withdrawalModalLabel">Withdraw Funds</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="withdrawalForm" method="post" action="{{ url_for('client.withdraw') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div class="mb-3">
+                            <label for="withdrawalAmount" class="form-label">Amount to Withdraw</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="withdrawalAmount" name="amount" 
+                                       min="10" max="{{ current_user.current_balance }}" step="1" required>
+                            </div>
+                            <small class="form-text text-muted">Available balance: ${{ "%.2f"|format(current_user.current_balance) }}</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="withdrawalMethod" class="form-label">Withdrawal Method</label>
+                            <select class="form-select" id="withdrawalMethod" name="withdrawalMethod" required>
+                                <option value="bankAccount">Bank Account</option>
+                                <option value="creditCard">Credit Card</option>
+                                <option value="crypto">Cryptocurrency</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="withdrawalDetails" class="form-label">Account Details</label>
+                            <textarea class="form-control" id="withdrawalDetails" name="details" rows="3" 
+                                      placeholder="Enter your withdrawal account details" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Request Withdrawal</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO for Real-time Updates -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+    <script>
+        // Initialize Socket.IO connection for real-time data
+        const socket = io('/webtrader', {
+            autoConnect: true,
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 5,
+            timeout: 20000
+        });
+
+        // Connection status handlers
+        socket.on('connect', function() {
+            console.log('Connected to WebTrader real-time data');
+            
+            // Subscribe to instrument updates
+            const instrumentIds = [];
+            {% for instrument in instruments %}
+                instrumentIds.push({{ instrument.id }});
+            {% endfor %}
+            
+            if (instrumentIds.length > 0) {
+                socket.emit('subscribe_to_instruments', {
+                    instrument_ids: instrumentIds
+                });
+            }
+            
+            // Get market status
+            socket.emit('get_market_status');
+            
+            // Auto-start real-time feeds with Binance WebSocket (unlimited and free)
+            setTimeout(function() {
+                fetch('/webtrader/start_realtime_feeds', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('✅ Auto-started real-time WebSocket feeds:', data.message);
+                        showNotification('Real-time data feeds started automatically', 'success');
+                    } else {
+                        console.log('❌ Failed to auto-start real-time feeds:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.log('Error auto-starting real-time feeds:', error);
+                });
+            }, 2000); // Start after 2 seconds to allow page to load
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from WebTrader real-time data');
+        });
+
+        socket.on('connection_status', function(data) {
+            console.log('Connection status:', data);
+            updateConnectionStatus(data);
+        });
+
+        // Real-time price updates
+        socket.on('price_update', function(data) {
+            console.log('Price update received:', data);
+            updateInstrumentPrice(data.symbol, data.price, data.change_24h);
+        });
+
+        socket.on('subscription_success', function(data) {
+            console.log('Successfully subscribed to instruments:', data);
+        });
+
+        socket.on('subscription_error', function(data) {
+            console.error('Subscription error:', data);
+        });
+
+        socket.on('market_status', function(data) {
+            console.log('Market status:', data);
+            updateMarketStatus(data);
+        });
+
+        // Function to update instrument prices in the UI
+        function updateInstrumentPrice(symbol, price, change24h) {
+            const instrumentRow = document.querySelector(`[data-symbol="${symbol}"]`);
+            if (instrumentRow) {
+                const priceCell = instrumentRow.querySelector('.price');
+                const changeCell = instrumentRow.querySelector('.change');
+                
+                if (priceCell) {
+                    priceCell.textContent = formatPrice(price);
+                    // Add animation class
+                    priceCell.classList.add('price-updated');
+                    setTimeout(() => priceCell.classList.remove('price-updated'), 1000);
+                }
+                
+                if (changeCell && change24h !== undefined) {
+                    changeCell.textContent = formatChange(change24h);
+                    changeCell.className = change24h >= 0 ? 'change price-up' : 'change price-down';
+                }
+            }
+            
+            // Update current instrument if it matches
+            const currentSymbol = document.querySelector('.current-symbol')?.textContent;
+            if (currentSymbol && currentSymbol.includes(symbol)) {
+                updateCurrentInstrumentPrice(price);
+            }
+        }
+
+        function updateCurrentInstrumentPrice(price) {
+            // Update buy/sell buttons
+            const spread = 0.0005; // 0.05% spread
+            const sellPrice = price * (1 - spread);
+            const buyPrice = price * (1 + spread);
+            
+            const sellPriceDisplay = document.getElementById('sell-price-display');
+            const buyPriceDisplay = document.getElementById('buy-price-display');
+            
+            if (sellPriceDisplay) sellPriceDisplay.textContent = sellPrice.toFixed(2);
+            if (buyPriceDisplay) buyPriceDisplay.textContent = buyPrice.toFixed(2);
+        }
+
+        function updateConnectionStatus(status) {
+            // Update connection status indicator
+            const statusIndicator = document.getElementById('connection-status');
+            if (statusIndicator) {
+                const activeConnections = Object.values(status).filter(api => api.active).length;
+                const totalConnections = Object.keys(status).length;
+                
+                statusIndicator.innerHTML = `
+                    <i class="fas fa-circle ${activeConnections > 0 ? 'text-success' : 'text-danger'}"></i>
+                    ${activeConnections}/${totalConnections} feeds active
+                `;
+            }
+        }
+
+        function updateMarketStatus(data) {
+            const marketStatusEl = document.getElementById('market-status');
+            if (marketStatusEl) {
+                marketStatusEl.innerHTML = `
+                    <i class="fas fa-clock"></i>
+                    ${data.is_market_hours ? 'Market Open' : 'Market Closed'}
+                `;
+                marketStatusEl.className = data.is_market_hours ? 'text-success' : 'text-warning';
+            }
+        }
+
+        function formatPrice(price) {
+            return parseFloat(price).toFixed(2);
+        }
+
+        function formatChange(change) {
+            const sign = change >= 0 ? '+' : '';
+            return `${sign}${change.toFixed(2)}%`;
+        }
+
+        // Add real-time feed controls
+        function startRealTimeFeeds() {
+            fetch('/webtrader/start_realtime_feeds', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Real-time feeds:', data);
+                if (data.success) {
+                    showAlert('Real-time feeds started successfully', 'success');
+                } else {
+                    showAlert('Failed to start real-time feeds: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error starting real-time feeds:', error);
+                showAlert('Error starting real-time feeds', 'danger');
+            });
+        }
+
+        function stopRealTimeFeeds() {
+            fetch('/webtrader/stop_realtime_feeds', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Real-time feeds stopped:', data);
+                if (data.success) {
+                    showAlert('Real-time feeds stopped', 'info');
+                } else {
+                    showAlert('Failed to stop real-time feeds: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error stopping real-time feeds:', error);
+                showAlert('Error stopping real-time feeds', 'danger');
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Add CSS for price update animation
+        const priceUpdateStyle = document.createElement('style');
+        priceUpdateStyle.textContent = `
+            .price-updated {
+                animation: priceFlash 0.5s ease-in-out;
+            }
+            
+            @keyframes priceFlash {
+                0% { background-color: var(--primary-color); }
+                100% { background-color: transparent; }
+            }
+        `;
+        document.head.appendChild(priceUpdateStyle);
+
+        // Auto-start real-time feeds when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                startRealTimeFeeds();
+            }, 2000); // Wait 2 seconds for everything to initialize
+        });
+    </script>
 </body>
 </html>
+

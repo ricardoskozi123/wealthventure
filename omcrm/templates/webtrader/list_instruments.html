@@ -1,49 +1,83 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Instruments</h1>
-
-<div class="d-flex justify-content-between mb-3">
-    <div>
-        <a href="{{ url_for('webtrader.new_instrument') }}" class="btn btn-primary">New Instrument</a>
-        {% if current_user.is_admin %}
-        <form action="{{ url_for('webtrader.update_all_prices') }}" method="post" class="d-inline">
-            <button type="submit" class="btn btn-success">Update All Prices</button>
-        </form>
-        <a href="{{ url_for('webtrader.check_pending_orders') }}" class="btn btn-info">Check Pending Orders</a>
-        {% endif %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h2 class="h4">Instruments</h2>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ url_for('webtrader.new_instrument') }}" class="btn btn-primary me-2">
+                <i data-feather="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                New Instrument
+            </a>
+            {% if current_user.is_admin %}
+            <form action="{{ url_for('webtrader.update_all_prices') }}" method="post" class="d-inline me-2">
+                <button type="submit" class="btn btn-success">
+                    <i data-feather="refresh-cw" class="me-1" style="width: 16px; height: 16px;"></i>
+                    Update All Prices
+                </button>
+            </form>
+            <a href="{{ url_for('webtrader.check_pending_orders') }}" class="btn btn-info">
+                <i data-feather="clock" class="me-1" style="width: 16px; height: 16px;"></i>
+                Check Pending Orders
+            </a>
+            {% endif %}
+        </div>
     </div>
-    <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="btn btn-secondary">Back to WebTrader</a>
-</div>
 
-<table class="table mt-3">
-    <thead>
-        <tr>
-            <th>Symbol</th>
-            <th>Name</th>
-            <th>Current Price</th>
-            <th>Type</th>
-            <th>Last Updated</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for instrument in instruments %}
-        <tr>
-            <td>{{ instrument.symbol }}</td>
-            <td>{{ instrument.name }}</td>
-            <td>${{ instrument.current_price }}</td>
-            <td>{{ instrument.type }}</td>
-            <td>{% if instrument.last_updated %}{{ instrument.last_updated.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}Never{% endif %}</td>
-            <td>
-                <a href="{{ url_for('webtrader.edit_instrument', instrument_id=instrument.id) }}" class="btn btn-secondary">Edit</a>
-                <form action="{{ url_for('webtrader.delete_instrument') }}" method="post" class="d-inline">
-                    <input type="hidden" name="instrument_id" value="{{ instrument.id }}">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Current Price</th>
+                            <th>Type</th>
+                            <th>Last Updated</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for instrument in instruments %}
+                        <tr>
+                            <td><strong>{{ instrument.symbol }}</strong></td>
+                            <td>{{ instrument.name }}</td>
+                            <td>${{ instrument.current_price }}</td>
+                            <td><span class="badge bg-secondary">{{ instrument.type }}</span></td>
+                            <td>{% if instrument.last_updated %}{{ instrument.last_updated.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}Never{% endif %}</td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('webtrader.edit_instrument', instrument_id=instrument.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i data-feather="edit" style="width: 16px; height: 16px;"></i>
+                                        Edit
+                                    </a>
+                                    <form action="{{ url_for('webtrader.delete_instrument') }}" method="post" class="d-inline">
+                                        <input type="hidden" name="instrument_id" value="{{ instrument.id }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i data-feather="trash-2" style="width: 16px; height: 16px;"></i>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if not instruments %}
+            <div class="text-center py-5">
+                <i data-feather="bar-chart-2" style="width: 48px; height: 48px;" class="text-muted mb-3"></i>
+                <p class="text-muted">No instruments found. Please add an instrument to get started.</p>
+                <a href="{{ url_for('webtrader.new_instrument') }}" class="btn btn-primary">
+                    <i data-feather="plus" class="me-1"></i>
+                    Add Instrument
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

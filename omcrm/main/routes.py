@@ -18,8 +18,16 @@ main = Blueprint('main', __name__)
 
 @main.route("/")
 @main.route("/home")
-@login_required
 def home():
+    """
+    Smart routing: Show landing page for visitors, dashboard for authenticated users
+    """
+    # If user is not authenticated, show the public landing page
+    if not current_user.is_authenticated:
+        return render_template("landing.html", 
+                               title="Professional Trading Platform",
+                               platform_name="OMCRM")
+    
     # If user is a client, redirect to client dashboard
     if isinstance(current_user, Lead) and current_user.is_client:
         return redirect(url_for('client.dashboard'))
@@ -260,6 +268,13 @@ def home():
                            source_names=source_names,
                            source_counts=source_counts,
                            source_colors=source_colors)
+
+
+@main.route("/dashboard")
+@login_required
+def dashboard():
+    """Direct dashboard route for authenticated users"""
+    return redirect(url_for('main.home'))
 
 
 @main.route("/create_db")

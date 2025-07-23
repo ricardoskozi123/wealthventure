@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Confirm Delete Status</h3>
+                    <div class="card-tools">
+                        <a href="{{ url_for('leads.manage_lead_statuses') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Statuses
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to delete the status <strong>{{ status.status_name }}</strong>?</p>
+                    
+                    {% if has_leads %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> This status is currently assigned to {{ lead_count }} lead(s)/client(s). You must reassign these leads before you can delete this status.
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('leads.manage_lead_statuses') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> This action cannot be undone.
+                    </div>
+                    <form method="POST" action="{{ url_for('leads.delete_lead_status', status_id=status.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('leads.manage_lead_statuses') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger">Delete Status</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

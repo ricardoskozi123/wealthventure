@@ -1,78 +1,92 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="content-section">
-    <h2>Convert Lead to Client</h2>
-    <p>You are about to convert this lead to a client. This operation cannot be undone.</p>
-
-    <div class="lead-info">
-        <h3>Lead Information</h3>
-        <p><strong>Name:</strong> {{ lead.first_name }} {{ lead.last_name }}</p>
-        <p><strong>Company:</strong> {{ lead.company_name }}</p>
-        <p><strong>Email:</strong> {{ lead.email }}</p>
-        <p><strong>Phone:</strong> {{ lead.phone }}</p>
-    </div>
-
-    <form method="POST" action="">
-        {{ form.hidden_tag() }}
-        <fieldset class="form-group">
-            <div class="form-group">
-                {{ form.conversion_date.label(class="form-control-label") }}
-                {% if form.conversion_date.errors %}
-                    {{ form.conversion_date(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.conversion_date.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.conversion_date(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
-            <div class="form-group">
-                {{ form.assignee.label(class="form-control-label") }}
-                {% if form.assignee.errors %}
-                    {{ form.assignee(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.assignee.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.assignee(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
-            <div class="form-group">
-                {{ form.password.label(class="form-control-label") }}
-                {% if form.password.errors %}
-                    {{ form.password(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.password.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.password(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
-            <div class="form-group">
-                {{ form.confirm_password.label(class="form-control-label") }}
-                {% if form.confirm_password.errors %}
-                    {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.confirm_password.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.confirm_password(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
-        </fieldset>
-        <div class="form-group">
-            {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('leads.get_lead_view', lead_id=lead.id) }}" class="btn btn-secondary">Cancel</a>
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h4 mb-0">Convert Lead to Client</h2>
         </div>
-    </form>
+        <div class="card-body">
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                You are about to convert this lead to a client. This operation cannot be undone.
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border">
+                        <div class="card-header bg-light">
+                            <h3 class="h5 mb-0">Lead Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>Name:</strong> {{ lead.first_name }} {{ lead.last_name }}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Company:</strong> {{ lead.company_name or 'Not provided' }}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Email:</strong> {{ lead.email or 'Not provided' }}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Phone:</strong> {{ lead.phone or 'Not provided' }}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Conversion Date:</strong> <span class="badge bg-success">Today</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.assignee.label(class="form-label") }}
+                            {% if form.assignee.errors %}
+                                {{ form.assignee(class="form-select is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.assignee.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.assignee(class="form-select") }}
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {% if form.password.errors %}
+                                {{ form.password(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.password(class="form-control", placeholder="Enter a password for client login") }}
+                            {% endif %}
+                        </div>
+                        <div class="mb-4">
+                            {{ form.confirm_password.label(class="form-label") }}
+                            {% if form.confirm_password.errors %}
+                                {{ form.confirm_password(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.confirm_password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.confirm_password(class="form-control", placeholder="Confirm password") }}
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('leads.get_lead_view', lead_id=lead.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %}

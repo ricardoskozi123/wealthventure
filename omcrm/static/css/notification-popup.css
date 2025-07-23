@@ -1,0 +1,139 @@
+/* Toast notification popup styling */
+.toast-container {
+  position: fixed;
+  z-index: 9999;
+  top: 20px;
+  right: 20px;
+  max-width: 350px;
+}
+
+.toast-notification {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 10px;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-in-out;
+  border-left: 4px solid #007bff;
+  display: flex;
+  flex-direction: column;
+}
+
+.toast-notification.warning {
+  border-left-color: #ffc107;
+}
+
+.toast-notification.danger {
+  border-left-color: #dc3545;
+}
+
+.toast-notification.success {
+  border-left-color: #28a745;
+}
+
+.toast-header {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.toast-title {
+  font-weight: 600;
+  margin: 0;
+  color: #343a40;
+  display: flex;
+  align-items: center;
+}
+
+.toast-icon {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #6c757d;
+}
+
+.toast-body {
+  padding: 10px 15px;
+  color: #495057;
+}
+
+.toast-actions {
+  padding: 8px 15px;
+  display: flex;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.toast-action-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.toast-action-btn:hover {
+  text-decoration: underline;
+}
+
+.toast-progress {
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.toast-progress-bar {
+  height: 100%;
+  background-color: #007bff;
+  width: 100%;
+  transition: width linear;
+}
+
+.toast-notification.warning .toast-progress-bar {
+  background-color: #ffc107;
+}
+
+.toast-notification.danger .toast-progress-bar {
+  background-color: #dc3545;
+}
+
+.toast-notification.success .toast-progress-bar {
+  background-color: #28a745;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.toast-notification.fadeOut {
+  animation: slideOut 0.3s ease-in-out forwards;
+} 

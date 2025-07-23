@@ -206,5 +206,75 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ![Deals](https://example.com/deals.png)
 ![WebTrader](https://example.com/webtrader.png)
 
+# OMCRM Deployment Guide
+
+This repository contains a Flask-based CRM application configured for demonstration with Docker.
+
+## Prerequisites
+
+- Ubuntu 22.04 LTS
+- Docker and Docker Compose installed
+- Git installed
+
+## Deployment Steps
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/yourusername/letstrythis.git
+cd letstrythis
+```
+
+2. **Create required directories**
+
+```bash
+mkdir -p logs instance nginx
+```
+
+3. **Setup the environment variables**
+
+The default environment variables are in the `.env` file. You can modify them as needed.
+
+4. **Build and start the containers**
+
+```bash
+docker-compose up -d
+```
+
+This will start both the web application and the Nginx reverse proxy.
+
+5. **Access the application**
+
+The application will be available at:
+- http://your-server-ip
+
+## Folder Structure
+
+- `logs/`: Application logs
+- `instance/`: SQLite database and instance-specific files
+- `nginx/`: Nginx configuration files
+- `omcrm/`: Application source code
+
+## Database
+
+This demonstration uses SQLite for simplicity. The database file will be stored in the `instance` directory.
+
+## API Keys
+
+The application uses Alpha Vantage API for Forex data. The default key is included for demonstration purposes but has rate limits. For production use, obtain your own API key from [Alpha Vantage](https://www.alphavantage.co/support/#api-key).
+
+## Customization
+
+- Edit `config.py` to change application settings
+- Edit `nginx/app.conf` to customize the Nginx configuration
+- Edit `Dockerfile` to modify the container setup
+
+## Troubleshooting
+
+- Check the application logs: `docker-compose logs web`
+- Check the Nginx logs: `docker-compose logs nginx`
+- Ensure all volumes are mounted correctly
+- Verify the SQLite database has correct permissions
+
 
 

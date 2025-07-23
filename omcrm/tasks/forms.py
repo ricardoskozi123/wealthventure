@@ -19,7 +19,7 @@ def deal_query():
 
 class TaskForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(min=2, max=100)])
-    description = TextAreaField('Description', validators=[Optional()])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     due_date = DateTimeField('Due Date', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
     
     priority = SelectField('Priority', choices=[
@@ -35,13 +35,11 @@ class TaskForm(FlaskForm):
         ('cancelled', 'Cancelled')
     ], default='pending')
     
-    # Simplified assignee field - using direct selection rather than QuerySelectField
-    assignee_id = SelectField('Assignee', coerce=int, validators=[Optional()])
+    assignee_id = SelectField('Assign To', validators=[Optional()], coerce=int)
     
-    # Related entity references
-    lead_id = SelectField('Related Lead', coerce=int, validators=[Optional()])
-    deal_id = SelectField('Related Deal', coerce=int, validators=[Optional()])
-    client_id = SelectField('Related Client', coerce=int, validators=[Optional()])
+    lead_id = SelectField('Related Lead', validators=[Optional()], coerce=int)
+    deal_id = SelectField('Related Deal', validators=[Optional()], coerce=int)
+    client_id = SelectField('Related Client', validators=[Optional()], coerce=int)
     
     submit = SubmitField('Save Task')
     
@@ -118,5 +116,5 @@ class TaskFilterForm(FlaskForm):
         self.assignee_id.choices = [(0, 'All Users')] + [(user.id, f"{user.first_name} {user.last_name}") for user in users]
 
 class TaskQuickCompleteForm(FlaskForm):
-    task_id = HiddenField('Task ID', validators=[DataRequired()])
-    submit = SubmitField('Mark Complete') 
+    """Simple form for CSRF protection on task completion"""
+    task_id = HiddenField('Task ID') 

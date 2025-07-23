@@ -52,6 +52,14 @@ class Task(db.Model):
     creator_id = db.Column(db.Integer, nullable=False)
     assignee_id = db.Column(db.Integer, nullable=True)
     
+    # Define relationships
+    creator = db.relationship('User', foreign_keys=[creator_id], 
+                             backref=db.backref('created_tasks', lazy='dynamic'),
+                             primaryjoin="Task.creator_id == User.id")
+    assignee = db.relationship('User', foreign_keys=[assignee_id],
+                              backref=db.backref('assigned_tasks', lazy='dynamic'),
+                              primaryjoin="Task.assignee_id == User.id")
+    
     def __repr__(self):
         return f"Task('{self.title}', due on '{self.due_date}')"
     
@@ -118,4 +126,31 @@ class Task(db.Model):
     def mark_as_read(self):
         """Mark a task as read"""
         self.status = TaskStatus.COMPLETED
-        db.session.commit() 
+        db.session.commit()
+
+    # Property to match the template's expectation
+    @property
+    def date_created(self):
+        return self.created_on
+    
+    @property
+    def date_completed(self):
+        # This would normally come from a completed_on field, but providing a placeholder
+        if self.status == 'completed':
+            return datetime.utcnow()  # In a real app, store the actual completion date
+        return None
+
+# Add TaskComment model for task comments
+class TaskComment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    task = db.relationship('Task', backref=db.backref('comments', lazy=True))
+    user = db.relationship('User', backref=db.backref('task_comments', lazy=True))
+    
+    def __repr__(self):
+        return f"TaskComment('{self.id}', task_id='{self.task_id}')" 

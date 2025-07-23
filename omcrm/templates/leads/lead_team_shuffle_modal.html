@@ -1,0 +1,109 @@
+<!-- Lead Team Shuffle Modal -->
+<div class="modal fade ba_modal" id="leadTeamShuffleModal" tabindex="-1" role="dialog" aria-labelledby="leadTeamShuffleModalLabel"
+     aria-hidden="true">
+    <form method="POST" action="{{ url_for('leads.shuffle_leads') }}">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="leadTeamShuffleModalLabel">Shuffle Leads Among Team Members</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-notif-area"></div>
+                    
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        This will redistribute the selected leads among the team members you choose.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="team_members" class="form-label fw-bold">Select Team Members</label>
+                        <div class="mt-2">
+                            <select name="team_members" id="team_members" class="form-control select2" multiple required>
+                                {% for user in users %}
+                                    <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple team members</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="distribution_method" class="form-label fw-bold">Distribution Method</label>
+                        <div class="mt-2">
+                            <select name="distribution_method" id="distribution_method" class="form-control">
+                                <option value="random">Random (Equal Distribution)</option>
+                                <option value="sequential">Sequential (Round Robin)</option>
+                                <option value="percentage">By Percentage</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 percentage-input" style="display:none;">
+                        <label for="percentages" class="form-label fw-bold">Percentage Distribution</label>
+                        <div class="mt-2">
+                            <input type="text" name="percentages" id="percentages" class="form-control" placeholder="e.g. 30,30,40">
+                            <small class="form-text text-muted">Enter comma-separated values that sum to 100</small>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="leads_to_shuffle" name="leads_to_shuffle" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Shuffle Leads</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Check if Select2 is loaded
+    if (typeof $.fn.select2 === 'undefined') {
+        // Load Select2 CSS
+        if ($('link[href*="select2.min.css"]').length === 0) {
+            $('head').append('<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />');
+        }
+        
+        // Load Select2 JS
+        $.getScript('https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', function() {
+            initializeSelect2();
+        });
+    } else {
+        initializeSelect2();
+    }
+    
+    // Initialize Select2 function
+    function initializeSelect2() {
+        $('#team_members').select2({
+            width: '100%',
+            placeholder: 'Select team members',
+            allowClear: true,
+            dropdownParent: $('#leadTeamShuffleModal')
+        });
+    }
+    
+    // Show/hide percentage input based on distribution method
+    $('#distribution_method').change(function() {
+        if ($(this).val() === 'percentage') {
+            $('.percentage-input').show();
+        } else {
+            $('.percentage-input').hide();
+        }
+    });
+    
+    // Update the hidden input with the selected lead IDs when showing the modal
+    $('#leadTeamShuffleModal').on('show.bs.modal', function() {
+        var selectedLeads = [];
+        $('.cb:checked').each(function() {
+            selectedLeads.push($(this).val());
+        });
+        $('#leads_to_shuffle').val(selectedLeads.join(','));
+        console.log('Selected leads: ' + selectedLeads.join(','));
+    });
+});
+</script> 

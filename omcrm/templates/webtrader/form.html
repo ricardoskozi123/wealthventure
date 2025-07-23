@@ -1,18 +1,108 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>{{ title }}</h1>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="form-group">
-        {{ form.symbol.label }} {{ form.symbol(class="form-control") }}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">{{ title }}</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('webtrader.list_instruments') }}">
+            <span data-feather="arrow-left"></span>
+            Back to Instruments
+        </a>
     </div>
-    <div class="form-group">
-        {{ form.name.label }} {{ form.name(class="form-control") }}
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Instrument Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label for="symbol" class="form-label">Symbol</label>
+                        {{ form.symbol(class="form-control", id="symbol", placeholder="e.g. AAPL, BTC/USD, EUR/USD") }}
+                        {% if form.symbol.errors %}
+                            {% for error in form.symbol.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <div class="form-text text-muted">
+                            For Forex pairs, use format like EUR/USD, GBP/JPY
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        {{ form.name(class="form-control", id="name", placeholder="Full name of the instrument") }}
+                        {% if form.name.errors %}
+                            {% for error in form.name.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Instrument Type</label>
+                        {{ form.type(class="form-select", id="type") }}
+                        {% if form.type.errors %}
+                            {% for error in form.type.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('webtrader.list_instruments') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        {{ form.type.label }} {{ form.type() }}
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Instrument Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">Tips</h5>
+                    <hr>
+                    <p class="mb-1"><strong>Stock symbols:</strong> Use standard market symbols like AAPL, MSFT, GOOGL</p>
+                    <p class="mb-1"><strong>Crypto symbols:</strong> Use formats like BTC/USD, ETH/USD or just BTC</p>
+                    <p class="mb-1"><strong>Forex symbols:</strong> Use standard pair format like EUR/USD, GBP/JPY</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Save</button>
-</form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update symbol placeholder based on selected type
+    const typeSelect = document.getElementById('type');
+    const symbolInput = document.getElementById('symbol');
+    
+    function updatePlaceholder() {
+        const selectedType = typeSelect.value;
+        if (selectedType === 'stock') {
+            symbolInput.placeholder = 'e.g. AAPL, MSFT, GOOGL';
+        } else if (selectedType === 'crypto') {
+            symbolInput.placeholder = 'e.g. BTC/USD, ETH/USD, SOL';
+        } else if (selectedType === 'forex') {
+            symbolInput.placeholder = 'e.g. EUR/USD, GBP/JPY, USD/CAD';
+        }
+    }
+    
+    // Set initial placeholder
+    updatePlaceholder();
+    
+    // Update placeholder when type changes
+    typeSelect.addEventListener('change', updatePlaceholder);
+});
+</script>
 {% endblock %}

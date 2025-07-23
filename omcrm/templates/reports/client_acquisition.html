@@ -1,0 +1,458 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2 class="h4">{% if title %}{{title}}{% else %}Client Acquisition Report{% endif %}</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a class="btn btn-sm btn-outline-secondary me-2" role="button" href="{{ url_for('reports.deal_reports') }}">
+            <i data-feather="arrow-left" class="me-1" style="width: 16px; height: 16px;"></i>
+            Back to Reports
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="timeframeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i data-feather="calendar" class="me-1" style="width: 16px; height: 16px;"></i>
+                <span id="selectedTimeframe">Last 12 Months</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="timeframeDropdown">
+                <li><a class="dropdown-item timeframe-option" href="#" data-period="6">Last 6 Months</a></li>
+                <li><a class="dropdown-item timeframe-option active" href="#" data-period="12">Last 12 Months</a></li>
+                <li><a class="dropdown-item timeframe-option" href="#" data-period="24">Last 24 Months</a></li>
+                <li><a class="dropdown-item timeframe-option" href="#" data-period="all">All Time</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i data-feather="info" class="me-2" style="width: 18px; height: 18px;"></i>
+            This report tracks your client acquisition trends over time, including sources, costs, and customer lifetime value metrics.
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Total Clients</h6>
+                        <h3 class="mb-0">{{ total_clients }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-primary rounded-circle shadow">
+                        <i data-feather="users" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    {% if previous_clients > 0 %}
+                    {% set percentage_change = ((total_clients - previous_clients) / previous_clients * 100)|round(1) %}
+                    {% if percentage_change > 0 %}
+                    <span class="text-success me-2">
+                        <i data-feather="arrow-up" style="width: 14px; height: 14px;"></i> {{ percentage_change }}%
+                    </span>
+                    {% else %}
+                    <span class="text-danger me-2">
+                        <i data-feather="arrow-down" style="width: 14px; height: 14px;"></i> {{ percentage_change|abs }}%
+                    </span>
+                    {% endif %}
+                    <span class="text-muted">vs previous period</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Acquisition Cost (CAC)</h6>
+                        <h3 class="mb-0">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(avg_acquisition_cost) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-danger rounded-circle shadow">
+                        <i data-feather="dollar-sign" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    <span class="text-muted">Average per client</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">Lifetime Value (LTV)</h6>
+                        <h3 class="mb-0">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(avg_lifetime_value) }}</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-success rounded-circle shadow">
+                        <i data-feather="trending-up" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    <span class="text-muted">Average per client</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1">LTV:CAC Ratio</h6>
+                        <h3 class="mb-0">{{ ltv_cac_ratio|round(1) }}:1</h3>
+                    </div>
+                    <div class="icon-shape bg-light text-info rounded-circle shadow">
+                        <i data-feather="bar-chart-2" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+                <div class="mt-3 mb-0">
+                    {% if ltv_cac_ratio >= 3 %}
+                    <span class="text-success">Excellent</span>
+                    {% elif ltv_cac_ratio >= 2 %}
+                    <span class="text-warning">Good</span>
+                    {% else %}
+                    <span class="text-danger">Needs improvement</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Client Acquisition Trend</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="acquisitionTrendChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Client Acquisition by Source</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="acquisitionSourceChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Acquisition Cost by Source</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="acquisitionCostChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Lifetime Value by Source</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="lifetimeValueChart" width="100%" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Client Acquisition by Source</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Source</th>
+                                <th class="text-end">Clients</th>
+                                <th class="text-end">% of Total</th>
+                                <th class="text-end">Avg. CAC</th>
+                                <th class="text-end">Avg. LTV</th>
+                                <th class="text-end">LTV:CAC</th>
+                                <th class="text-end">Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for source in acquisition_sources %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar {% if loop.index == 1 %}bg-primary{% elif loop.index == 2 %}bg-success{% elif loop.index == 3 %}bg-warning{% else %}bg-secondary{% endif %} me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 6px;">
+                                            <span class="text-white">{{ source.name[:1] }}</span>
+                                        </div>
+                                        {{ source.name }}
+                                    </div>
+                                </td>
+                                <td class="text-end">{{ source.clients }}</td>
+                                <td class="text-end">
+                                    {% set percentage = (source.clients / total_clients * 100) if total_clients > 0 else 0 %}
+                                    {{ percentage|round(1) }}%
+                                </td>
+                                <td class="text-end">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(source.cac) }}</td>
+                                <td class="text-end">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(source.ltv) }}</td>
+                                <td class="text-end">
+                                    {% set ratio = source.ltv / source.cac if source.cac > 0 else 0 %}
+                                    <span class="badge {% if ratio >= 3 %}bg-success{% elif ratio >= 2 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ ratio|round(1) }}:1
+                                    </span>
+                                </td>
+                                <td class="text-end">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(source.revenue) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block additional_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Time period data
+    const timeLabels = {{ time_labels|tojson }};
+    const clientsData = {{ clients_data|tojson }};
+    const revenueData = {{ revenue_data|tojson }};
+    
+    // Source data
+    const sourceLabels = {{ source_labels|tojson }};
+    const sourceData = {{ source_data|tojson }};
+    const sourceColors = [
+        'rgba(54, 162, 235, 0.7)',
+        'rgba(75, 192, 192, 0.7)',
+        'rgba(255, 206, 86, 0.7)',
+        'rgba(153, 102, 255, 0.7)',
+        'rgba(255, 99, 132, 0.7)',
+        'rgba(255, 159, 64, 0.7)'
+    ];
+    
+    // Cost and value data
+    const sourceCACData = {{ source_cac_data|tojson }};
+    const sourceLTVData = {{ source_ltv_data|tojson }};
+    
+    // Initialize acquisition trend chart
+    const trendCtx = document.getElementById('acquisitionTrendChart').getContext('2d');
+    const trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: timeLabels,
+            datasets: [
+                {
+                    label: 'New Clients',
+                    data: clientsData,
+                    yAxisID: 'y',
+                    type: 'bar',
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Revenue',
+                    data: revenueData,
+                    yAxisID: 'y1',
+                    type: 'line',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Clients'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Revenue'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '{{ config.def_currency.symbol }} ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Initialize source distribution chart
+    const sourceCtx = document.getElementById('acquisitionSourceChart').getContext('2d');
+    const sourceChart = new Chart(sourceCtx, {
+        type: 'doughnut',
+        data: {
+            labels: sourceLabels,
+            datasets: [{
+                data: sourceData,
+                backgroundColor: sourceColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${percentage}% (${value} clients)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Initialize acquisition cost chart
+    const costCtx = document.getElementById('acquisitionCostChart').getContext('2d');
+    const costChart = new Chart(costCtx, {
+        type: 'bar',
+        data: {
+            labels: sourceLabels,
+            datasets: [{
+                label: 'Acquisition Cost',
+                data: sourceCACData,
+                backgroundColor: sourceColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '{{ config.def_currency.symbol }} ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Initialize lifetime value chart
+    const ltvCtx = document.getElementById('lifetimeValueChart').getContext('2d');
+    const ltvChart = new Chart(ltvCtx, {
+        type: 'bar',
+        data: {
+            labels: sourceLabels,
+            datasets: [{
+                label: 'Lifetime Value',
+                data: sourceLTVData,
+                backgroundColor: sourceColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '{{ config.def_currency.symbol }} ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Timeframe dropdown functionality
+    document.querySelectorAll('.timeframe-option').forEach(function(option) {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const period = this.getAttribute('data-period');
+            document.getElementById('selectedTimeframe').textContent = period === 'all' ? 'All Time' : 'Last ' + period + ' Months';
+            
+            // Here you would normally fetch new data via AJAX based on the selected period
+            // For now we'll just update the active class
+            document.querySelectorAll('.timeframe-option').forEach(function(opt) {
+                opt.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+    
+    // Initialize feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}
+{% endblock content %} 

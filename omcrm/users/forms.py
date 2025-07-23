@@ -63,7 +63,6 @@ class ResourceForm(FlaskForm):
     can_create = BooleanField('Create')
     can_edit = BooleanField('Update')
     can_delete = BooleanField('Delete')
-    can_impersonate = BooleanField('Impersonate Clients')
 
 
 class NewRoleForm(FlaskForm):

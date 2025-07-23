@@ -1,0 +1,8 @@
+{% if 'admin_user_id' in session %}
+<div class="fixed-top text-end p-2" style="z-index: 9999; pointer-events: none;">
+    <a href="{{ url_for('leads.return_to_admin') }}" class="btn btn-primary" style="pointer-events: auto; background-color: #2663eb; border-color: #2663eb; font-weight: 500; border-radius: 5px;">
+        Return to Admin
+    </a>
+</div>
+<div style="height: 50px;"></div> <!-- Small spacer for the button -->
+{% endif %} 

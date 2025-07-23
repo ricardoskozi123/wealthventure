@@ -38,4 +38,9 @@ class EditTradeForm(FlaskForm):
 class InstrumentForm(FlaskForm):
     symbol = StringField('Symbol', validators=[DataRequired()])
     name = StringField('Name', validators=[DataRequired()])
-    type = SelectField('Type', choices=[('stock', 'Stock'), ('crypto', 'Crypto')], validators=[DataRequired()])
+    type = SelectField('Type', choices=[
+        ('stock', 'Stock'), 
+        ('crypto', 'Crypto'),
+        ('forex', 'Forex')
+    ], validators=[DataRequired()])
+    submit = SubmitField('Save Instrument')

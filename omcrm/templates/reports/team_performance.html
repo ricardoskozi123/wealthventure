@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Team Performance</h5>
+                    <div class="d-flex align-items-center">
+                        <select id="timePeriodSelector" class="form-select form-select-sm me-2">
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="180">Last 180 Days</option>
+                            <option value="365" selected>Last 12 Months</option>
+                        </select>
+                        {% if current_user.admin %}
+                        <select id="teamFilter" class="form-select form-select-sm">
+                            <option value="all">All Teams</option>
+                            {% for team in teams %}
+                            <option value="{{ team }}">{{ team }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header">
+                            <h6 class="mb-0">Revenue by Team</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container position-relative" style="height: 300px;">
+                                <canvas id="teamRevenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header">
+                            <h6 class="mb-0">Revenue by User</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container position-relative" style="height: 300px;">
+                                <canvas id="userRevenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header">
+                            <h6 class="mb-0">Deals Closed by User</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container position-relative" style="height: 300px;">
+                                <canvas id="dealCountChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header">
+                            <h6 class="mb-0">Conversion Rate by User</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container position-relative" style="height: 300px;">
+                                <canvas id="conversionRateChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Detailed Performance by User</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Revenue</th>
+                                    <th>Deals Closed</th>
+                                    <th>Leads Managed</th>
+                                    <th>Conversion Rate</th>
+                                    <th>Avg. Deal Size</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in range(users|length) %}
+                                <tr>
+                                    <td>{{ users[i] }}</td>
+                                    <td>{{ config.def_currency.symbol }} {{ revenueByUser[i]|round(2)|thousands_sep }}</td>
+                                    <td>{{ dealCountByUser[i] }}</td>
+                                    <td>{{ leadCountByUser[i] }}</td>
+                                    <td>{{ conversionRateByUser[i]|round(1) }}%</td>
+                                    <td>{{ config.def_currency.symbol }} {{ avgDealSizeByUser[i]|round(2)|thousands_sep }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Performance Insights</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light">
+                        <h6><i class="bi bi-lightbulb"></i> Key Insights</h6>
+                        <ul class="mb-0">
+                            {% if teams|length > 0 and users|length > 0 %}
+                                <li>{{ teams[0] }} is the top-performing team with {{ config.def_currency.symbol }} {{ revenueByTeam[0]|round(2)|thousands_sep }} in revenue</li>
+                                <li>{{ users[0] }} is the top-performing user with {{ config.def_currency.symbol }} {{ revenueByUser[0]|round(2)|thousands_sep }} in revenue</li>
+                                <li>Average conversion rate across users: {{ (conversionRateByUser|sum / conversionRateByUser|length)|round(1) if conversionRateByUser|length > 0 else 0 }}%</li>
+                            {% else %}
+                                <li>No performance data available for analysis</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize report data for external JavaScript
+window.reportData = {
+    users: {{ users|tojson }},
+    teams: {{ teams|tojson }},
+    revenueByUser: {{ revenueByUser|tojson }},
+    revenueByTeam: {{ revenueByTeam|tojson }},
+    dealCountByUser: {{ dealCountByUser|tojson }},
+    leadCountByUser: {{ leadCountByUser|tojson }},
+    conversionRateByUser: {{ conversionRateByUser|tojson }},
+    avgDealSizeByUser: {{ avgDealSizeByUser|tojson }},
+    currencySymbol: "{{ config.def_currency.symbol }}"
+};
+</script>
+<script src="{{ url_for('static', filename='js/reports/team_performance.js') }}"></script>
+{% endblock %} 

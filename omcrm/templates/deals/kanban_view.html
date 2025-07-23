@@ -76,6 +76,13 @@
     .drag-over {
         background-color: #e2f0ff;
     }
+    .debug-info {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+    }
 </style>
 {% endblock %}
 
@@ -101,38 +108,45 @@
     <div class="kanban-column">
         <div class="kanban-column-header">
             {{ stage.stage_name }}
-            <span class="kanban-column-count" id="count-{{ stage.id }}">0</span>
+            <span class="kanban-column-count" id="count-{{ stage.id }}">
+                {{ deals|selectattr('deal_stage_id', 'eq', stage.id)|list|length }}
+            </span>
         </div>
         <div class="kanban-card-list" id="stage-{{ stage.id }}" data-stage-id="{{ stage.id }}">
-            <!-- Cards will be loaded here via JavaScript -->
+            {% for deal in deals %}
+                {% if deal.deal_stage_id == stage.id %}
+                <div class="kanban-card" id="deal-{{ deal.id }}" data-deal-id="{{ deal.id }}" draggable="true">
+                    <div class="kanban-card-title">{{ deal.title }}</div>
+                    <div class="kanban-card-client">{{ deal.client.first_name }} {{ deal.client.last_name }}</div>
+                    <div class="kanban-card-probability">
+                        <div class="progress flex-grow-1">
+                            {% if deal.probability < 30 %}
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ deal.probability }}%"></div>
+                            {% elif deal.probability < 70 %}
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ deal.probability }}%"></div>
+                            {% else %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ deal.probability }}%"></div>
+                            {% endif %}
+                        </div>
+                        <span>{{ deal.probability }}%</span>
+                    </div>
+                    <div class="kanban-card-price">{{ config.def_currency.symbol }} {{ "{:,.2f}".format(deal.expected_close_price) }}</div>
+                    <div class="kanban-card-date">{{ deal.expected_close_date.strftime('%Y-%m-%d') if deal.expected_close_date else 'No date' }}</div>
+                    <div class="kanban-card-actions">
+                        <a href="/deals/{{ deal.id }}" class="btn btn-sm btn-outline-secondary">
+                            <span data-feather="eye"></span>
+                        </a>
+                        <a href="/deals/edit/{{ deal.id }}" class="btn btn-sm btn-outline-secondary">
+                            <span data-feather="edit"></span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
     {% endfor %}
 </div>
-
-<!-- Card Template for JavaScript -->
-<template id="card-template">
-    <div class="kanban-card" id="deal-[ID]" data-deal-id="[ID]">
-        <div class="kanban-card-title">[TITLE]</div>
-        <div class="kanban-card-client">[CLIENT_NAME]</div>
-        <div class="kanban-card-probability">
-            <div class="progress flex-grow-1">
-                <div class="progress-bar [PROGRESS_CLASS]" role="progressbar" style="width: [PROBABILITY]%"></div>
-            </div>
-            <span>[PROBABILITY]%</span>
-        </div>
-        <div class="kanban-card-price">[CURRENCY][PRICE]</div>
-        <div class="kanban-card-date">[CLOSE_DATE]</div>
-        <div class="kanban-card-actions">
-            <a href="/deals/[ID]" class="btn btn-sm btn-outline-secondary">
-                <span data-feather="eye"></span>
-            </a>
-            <a href="/deals/edit/[ID]" class="btn btn-sm btn-outline-secondary">
-                <span data-feather="edit"></span>
-            </a>
-        </div>
-    </div>
-</template>
 {% endblock %}
 
 {% block scripts %}
@@ -140,77 +154,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize feather icons
         feather.replace();
-
-        // Load deals data
-        const deals = [
-            {% for deal in deals %}
-            {
-                id: {{ deal.id }},
-                title: "{{ deal.title }}",
-                clientName: "{{ deal.client.first_name }} {{ deal.client.last_name }}",
-                price: "{{ "{:,.2f}".format(deal.expected_close_price) }}",
-                closeDate: "{{ deal.expected_close_date.strftime('%Y-%m-%d') if deal.expected_close_date else 'No date' }}",
-                stageId: {{ deal.deal_stage_id }},
-                probability: {{ deal.probability }}
-            },
-            {% endfor %}
-        ];
-
-        // Initialize columns with deals
-        deals.forEach(function(deal) {
-            addDealToStage(deal);
-        });
-
-        // Update column counts
-        updateColumnCounts();
-
+        
         // Add drag and drop functionality
         setupDragAndDrop();
-
-        function addDealToStage(deal) {
-            const stage = document.getElementById(`stage-${deal.stageId}`);
-            
-            if (!stage) return;
-            
-            // Clone the template
-            const template = document.getElementById('card-template').innerHTML;
-            
-            // Replace placeholders with actual data
-            let cardHtml = template
-                .replace(/\[ID\]/g, deal.id)
-                .replace('[TITLE]', deal.title)
-                .replace('[CLIENT_NAME]', deal.clientName)
-                .replace('[CURRENCY]', '{{ config.def_currency.symbol }} ')
-                .replace('[PRICE]', deal.price)
-                .replace('[CLOSE_DATE]', deal.closeDate)
-                .replace('[PROBABILITY]', deal.probability);
-            
-            // Set progress bar class based on probability
-            if (deal.probability < 30) {
-                cardHtml = cardHtml.replace('[PROGRESS_CLASS]', 'bg-danger');
-            } else if (deal.probability < 70) {
-                cardHtml = cardHtml.replace('[PROGRESS_CLASS]', 'bg-warning');
-            } else {
-                cardHtml = cardHtml.replace('[PROGRESS_CLASS]', 'bg-success');
-            }
-            
-            // Add the card to the stage
-            stage.innerHTML += cardHtml;
-        }
-
-        function updateColumnCounts() {
-            document.querySelectorAll('.kanban-card-list').forEach(function(column) {
-                const stageId = column.dataset.stageId;
-                const count = column.querySelectorAll('.kanban-card').length;
-                document.getElementById(`count-${stageId}`).textContent = count;
-            });
-        }
 
         function setupDragAndDrop() {
             // Make cards draggable
             document.querySelectorAll('.kanban-card').forEach(function(card) {
-                card.setAttribute('draggable', true);
-                
                 card.addEventListener('dragstart', function(e) {
                     e.dataTransfer.setData('text/plain', card.id);
                     setTimeout(() => {
@@ -265,9 +215,17 @@
                         .catch(error => {
                             console.error('Error:', error);
                             // Revert the change if there was an error
-                            // This would require keeping track of the original column
                         });
                 });
+            });
+        }
+        
+        // We still need this for updating counts after drag and drop
+        function updateColumnCounts() {
+            document.querySelectorAll('.kanban-card-list').forEach(function(column) {
+                const stageId = column.dataset.stageId;
+                const count = column.querySelectorAll('.kanban-card').length;
+                document.getElementById(`count-${stageId}`).textContent = count;
             });
         }
     });

@@ -63,9 +63,27 @@ def get_deals_view():
     query = get_visible_deals_query(query)
 
     if view_t == 'kanban':
+        all_deals = query.all()
+        all_stages = DealStage.query.order_by(DealStage.display_order.asc()).all()
+        
+        print(f"Kanban view - Found {len(all_deals)} deals and {len(all_stages)} stages")
+        for stage in all_stages:
+            print(f"Stage ID: {stage.id}, Name: {stage.stage_name}, Order: {stage.display_order}")
+        
+        # Count deals per stage
+        stage_counts = {}
+        for deal in all_deals:
+            stage_id = deal.deal_stage_id
+            if stage_id in stage_counts:
+                stage_counts[stage_id] += 1
+            else:
+                stage_counts[stage_id] = 1
+                
+        print("Deal counts per stage:", stage_counts)
+        
         return render_template("deals/kanban_view.html", title="Deals View",
-                               deals=query.all(),
-                               deal_stages=DealStage.query.order_by(DealStage.display_order.asc()).all(),
+                               deals=all_deals,
+                               deal_stages=all_stages,
                                filters=filters)
     else:
         return render_template("deals/deals_list.html", title="Deals View",
@@ -234,10 +252,17 @@ def update_deal(deal_id):
 @login_required
 @check_access('deals', 'update')
 def update_deal_stage_ajax(deal_id, stage_id):
-    deal = Deal.query.filter_by(id=deal_id).first()
-    deal.deal_stage_id = stage_id
-    db.session.commit()
-    return json.dumps({'success': True, 'message': 'Done'})
+    try:
+        deal = Deal.query.filter_by(id=deal_id).first_or_404()
+        stage = DealStage.query.filter_by(id=stage_id).first_or_404()
+        
+        deal.deal_stage_id = stage_id
+        db.session.commit()
+        
+        return json.dumps({'success': True, 'message': 'Deal stage updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return json.dumps({'success': False, 'message': str(e)}), 500
 
 
 @deals.route("/deals/reset_filters")
@@ -270,36 +295,67 @@ def manage_deal_stages():
     stages = DealStage.query.order_by(DealStage.display_order.asc()).all()
     return render_template("deals/manage_deal_stages.html", title="Manage Deal Stages", stages=stages, form=form)
 
-@deals.route("/deal_stages/edit/<int:stage_id>", methods=['POST'])
+@deals.route("/deal_stages/edit/<int:stage_id>", methods=['GET', 'POST'])
 @login_required
 @check_access('deals', 'update')
 def edit_deal_stage(stage_id):
+    """Edit a pipeline stage"""
     from flask_wtf import FlaskForm
-    form = FlaskForm()
+    from wtforms import StringField, SubmitField
+    from wtforms.validators import DataRequired
     
+    class EditStageForm(FlaskForm):
+        stage_name = StringField('Stage Name', validators=[DataRequired()])
+        submit = SubmitField('Update Stage')
+    
+    # Get the stage
+    stage = DealStage.query.get_or_404(stage_id)
+    
+    # Handle GET request - show the form
+    if request.method == 'GET':
+        form = EditStageForm()
+        form.stage_name.data = stage.stage_name
+        return render_template('deals/edit_stage.html', form=form, stage=stage, title="Edit Pipeline Stage")
+    
+    # Handle POST request - process the form
+    form = FlaskForm()
     if form.validate_on_submit():
-        stage = DealStage.query.get_or_404(stage_id)
         stage_name = request.form.get('stage_name')
         if stage_name:
             stage.stage_name = stage_name
             db.session.commit()
-            flash('Deal stage updated successfully!', 'success')
+            flash('Pipeline stage updated successfully!', 'success')
         else:
             flash('Stage name cannot be empty.', 'danger')
     return redirect(url_for('deals.manage_deal_stages'))
 
-@deals.route("/deal_stages/delete/<int:stage_id>", methods=['POST'])
+@deals.route("/deal_stages/delete/<int:stage_id>", methods=['GET', 'POST'])
 @login_required
 @check_access('deals', 'delete')
 def delete_deal_stage(stage_id):
+    """Delete a pipeline stage"""
+    # Get the stage
+    stage = DealStage.query.get_or_404(stage_id)
+    
+    # Handle GET request - show confirmation page
+    if request.method == 'GET':
+        # Check if any deals are using this stage
+        deal_count = Deal.query.filter_by(deal_stage_id=stage_id).count()
+        return render_template('deals/delete_stage.html', stage=stage, deal_count=deal_count, title="Delete Pipeline Stage")
+    
+    # Handle POST request - process the deletion
     from flask_wtf import FlaskForm
     form = FlaskForm()
     
     if form.validate_on_submit():
-        stage = DealStage.query.get_or_404(stage_id)
-        db.session.delete(stage)
-        db.session.commit()
-        flash('Deal stage deleted successfully!', 'success')
+        # Check if any deals are using this stage
+        deals_in_stage = Deal.query.filter_by(deal_stage_id=stage_id).count()
+        if deals_in_stage > 0:
+            flash(f'Cannot delete stage - it contains {deals_in_stage} deal(s). Please move these deals to another stage first.', 'danger')
+        else:
+            db.session.delete(stage)
+            db.session.commit()
+            flash('Pipeline stage deleted successfully!', 'success')
     return redirect(url_for('deals.manage_deal_stages'))
 
 @deals.route("/add_deal", methods=['GET', 'POST'])

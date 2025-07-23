@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h2 class="h4">Edit Task</h2>
+    <h2 class="h4">Update Task</h2>
     <div class="btn-toolbar mb-2 mb-md-0">
         <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('tasks.task_list') }}">
             <span data-feather="arrow-left"></span>
@@ -111,26 +111,6 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="account_id" class="form-label">Related Account</label>
-                        {{ form.account_id(class="form-control form-select", id="account_id") }}
-                        {% if form.account_id.errors %}
-                            {% for error in form.account_id.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="contact_id" class="form-label">Related Contact</label>
-                        {{ form.contact_id(class="form-control form-select", id="contact_id") }}
-                        {% if form.contact_id.errors %}
-                            {% for error in form.contact_id.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
                         <label for="client_id" class="form-label">Related Client</label>
                         {{ form.client_id(class="form-control form-select", id="client_id") }}
                         {% if form.client_id.errors %}
@@ -150,26 +130,42 @@
     </div>
     
     <div class="col-md-4">
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">Additional Information</h5>
+                <h5 class="mb-0">Task Information</h5>
             </div>
             <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">Created By</label>
-                    <p class="mb-0">{{ creator.first_name }} {{ creator.last_name }}</p>
+                <div class="mb-3">
+                    <strong>Created By:</strong>
+                    <p>{{ creator.first_name }} {{ creator.last_name }}</p>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Date Created</label>
-                    <p class="mb-0">{{ task.created_on.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <strong>Created On:</strong>
+                    <p>{{ task.created_on.strftime('%Y-%m-%d %H:%M') if task.created_on }}</p>
                 </div>
                 
-                {% if task.is_overdue and task.status not in ['completed', 'cancelled'] %}
-                <div class="alert alert-danger" role="alert">
-                    <strong>Warning:</strong> This task is overdue!
-                            </div>
-                            {% endif %} 
+                {% if task.updated_at %}
+                <div class="mb-3">
+                    <strong>Last Updated:</strong>
+                    <p>{{ task.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Delete Task</h5>
+            </div>
+            <div class="card-body">
+                <p>This action cannot be undone. Please be certain.</p>
+                <form action="{{ url_for('tasks.delete_task', task_id=task.id) }}" method="POST">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this task?');">
+                        <i data-feather="trash-2" class="me-1"></i> Delete Task
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -177,7 +173,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Format the datetime-local input with the current value
+    // Format the datetime-local input
     var dueDateInput = document.getElementById('due_date');
     if (dueDateInput) {
         // Add type="datetime-local" to the input
@@ -186,11 +182,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize select2 for better dropdown experience (if available)
     if (typeof $.fn.select2 !== 'undefined') {
-        $('#lead_id, #deal_id, #account_id, #contact_id, #client_id, #assignee_id').select2({
+        $('#lead_id, #deal_id, #client_id, #assignee_id').select2({
             theme: 'bootstrap4',
             placeholder: 'Select an option',
             allowClear: true
         });
+    }
+    
+    // Initialize feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
     }
 });
 </script>
