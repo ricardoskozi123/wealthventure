@@ -14,7 +14,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-READY", "pg_isready", "-U", "omcrm_user", "-d", "omcrm_trading"]
+      test: ["CMD", "pg_isready", "-U", "omcrm_user", "-d", "omcrm_trading"]
       interval: 10s
       timeout: 5s
       retries: 5

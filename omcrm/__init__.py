@@ -93,17 +93,18 @@ def create_app(config_class=DevelopmentConfig):
 
     with app.app_context():
         try:
-            # Ensure database directory exists
-            db_path = app.config.get('SQLALCHEMY_DATABASE_URI', '').replace('sqlite:///', '')
-            if db_path and not os.path.exists(os.path.dirname(db_path)) and os.path.dirname(db_path):
-                os.makedirs(os.path.dirname(db_path), exist_ok=True)
+           # # Ensure database directory exists
+            #db_path = app.config.get('SQLALCHEMY_DATABASE_URI', '').replace('sqlite:///', '')
+           # if db_path and not os.path.exists(os.path.dirname(db_path)) and os.path.dirname(db_path):
+           #     os.makedirs(os.path.dirname(db_path), exist_ok=True)
             
             # Create all tables first
             db.create_all()
             
             # check if the config table exists, otherwise run install
-            engine = db.get_engine()
-            if not engine.dialect.has_table(engine, 'app_config'):
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            if not inspector.has_table('app_config'):
                 return run_install(app)
             else:
                 from omcrm.settings.models import AppConfig
