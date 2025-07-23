@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import DateTimeLocalField
+from wtforms import DateTimeLocalField, IntegerField
 from wtforms import StringField, SubmitField, FloatField, TextAreaField, SelectField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Optional, NumberRange
 from wtforms_sqlalchemy.fields import QuerySelectField
 from flask_login import current_user
 
