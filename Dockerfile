@@ -36,5 +36,5 @@ RUN mkdir -p /app/db && chmod 777 /app/db
 # Expose app port
 EXPOSE 5000
 
-# Start app with proper timeout and worker configuration
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "120", "--workers", "2", "--worker-class", "sync", "--max-requests", "1000", "--max-requests-jitter", "100", "wsgi:application"]
+# Start app with more workers now that WebSocket is disabled
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "120", "--workers", "4", "--worker-class", "sync", "--max-requests", "1000", "--max-requests-jitter", "100", "wsgi:application"]

@@ -311,20 +311,23 @@ def get_price():
 
     logging.debug(f"Cache expired or no recent price for {instrument.symbol}. Fetching new price...")
     
+    # 🚫 WEBSOCKET DISABLED - Use API calls only for testing
     # FIRST: Try to get price from our direct WebSocket cache (crypto only)
     new_price = None
-    if instrument.type == 'crypto':
-        new_price = get_cached_crypto_price(instrument.symbol)
-        if new_price:
-            logging.info(f"💰 Using WebSocket price for {instrument.symbol}: ${new_price} (unlimited Binance)")
-        else:
-            logging.warning(f"⚠️  No WebSocket data for {instrument.symbol}, falling back to HTTP API")
+    # if instrument.type == 'crypto':
+    #     new_price = get_cached_crypto_price(instrument.symbol)
+    #     if new_price:
+    #         logging.info(f"💰 Using WebSocket price for {instrument.symbol}: ${new_price} (unlimited Binance)")
+    #     else:
+    #         logging.warning(f"⚠️  No WebSocket data for {instrument.symbol}, falling back to HTTP API")
     
-    # FALLBACK: Use HTTP API or simulated prices
-    if new_price is None:
-        new_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
-        if instrument.type == 'stock':
-            logging.info(f"📊 Stock price for {instrument.symbol}: ${new_price} (simulated)")
+    # FALLBACK: Use HTTP API or simulated prices (ALWAYS for testing)
+    # if new_price is None:
+    new_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
+    if instrument.type == 'stock':
+        logging.info(f"📊 Stock price for {instrument.symbol}: ${new_price} (simulated)")
+    elif instrument.type == 'crypto':
+        logging.info(f"💰 Crypto price for {instrument.symbol}: ${new_price} (API)")
     
     # Update the instrument in the database if a valid price was obtained
     if new_price is not None:
@@ -390,32 +393,34 @@ def webtrader_dashboard():
     form = TradeForm()
     instruments = TradingInstrument.query.all()
     
-    # 🚀 AUTO-START BINANCE WEBSOCKET FOR ALL CRYPTO INSTRUMENTS
+    # 🚫 WEBSOCKET DISABLED FOR PERFORMANCE TESTING
+    # Commenting out WebSocket to test if it's causing the performance issues
     try:
+        logging.info("⚠️  WebSocket disabled for performance testing")
         # Get all crypto instruments from database
-        crypto_instruments = TradingInstrument.query.filter_by(type='crypto').all()
+        # crypto_instruments = TradingInstrument.query.filter_by(type='crypto').all()
         
-        if crypto_instruments:
-            # Extract symbols and convert to Binance format (lowercase + usdt)
-            binance_symbols = []
-            for instrument in crypto_instruments:
-                symbol = instrument.symbol
-                if '/' in symbol:
-                    # Convert BTC/USD -> btcusdt
-                    base_symbol = symbol.split('/')[0].lower()
-                    binance_symbol = f"{base_symbol}usdt"
-                    binance_symbols.append(binance_symbol)
-                    logging.info(f"📈 Mapping {symbol} → {binance_symbol}")
-            
-            if binance_symbols:
-                # Start WebSocket connection using the EXACT working pattern
-                start_crypto_websocket(binance_symbols)
-                logging.info(f"🎉 Started Binance WebSocket for {len(binance_symbols)} crypto instruments!")
-                logging.info(f"🔗 Symbols: {', '.join(binance_symbols)}")
-            else:
-                logging.warning("⚠️  No valid crypto symbols found for WebSocket")
-        else:
-            logging.warning("⚠️  No crypto instruments found in database")
+        # if crypto_instruments:
+        #     # Extract symbols and convert to Binance format (lowercase + usdt)
+        #     binance_symbols = []
+        #     for instrument in crypto_instruments:
+        #         symbol = instrument.symbol
+        #         if '/' in symbol:
+        #             # Convert BTC/USD -> btcusdt
+        #             base_symbol = symbol.split('/')[0].lower()
+        #             binance_symbol = f"{base_symbol}usdt"
+        #             binance_symbols.append(binance_symbol)
+        #             logging.info(f"📈 Mapping {symbol} → {binance_symbol}")
+        #     
+        #     if binance_symbols:
+        #         # Start WebSocket connection using the EXACT working pattern
+        #         start_crypto_websocket(binance_symbols)
+        #         logging.info(f"🎉 Started Binance WebSocket for {len(binance_symbols)} crypto instruments!")
+        #         logging.info(f"🔗 Symbols: {', '.join(binance_symbols)}")
+        #     else:
+        #         logging.warning("⚠️  No valid crypto symbols found for WebSocket")
+        # else:
+        #     logging.warning("⚠️  No crypto instruments found in database")
             
     except Exception as e:
         logging.error(f"Error starting crypto WebSocket: {e}")
