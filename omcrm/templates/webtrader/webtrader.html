@@ -3572,7 +3572,8 @@
         </div>
     </div>
 
-    <!-- Socket.IO for Real-time Updates -->
+    <!-- 🚫 SOCKET.IO DISABLED FOR PERFORMANCE - Background worker handles price updates -->
+    <!-- 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
     <script>
         // Initialize Socket.IO connection for real-time data
@@ -3822,6 +3823,24 @@
                 startRealTimeFeeds();
             }, 2000); // Wait 2 seconds for everything to initialize
         });
+    </script>
+    -->
+    
+    <script>
+        // 🚀 SOCKET.IO DISABLED - Using background price worker for optimal performance
+        console.log('🚀 Socket.IO disabled - using dedicated background price worker for optimal performance');
+        
+        // Mock socket object to prevent errors in existing code
+        const socket = {
+            emit: function() { console.log('Socket.IO disabled - no emit'); },
+            on: function() { console.log('Socket.IO disabled - no event listeners'); }
+        };
+        
+        // Disabled real-time feed controls
+        function startRealTimeFeeds() {
+            console.log('🚫 WebSocket feeds disabled - using dedicated background price worker');
+            showAlert('WebSocket feeds disabled for performance. Background worker handles price updates.', 'info');
+        }
     </script>
 </body>
 </html>
