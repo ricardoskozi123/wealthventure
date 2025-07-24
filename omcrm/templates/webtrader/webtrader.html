@@ -1785,7 +1785,7 @@
         
         function selectInstrument(instrumentId) {
             instrumentId = parseInt(instrumentId);
-            console.log(`Selecting instrument ID: ${instrumentId}`);
+            console.log(`🔄 Selecting instrument ID: ${instrumentId}`);
             
             if (!instrumentId || !instrumentsData[instrumentId]) {
                 console.error("Invalid instrument ID or data not found");
@@ -1811,10 +1811,12 @@
             // Update Symbol Text Above Chart
             document.getElementById('current-symbol-text').textContent = currentInstrument.symbol;
             
-            // Fetch price and update UI elements
+            // 🚀 IMMEDIATE PRICE UPDATE - Fetch fresh price from database
+            console.log(`💰 Fetching fresh price for ${currentInstrument.symbol}...`);
             updateInstrumentPriceAndUI();
 
-            // 🔄 IMPROVED CHART REFRESH WITH PROPER LOADING AND ERROR HANDLING
+            // 🔄 IMPROVED CHART REFRESH WITH LOADING STATE
+            console.log(`📊 Refreshing chart for ${currentInstrument.symbol}...`);
             refreshTradingViewChart();
             
             // Highlight selected row in the list
@@ -1829,6 +1831,14 @@
             // Reset amount and update trade info
             document.getElementById('trade_amount').value = '';
             updateTradeInfo();
+            
+            // 🚀 INSTANT UI REFRESH - Force price table update
+            setTimeout(() => {
+                console.log(`🔄 Forcing price refresh for ${currentInstrument.symbol}`);
+                updateInstrumentPriceAndUI();
+            }, 500);
+            
+            console.log(`✅ Switched to ${currentInstrument.symbol} (${currentInstrument.type})`);
         }
         
         // 🔄 NEW: Dedicated chart refresh function with proper loading

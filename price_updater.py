@@ -2,6 +2,7 @@
 """
 Dedicated Price Updater - Background Worker
 Runs independently from the main app to update instrument prices
+Uses the same Binance WebSocket logic as before for real-time crypto prices!
 """
 
 import os
@@ -10,6 +11,8 @@ import time
 import logging
 from datetime import datetime
 import random
+import json
+import threading
 
 # Add the project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -19,6 +22,10 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - PRICE_WORKER - %(levelname)s - %(message)s'
 )
+
+# Global WebSocket variables for crypto prices
+crypto_ws = None
+crypto_price_cache = {}
 
 def create_app_context():
     """Create a minimal Flask app context for database access"""
@@ -33,11 +40,131 @@ def create_app_context():
     app = create_app()
     return app, db
 
+def start_crypto_websocket(crypto_instruments):
+    """Start Binance WebSocket for real-time crypto prices - same logic as before"""
+    global crypto_ws, crypto_price_cache
+    
+    if crypto_ws is not None:
+        logging.info("🔄 WebSocket already running, skipping...")
+        return
+    
+    # Extract symbols and convert to Binance format (same as before)
+    binance_symbols = []
+    for instrument in crypto_instruments:
+        symbol = instrument['symbol']
+        if '/' in symbol:
+            # Convert BTC/USD -> btcusdt
+            base_symbol = symbol.split('/')[0].lower()
+            binance_symbol = f"{base_symbol}usdt"
+            binance_symbols.append(binance_symbol)
+            logging.info(f"📈 Mapping {symbol} → {binance_symbol}")
+    
+    if not binance_symbols:
+        logging.warning("⚠️  No valid crypto symbols found for WebSocket")
+        return
+    
+    # NON-BLOCKING: Don't block the main worker thread (same pattern as before)
+    def start_websocket_async():
+        try:
+            # Create WebSocket URL for multiple symbols (exact same pattern)
+            streams = [f"{symbol}@ticker" for symbol in binance_symbols]
+            ws_url = f"wss://stream.binance.com:9443/ws/{'/'.join(streams)}"
+            
+            logging.info(f"🔗 Connecting to Binance WebSocket...")
+            logging.info(f"📊 Subscribing to: {', '.join(binance_symbols)}")
+            logging.info(f"🌐 URL: {ws_url}")
+            
+            def on_message(ws, message):
+                try:
+                    data = json.loads(message)
+                    
+                    # Handle single stream data (exact same pattern)
+                    if 'stream' in data and 'data' in data:
+                        ticker_data = data['data']
+                    else:
+                        ticker_data = data
+                    
+                    symbol = ticker_data.get('s', 'UNKNOWN')
+                    price = float(ticker_data.get('c', 0))
+                    change_24h = float(ticker_data.get('P', 0))
+                    
+                    # Convert BTCUSDT -> BTC/USD for database lookup (same logic)
+                    if symbol.endswith('USDT'):
+                        base_symbol = symbol.replace('USDT', '')
+                        db_symbol = f"{base_symbol}/USD"
+                        
+                        # Cache the price data
+                        crypto_price_cache[db_symbol] = {
+                            'price': price,
+                            'change_24h': change_24h,
+                            'timestamp': time.time()
+                        }
+                        
+                        color = "🟢" if change_24h >= 0 else "🔴"
+                        logging.info(f"{color} {db_symbol}: ${price:,.6f} ({change_24h:+.2f}%)")
+                        
+                except Exception as e:
+                    logging.error(f"❌ Error parsing WebSocket message: {e}")
+            
+            def on_error(ws, error):
+                logging.error(f"❌ WebSocket Error: {error}")
+            
+            def on_close(ws, close_status_code, close_msg):
+                global crypto_ws
+                crypto_ws = None
+                logging.info(f"🔌 WebSocket Closed: {close_status_code} - {close_msg}")
+            
+            def on_open(ws):
+                logging.info(f"✅ WebSocket Connected Successfully!")
+                logging.info(f"💰 Receiving unlimited free real-time crypto prices...")
+            
+            # Create WebSocket connection (exact same pattern)
+            import websocket
+            global crypto_ws
+            crypto_ws = websocket.WebSocketApp(
+                ws_url,
+                on_message=on_message,
+                on_error=on_error,
+                on_close=on_close,
+                on_open=on_open
+            )
+            
+            # Run WebSocket (this will block in the background thread)
+            crypto_ws.run_forever()
+            
+        except Exception as e:
+            logging.error(f"❌ WebSocket startup error: {e}")
+    
+    # Start in background thread to avoid blocking worker (same as before)
+    ws_thread = threading.Thread(target=start_websocket_async, daemon=True)
+    ws_thread.start()
+    
+    logging.info("🚀 WebSocket thread started (non-blocking)!")
+
+def get_cached_crypto_price(symbol):
+    """Get cached price from WebSocket data"""
+    global crypto_price_cache
+    
+    cached_data = crypto_price_cache.get(symbol)
+    if cached_data:
+        # Check if data is recent (less than 30 seconds old)
+        age = time.time() - cached_data['timestamp']
+        if age < 30:
+            return cached_data['price']
+    
+    return None
+
 def get_crypto_price_simple(symbol):
-    """Simple crypto price fetcher for background worker"""
+    """Get crypto price - prioritize WebSocket, fallback to API"""
     import requests
     
-    # Try CoinGecko first (most reliable)
+    # First try WebSocket cache (real-time prices)
+    ws_price = get_cached_crypto_price(symbol)
+    if ws_price:
+        logging.info(f"💰 WebSocket price for {symbol}: ${ws_price:,.2f}")
+        return round(ws_price, 6)
+    
+    # Fallback to CoinGecko API if WebSocket not available
     crypto_mappings = {
         'BTC/USD': 'bitcoin',
         'ETH/USD': 'ethereum', 
@@ -63,11 +190,11 @@ def get_crypto_price_simple(symbol):
         
         if crypto_id in data and 'usd' in data[crypto_id]:
             price = float(data[crypto_id]['usd'])
-            logging.info(f"💰 Updated {symbol}: ${price:,.2f}")
+            logging.info(f"💰 API fallback price for {symbol}: ${price:,.2f}")
             return round(price, 6)
             
     except Exception as e:
-        logging.warning(f"Failed to get price for {symbol}: {e}")
+        logging.warning(f"Failed to get API price for {symbol}: {e}")
     
     return None
 
@@ -85,7 +212,7 @@ def get_stock_price_simple(symbol):
         # Add small realistic variation (±1% max)
         variation = random.uniform(-0.01, 0.01)
         simulated_price = base_price * (1 + variation)
-        logging.info(f"📊 Updated {symbol}: ${simulated_price:.2f}")
+        logging.info(f"📊 Simulated price for {symbol}: ${simulated_price:.2f}")
         return round(simulated_price, 2)
     
     return 100.0  # Default fallback
@@ -140,6 +267,40 @@ def main():
     """Main price updater loop"""
     logging.info("🚀 Starting dedicated price updater worker...")
     logging.info("📊 Will update prices every 10 seconds")
+    
+    # Initialize WebSocket for crypto instruments (same as before)
+    try:
+        logging.info("💰 Initializing Binance WebSocket for crypto...")
+        app, db = create_app_context()
+        
+        with app.app_context():
+            from omcrm.webtrader.models import TradingInstrument
+            
+            # Get all crypto instruments from database
+            crypto_instruments = TradingInstrument.query.filter_by(type='crypto').all()
+            
+            if crypto_instruments:
+                # Convert to the format expected by the WebSocket function
+                crypto_instrument_data = []
+                for instrument in crypto_instruments:
+                    crypto_instrument_data.append({
+                        'symbol': instrument.symbol,
+                        'name': instrument.name,
+                        'type': instrument.type
+                    })
+                
+                # Start WebSocket connection using the EXACT working pattern
+                start_crypto_websocket(crypto_instrument_data)
+                logging.info(f"🎉 Started Binance WebSocket for {len(crypto_instrument_data)} crypto instruments!")
+                logging.info(f"🔗 Symbols: {[i['symbol'] for i in crypto_instrument_data]}")
+            else:
+                logging.warning("⚠️  No crypto instruments found in database")
+                
+    except Exception as e:
+        logging.error(f"Error starting crypto WebSocket: {e}")
+    
+    # Give WebSocket time to connect
+    time.sleep(3)
     
     while True:
         try:
