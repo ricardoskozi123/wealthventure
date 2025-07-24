@@ -1814,11 +1814,34 @@
             // Fetch price and update UI elements
             updateInstrumentPriceAndUI();
 
-            // Update TradingView Chart with forced refresh
-            let tvSymbol = '';
+            // 🔄 IMPROVED CHART REFRESH WITH PROPER LOADING AND ERROR HANDLING
+            refreshTradingViewChart();
+            
+            // Highlight selected row in the list
+            const rows = document.querySelectorAll('.instruments-table tbody tr');
+            rows.forEach(row => {
+                row.classList.remove('active');
+                if (parseInt(row.getAttribute('data-instrument-id')) === instrumentId) {
+                    row.classList.add('active');
+                }
+            });
+            
+            // Reset amount and update trade info
+            document.getElementById('trade_amount').value = '';
+            updateTradeInfo();
+        }
+        
+        // 🔄 NEW: Dedicated chart refresh function with proper loading
+        function refreshTradingViewChart() {
             const symbol = currentInstrument.symbol;
             const type = currentInstrument.type;
             
+            // Show loading state
+            const chartContainer = document.getElementById('tradingview_chart');
+            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a;"><i class="fas fa-spinner fa-spin"></i> Loading chart for ' + symbol + '...</div>';
+            
+            // Determine TradingView symbol
+            let tvSymbol = '';
             if (type === 'crypto') {
                 const base = symbol.split('/')[0];
                 const quote = symbol.split('/')[1] || 'USD';
@@ -1835,42 +1858,49 @@
                 else tvSymbol = symbol;
             }
             
-            if (window.tvWidget && tvSymbol) {
-                // Remove existing widget
-                const chartContainer = document.getElementById('tradingview_chart');
-                chartContainer.innerHTML = '';
-                
-                // Create new widget with the new symbol
-                window.tvWidget = new TradingView.widget({
-                    "autosize": true,
-                    "symbol": tvSymbol,
-                    "interval": "15",
-                    "timezone": "Etc/UTC",
-                    "theme": "dark",
-                    "style": "1",
-                    "locale": "en",
-                    "toolbar_bg": "#f1f3f6",
-                    "enable_publishing": false,
-                    "allow_symbol_change": true,
-                    "container_id": "tradingview_chart",
-                    "studies": [
-                        "MASimple@tv-basicstudies"
-                    ]
-                });
+            console.log(`🔄 Refreshing chart for ${symbol} -> TradingView symbol: ${tvSymbol}`);
+            
+            // Destroy existing widget if it exists
+            try {
+                if (window.tvWidget && typeof window.tvWidget.remove === 'function') {
+                    window.tvWidget.remove();
+                    console.log("✅ Destroyed previous TradingView widget");
+                }
+            } catch (error) {
+                console.warn("Warning destroying previous widget:", error);
             }
             
-            // Highlight selected row in the list
-            const rows = document.querySelectorAll('.instruments-table tbody tr');
-            rows.forEach(row => {
-                row.classList.remove('active');
-                if (parseInt(row.getAttribute('data-instrument-id')) === instrumentId) {
-                    row.classList.add('active');
+            // Wait a moment for cleanup, then create new widget
+            setTimeout(() => {
+                try {
+                    // Clear container again to be sure
+                    chartContainer.innerHTML = '';
+                    
+                    // Create new TradingView widget
+                    window.tvWidget = new TradingView.widget({
+                        "autosize": true,
+                        "symbol": tvSymbol,
+                        "interval": "15",
+                        "timezone": "Etc/UTC",
+                        "theme": "dark",
+                        "style": "1",
+                        "locale": "en",
+                        "toolbar_bg": "#f1f3f6",
+                        "enable_publishing": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tradingview_chart",
+                        "studies": [
+                            "MASimple@tv-basicstudies"
+                        ]
+                    });
+                    
+                    console.log(`✅ Created new TradingView widget for ${symbol}`);
+                    
+                } catch (error) {
+                    console.error("❌ Error creating TradingView widget:", error);
+                    chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: #ff6b6b; background: #1a1a1a;"><i class="fas fa-exclamation-triangle"></i> Error loading chart for ' + symbol + '</div>';
                 }
-            });
-            
-            // Reset amount and update trade info
-            document.getElementById('trade_amount').value = '';
-            updateTradeInfo();
+            }, 500); // 500ms delay for proper cleanup
         }
         
         function updateInstrumentPriceAndUI() {
