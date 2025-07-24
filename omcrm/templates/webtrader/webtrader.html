@@ -1785,14 +1785,18 @@
         
         function selectInstrument(instrumentId) {
             instrumentId = parseInt(instrumentId);
-            console.log(`🔄 Selecting instrument ID: ${instrumentId}`);
+            console.log(`⚡ FAST SWITCH to instrument ID: ${instrumentId}`);
             
             if (!instrumentId || !instrumentsData[instrumentId]) {
                 console.error("Invalid instrument ID or data not found");
                 return;
             }
             
-            // Update global state
+            // 🚀 IMMEDIATE UI UPDATES - Don't wait for API calls
+            const startTime = performance.now();
+            
+            // Update global state instantly
+            const oldSymbol = currentInstrument.symbol;
             currentInstrument.id = instrumentId;
             currentInstrument.symbol = instrumentsData[instrumentId].symbol;
             currentInstrument.type = instrumentsData[instrumentId].type;
@@ -1800,7 +1804,7 @@
             
             document.getElementById('instrument_id').value = instrumentId;
             
-            // Update Trade Panel Header & Amount Unit
+            // 🚀 INSTANT UI UPDATES - No delays
             document.getElementById('trade-panel-symbol').textContent = currentInstrument.symbol;
             let unit = currentInstrument.symbol;
             if (unit.includes('/')) {
@@ -1808,18 +1812,12 @@
             }
             document.getElementById('amount-unit').textContent = unit;
             
-            // Update Symbol Text Above Chart
-            document.getElementById('current-symbol-text').textContent = currentInstrument.symbol;
+            // Update Symbol Text Above Chart instantly
+            if (document.getElementById('current-symbol-text')) {
+                document.getElementById('current-symbol-text').textContent = currentInstrument.symbol;
+            }
             
-            // 🚀 IMMEDIATE PRICE UPDATE - Fetch fresh price from database
-            console.log(`💰 Fetching fresh price for ${currentInstrument.symbol}...`);
-            updateInstrumentPriceAndUI();
-
-            // 🔄 IMPROVED CHART REFRESH WITH LOADING STATE
-            console.log(`📊 Refreshing chart for ${currentInstrument.symbol}...`);
-            refreshTradingViewChart();
-            
-            // Highlight selected row in the list
+            // 🚀 IMMEDIATE ROW HIGHLIGHTING
             const rows = document.querySelectorAll('.instruments-table tbody tr');
             rows.forEach(row => {
                 row.classList.remove('active');
@@ -1828,17 +1826,46 @@
                 }
             });
             
-            // Reset amount and update trade info
-            document.getElementById('trade_amount').value = '';
-            updateTradeInfo();
+            // 🚀 IMMEDIATE CHART REFRESH - Don't wait for price updates
+            console.log(`📊 IMMEDIATE chart refresh: ${oldSymbol} → ${currentInstrument.symbol}`);
+            refreshTradingViewChart();
             
-            // 🚀 INSTANT UI REFRESH - Force price table update
+            // 🚀 PARALLEL PRICE UPDATE - Run in background while chart loads
             setTimeout(() => {
-                console.log(`🔄 Forcing price refresh for ${currentInstrument.symbol}`);
-                updateInstrumentPriceAndUI();
-            }, 500);
+                fetch(`/webtrader/get_price?instrument_id=${currentInstrument.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.current_price !== null) {
+                            const price = parseFloat(data.current_price);
+                            currentInstrument.price = price;
+                            
+                            // Update trading panel prices
+                            const spread = price * 0.0005;
+                            const sellPrice = (price - spread / 2);
+                            const buyPrice = (price + spread / 2);
+                            
+                            document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
+                            document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
+                            
+                            // Update trade info
+                            updateTradeInfo();
+                            
+                            const endTime = performance.now();
+                            console.log(`✅ FAST SWITCH completed in ${(endTime - startTime).toFixed(0)}ms: ${currentInstrument.symbol}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching price:', error);
+                        // Don't let price errors block the UI
+                        const endTime = performance.now();
+                        console.log(`⚠️ SWITCH completed (price failed) in ${(endTime - startTime).toFixed(0)}ms: ${currentInstrument.symbol}`);
+                    });
+            }, 10); // Tiny delay to let chart start loading
             
-            console.log(`✅ Switched to ${currentInstrument.symbol} (${currentInstrument.type})`);
+            // Reset amount immediately
+            document.getElementById('trade_amount').value = '';
+            
+            console.log(`🚀 UI updated instantly for ${currentInstrument.symbol}, price loading in background...`);
         }
         
         // 🔄 NEW: Dedicated chart refresh function with proper loading
@@ -2819,42 +2846,64 @@
 
         // Auto-refresh prices with optimized intervals for API efficiency
         setInterval(function() {
-            // Update the selected instrument price from API 
-            if (currentInstrument.id) { // Only update if an instrument is selected
-                 updateInstrumentPriceAndUI();
+            // 🚀 AUTO-UPDATE PRICES - Update every 2 seconds for responsiveness
+            if (currentInstrument.id) {
+                updateInstrumentPriceAndUI();
             }
             // Update market data ticker for visible instruments
             updateMarketDataTicker();
             // Update P/L for open trades
             updateAllOpenTradesPL();
-            // Note: Using a single interval to batch updates and reduce API calls
-        }, 10000); // 10 seconds refresh for all data
+        }, 2000); // 2 seconds refresh for real-time feel
         
-        // This will run once every 30 seconds to update ALL instruments in the background
-        // This can be useful for ensuring the cache is warm
+        // 🚀 SEPARATE FASTER UPDATE for current instrument prices
         setInterval(function() {
-            // Only run this during market hours
-            const now = new Date();
-            const hour = now.getHours();
-            // Only update all prices during active trading hours (reduce API load during off hours)
-            if (hour >= 8 && hour <= 20) {
-                console.log("Running background update of all prices");
-                // This will update the cache on the server side
-                fetch('/webtrader/update_all_prices', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': '' // Removed csrf_token() call that was causing the error
-                    }
-                }).then(response => {
-                    if (response.ok) {
-                        console.log("All prices updated in background");
-                    }
-                }).catch(error => {
-                    console.error("Error updating all prices:", error);
-                });
+            // Update ONLY the current selected instrument for instant responsiveness
+            if (currentInstrument.id) {
+                fetch(`/webtrader/get_price?instrument_id=${currentInstrument.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.current_price !== null) {
+                            const price = parseFloat(data.current_price);
+                            currentInstrument.price = price;
+                            
+                            // Update Bid/Ask in the trading panel immediately
+                            const spread = price * 0.0005;
+                            const sellPrice = (price - spread / 2);
+                            const buyPrice = (price + spread / 2);
+                            
+                            document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
+                            document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
+                            
+                            // Update price in the instrument list table instantly
+                            const row = document.querySelector(`.instruments-table tbody tr[data-instrument-id="${currentInstrument.id}"]`);
+                            if (row) {
+                                const priceCell = row.querySelector('td:nth-child(2)');
+                                let priceHtml;
+                                
+                                if (currentInstrument.type === 'forex') {
+                                    priceHtml = price.toFixed(4);
+                                } else if (currentInstrument.type === 'crypto') {
+                                    priceHtml = `$${price.toFixed(2)}`;
+                                } else {
+                                    priceHtml = `$${price.toFixed(2)}`;
+                                }
+                                
+                                priceCell.innerHTML = priceHtml;
+                                
+                                // Add flash effect to show update
+                                priceCell.style.backgroundColor = '#0d6efd';
+                                setTimeout(() => {
+                                    priceCell.style.backgroundColor = '';
+                                }, 200);
+                            }
+                            
+                            updateTradeInfo();
+                        }
+                    })
+                    .catch(error => console.error('Error fetching current instrument price:', error));
             }
-        }, 30000); // Every 30 seconds during market hours
+        }, 1000); // 1 second update for current instrument - super responsive!
 
         // Calculate and update available balance
         function updateAvailableBalance() {
@@ -3850,6 +3899,83 @@
         function startRealTimeFeeds() {
             console.log('🚫 WebSocket feeds disabled - using dedicated background price worker');
             showAlert('WebSocket feeds disabled for performance. Background worker handles price updates.', 'info');
+        }
+    </script>
+
+    <!-- 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching -->
+    <script>
+        // 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching
+        function refreshTradingViewChart() {
+            const symbol = currentInstrument.symbol;
+            const type = currentInstrument.type;
+            
+            // Show immediate loading state
+            const chartContainer = document.getElementById('tradingview_chart');
+            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a; font-size: 16px;"><i class="fas fa-chart-line fa-spin" style="margin-right: 10px;"></i>Loading ' + symbol + ' chart...</div>';
+            
+            // Determine TradingView symbol immediately
+            let tvSymbol = '';
+            if (type === 'crypto') {
+                const base = symbol.split('/')[0];
+                const quote = symbol.split('/')[1] || 'USD';
+                tvSymbol = `BINANCE:${base}${quote === 'USD' ? 'USDT' : quote}`;
+            } else if (type === 'stock') {
+                tvSymbol = `NASDAQ:${symbol}`;
+            } else if (type === 'forex') {
+                tvSymbol = `FX:${symbol.replace('/', '')}`;
+            } else if (type === 'commodities') {
+                if (symbol === 'GOLD') tvSymbol = 'TVC:GOLD';
+                else if (symbol === 'SILVER') tvSymbol = 'TVC:SILVER';
+                else if (symbol === 'OIL' || symbol === 'WTI') tvSymbol = 'NYMEX:CL1!';
+                else if (symbol === 'NATGAS') tvSymbol = 'NYMEX:NG1!';
+                else tvSymbol = symbol;
+            }
+            
+            console.log(`⚡ FAST CHART: ${symbol} → ${tvSymbol}`);
+            
+            // 🚀 RAPID WIDGET DESTRUCTION - No delays
+            try {
+                if (window.tvWidget && typeof window.tvWidget.remove === 'function') {
+                    window.tvWidget.remove();
+                    console.log("⚡ Widget destroyed instantly");
+                }
+            } catch (error) {
+                console.warn("Widget destruction warning (continuing):", error);
+            }
+            
+            // 🚀 IMMEDIATE RECREATION - No delays
+            try {
+                // Clear container
+                chartContainer.innerHTML = '';
+                
+                // Create new TradingView widget immediately
+                window.tvWidget = new TradingView.widget({
+                    "autosize": true,
+                    "symbol": tvSymbol,
+                    "interval": "15",
+                    "timezone": "Etc/UTC",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "en",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_chart",
+                    "studies": [
+                        "MASimple@tv-basicstudies"
+                    ],
+                    "loading_screen": {
+                        "backgroundColor": "#1a1a1a",
+                        "foregroundColor": "#ffffff"
+                    }
+                });
+                
+                console.log(`⚡ CHART READY: ${symbol} (${tvSymbol})`);
+                
+            } catch (error) {
+                console.error("❌ Chart creation error:", error);
+                chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: #ff6b6b; background: #1a1a1a; font-size: 16px;"><i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>Chart error for ' + symbol + '</div>';
+            }
         }
     </script>
 </body>
