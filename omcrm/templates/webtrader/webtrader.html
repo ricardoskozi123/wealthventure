@@ -2948,9 +2948,7 @@
             
             console.log("Liquidation monitoring system installed");
         });
-</script>
-    
-    <script>
+
         // EMERGENCY MARGIN FIX - Correctly calculating margins and margin level
         function emergencyMarginFix() {
             try {
@@ -3114,9 +3112,7 @@
             
             console.log("Complete margin fix system installed!");
         });
-    </script>
-    
-    <script>
+
         // CORRECT MARGIN FIX - Implementing exact PHP calculation method
         function emergencyMarginFix() {
             try {
@@ -3259,9 +3255,7 @@
             
             console.log("PHP-compatible margin calculation system installed!");
         });
-    </script>
-    
-    <script>
+
         // DIRECT PORT OF PHP MARGIN CALCULATION - FIXED
         function calculateMargin() {
             try {
@@ -3609,27 +3603,36 @@
             // Get market status
             socket.emit('get_market_status');
             
-            // Auto-start real-time feeds with Binance WebSocket (unlimited and free)
-            setTimeout(function() {
+            // 🚫 WEBSOCKET DISABLED FOR PERFORMANCE - Background worker handles price updates
+            // Add real-time feed controls
+            function startRealTimeFeeds() {
+                console.log('🚫 WebSocket feeds disabled - using dedicated background price worker');
+                showAlert('WebSocket feeds disabled for performance. Background worker handles price updates.', 'info');
+                return;
+                
+                /*
                 fetch('/webtrader/start_realtime_feeds', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
                     }
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Real-time feeds:', data);
                     if (data.success) {
-                        console.log('✅ Auto-started real-time WebSocket feeds:', data.message);
-                        showNotification('Real-time data feeds started automatically', 'success');
+                        showAlert('Real-time feeds started successfully', 'success');
                     } else {
-                        console.log('❌ Failed to auto-start real-time feeds:', data.message);
+                        showAlert('Failed to start real-time feeds: ' + data.message, 'danger');
                     }
                 })
                 .catch(error => {
-                    console.log('Error auto-starting real-time feeds:', error);
+                    console.error('Error starting real-time feeds:', error);
+                    showAlert('Error starting real-time feeds', 'danger');
                 });
-            }, 2000); // Start after 2 seconds to allow page to load
+                */
+            }
         });
 
         socket.on('disconnect', function() {

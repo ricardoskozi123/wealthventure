@@ -604,51 +604,14 @@ def store_order(user, instrument, amount, order_type, target_price, trade_type):
 @webtrader.route("/start_realtime_feeds", methods=['POST'])
 @login_required
 def start_realtime_feeds():
-    """Start real-time WebSocket data feeds"""
-    try:
-        from omcrm.webtrader.realtime_data import real_time_manager
-        
-        # Get all instruments for real-time feeds
-        instruments = TradingInstrument.query.all()
-        instrument_data = []
-        
-        for instrument in instruments:
-            instrument_data.append({
-                'id': instrument.id,
-                'symbol': instrument.symbol,
-                'name': instrument.name,
-                'type': instrument.type
-            })
-        
-        if not real_time_manager.is_running and instrument_data:
-            real_time_manager.start_real_time_feeds(instrument_data)
-            logging.info(f"✅ Started real-time WebSocket feeds for {len(instrument_data)} instruments")
-            
-            return jsonify({
-                'success': True,
-                'message': f'Real-time feeds started for {len(instrument_data)} instruments',
-                'instruments_count': len(instrument_data),
-                'crypto_symbols': [i['symbol'] for i in instrument_data if i['type'] == 'crypto'],
-                'stock_symbols': [i['symbol'] for i in instrument_data if i['type'] == 'stock']
-            })
-        elif real_time_manager.is_running:
-            return jsonify({
-                'success': True,
-                'message': 'Real-time feeds are already running',
-                'status': 'already_running'
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'No instruments found to start feeds for'
-            })
-            
-    except Exception as e:
-        logging.error(f"Error starting real-time feeds: {e}")
-        return jsonify({
-            'success': False,
-            'message': f'Failed to start real-time feeds: {str(e)}'
-        })
+    """🚫 WEBSOCKET DISABLED - Background worker handles all price updates"""
+    logging.info("🚫 WebSocket feeds disabled - using dedicated background price worker")
+    
+    return jsonify({
+        'success': False,
+        'message': 'WebSocket feeds disabled for performance. Background worker handles price updates.',
+        'status': 'disabled'
+    })
 
 # Add remaining routes here - keeping this short to avoid file being too long
 @webtrader.route("/instruments")
