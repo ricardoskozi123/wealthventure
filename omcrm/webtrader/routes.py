@@ -294,93 +294,21 @@ def get_commodity_price_fallback(symbol):
 @webtrader.route("/get_price/")
 @login_required
 def get_price():
-    """Get current price for an instrument, prioritizing WebSocket data over HTTP APIs."""
+    """Get current price for an instrument - ONLY from database (background worker handles updates)"""
     instrument_id = request.args.get('instrument_id')
     instrument = TradingInstrument.query.get_or_404(instrument_id)
     
-    # IMPROVED: Shorter cache for stocks (1 second) since APIs are failing and we use simulated prices
-    cache_duration = 1 if instrument.type == 'stock' else 5  # 1 sec for stocks, 5 sec for crypto
-    current_time = datetime.utcnow()
-    if instrument.last_updated and (current_time - instrument.last_updated).total_seconds() < cache_duration:
-        # Return existing price if it was updated recently (within cache time)
-        logging.debug(f"Using cached price {instrument.current_price} for {instrument.symbol}")
-        return jsonify({
-            'current_price': instrument.current_price,
-            'change': instrument.change or 0.0
-        })
-
-    logging.debug(f"Cache expired or no recent price for {instrument.symbol}. Fetching new price...")
+    # 🚀 MAIN APP PERFORMANCE FIX: Never call APIs, only read from DB
+    # The dedicated price_worker handles all external API calls
+    logging.debug(f"📊 Reading cached price for {instrument.symbol}: ${instrument.current_price}")
     
-    # 🚫 WEBSOCKET DISABLED - Use API calls only for testing
-    # FIRST: Try to get price from our direct WebSocket cache (crypto only)
-    new_price = None
-    # if instrument.type == 'crypto':
-    #     new_price = get_cached_crypto_price(instrument.symbol)
-    #     if new_price:
-    #         logging.info(f"💰 Using WebSocket price for {instrument.symbol}: ${new_price} (unlimited Binance)")
-    #     else:
-    #         logging.warning(f"⚠️  No WebSocket data for {instrument.symbol}, falling back to HTTP API")
+    # Always return the database price (updated by background worker)
+    current_price = instrument.current_price if instrument.current_price else 0.0
+    change = instrument.change if instrument.change else 0.0
     
-    # FALLBACK: Use HTTP API or simulated prices (ALWAYS for testing)
-    # if new_price is None:
-    new_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
-    if instrument.type == 'stock':
-        logging.info(f"📊 Stock price for {instrument.symbol}: ${new_price} (simulated)")
-    elif instrument.type == 'crypto':
-        logging.info(f"💰 Crypto price for {instrument.symbol}: ${new_price} (API)")
-    
-    # Update the instrument in the database if a valid price was obtained
-    if new_price is not None:
-        try:
-            # Determine precision based on type
-            if instrument.type == 'crypto':
-                precision = 6
-            elif instrument.type == 'forex':
-                precision = 4
-            else: # Stocks, commodities
-                precision = 2
-                
-            new_price = round(float(new_price), precision)
-            
-            # Only update if the price has actually changed to avoid unnecessary DB writes
-            if instrument.current_price != new_price:
-                try:
-                    # Use the new update_price method to calculate change percentage
-                    instrument.update_price(new_price)
-                    db.session.commit()
-                    logging.info(f"Updated DB price for {instrument.symbol} to {new_price} (change: {instrument.change}%)")
-                except Exception as e:
-                    # If update_price fails (possibly due to missing column), fall back to direct update
-                    logging.error(f"Error in update_price for {instrument.symbol}: {str(e)}")
-                    instrument.current_price = new_price
-                    instrument.change = 0.0  # Default no change
-                    instrument.last_updated = current_time
-                    db.session.commit()
-            else:
-                # Price hasn't changed, but update timestamp to refresh cache
-                instrument.last_updated = current_time
-                db.session.commit()
-                logging.debug(f"Price for {instrument.symbol} hasn't changed ({new_price}). Updated timestamp.")
-
-        except (ValueError, TypeError) as e:
-            logging.error(f"Error converting/saving price {new_price} for {instrument.symbol}: {str(e)}")
-            # Return the last known good price from DB if conversion fails, or None
-            return jsonify({
-                'current_price': instrument.current_price if instrument.current_price else None,
-                'change': instrument.change or 0.0
-            })
-    else:
-         # If get_real_time_price returned None (failure)
-         logging.error(f"Failed to get valid price for {instrument.symbol}. Returning last known DB price.")
-         # Return the last known price from DB even if it's old, or None if never set
-         return jsonify({
-             'current_price': instrument.current_price if instrument.current_price else None,
-             'change': instrument.change or 0.0
-         })
-
     return jsonify({
-        'current_price': new_price,
-        'change': instrument.change or 0.0
+        'current_price': current_price,
+        'change': change
     })
 
 @webtrader.route("/", methods=['GET', 'POST'])
@@ -425,17 +353,14 @@ def webtrader_dashboard():
     except Exception as e:
         logging.error(f"Error starting crypto WebSocket: {e}")
     
-    # Ensure all instruments have valid values
+    # Ensure all instruments have valid values - but don't make API calls
     for instrument in instruments:
         if instrument.current_price is None:
-            # Initialize price for instruments with None values
-            price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
-            if price:
-                instrument.current_price = price
-                instrument.previous_price = price
-                instrument.change = 0.0
-                instrument.last_updated = datetime.utcnow()
-                db.session.commit()
+            # Set default price if None - background worker will update it
+            instrument.current_price = 100.0  # Default placeholder
+            instrument.change = 0.0
+            instrument.last_updated = datetime.utcnow()
+            db.session.commit()
         # Ensure change is not None
         if instrument.change is None:
             instrument.change = 0.0
@@ -463,10 +388,10 @@ def webtrader_dashboard():
             flash('Invalid instrument selected.', 'danger')
             return redirect(url_for('webtrader.webtrader_dashboard'))
 
-        # Get current price
-        current_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
-        if not current_price:
-            flash('Unable to get current price. Please try again.', 'danger')
+        # 🚀 PERFORMANCE: Get current price from database only (no API calls)
+        current_price = instrument.current_price
+        if not current_price or current_price <= 0:
+            flash('Price not available. Please try again in a moment.', 'danger')
             return redirect(url_for('webtrader.webtrader_dashboard'))
 
         if order_type == 'market':
@@ -601,10 +526,15 @@ def get_cached_crypto_price(symbol):
     return None
 
 def execute_market_order(user, instrument, amount, current_price, trade_type):
-    """Execute a market order for buying or selling"""
+    """Execute a market order for buying or selling - using DB price only"""
     # Check if user is allowed to trade
     if hasattr(user, 'available_to_trade') and not user.available_to_trade:
         flash('Your account is currently not allowed to open new trades. Please contact support.', 'danger')
+        return False
+    
+    # 🚀 PERFORMANCE: Use the passed current_price (from DB) directly, no API calls
+    if not current_price or current_price <= 0:
+        flash('Invalid price. Please try again.', 'danger')
         return False
         
     # FIXED: Treat 'amount' as the number of units (e.g., 2 ETH), not USD value
@@ -893,7 +823,7 @@ def cancel_order():
 @webtrader.route("/check_pending_orders", methods=['GET', 'POST'])
 @login_required
 def check_pending_orders():
-    """Check all pending orders and execute them if conditions are met"""
+    """Check all pending orders and execute them if conditions are met - using database prices only"""
     if not current_user.is_admin:
         flash('Access denied. Admin only.', 'danger')
         return redirect(url_for('webtrader.list_instruments'))
@@ -903,9 +833,9 @@ def check_pending_orders():
     
     for order in pending_orders:
         try:
-            # Get current price for the instrument
-            current_price = get_real_time_price(order.instrument.symbol, order.instrument.name, order.instrument.type)
-            if not current_price:
+            # 🚀 PERFORMANCE: Get current price from database only (no API calls)
+            current_price = order.instrument.current_price
+            if not current_price or current_price <= 0:
                 continue
                 
             # Determine if order should be executed based on type and target price
@@ -977,7 +907,7 @@ def stop_realtime_feeds():
 @webtrader.route("/close_trade", methods=['POST'])
 @login_required
 def close_trade():
-    """Close an open trade"""
+    """Close an open trade - using database prices only"""
     trade_id = request.form.get('trade_id')
     
     if not trade_id:
@@ -992,14 +922,12 @@ def close_trade():
         return redirect(url_for('webtrader.webtrader_dashboard'))
     
     try:
-        # Get current price for the instrument
-        current_price = get_cached_crypto_price(trade.instrument.symbol.replace('/', '').lower() + 'usdt')
+        # 🚀 PERFORMANCE: Get current price from database only (no API calls)
+        current_price = trade.instrument.current_price
         
-        if not current_price:
-            # Fallback to database cached price or API
-            instrument = trade.instrument
-            instrument.update_price()
-            current_price = instrument.price
+        if not current_price or current_price <= 0:
+            flash('Price not available. Please try again in a moment.', 'error')
+            return redirect(url_for('webtrader.webtrader_dashboard'))
         
         # Calculate profit/loss
         if trade.trade_type == 'buy':
@@ -1034,7 +962,7 @@ def close_trade():
 @webtrader.route("/execute_trade", methods=['POST'])
 @login_required
 def execute_trade():
-    """Execute a trade order"""
+    """Execute a trade order - using database prices only"""
     if not current_user.is_client:
         flash('Access denied. This area is for clients only.', 'danger')
         return redirect(url_for('main.home'))
@@ -1060,18 +988,10 @@ def execute_trade():
         flash('Invalid instrument selected.', 'danger')
         return redirect(url_for('webtrader.webtrader_dashboard'))
 
-    # Get current price - prioritize WebSocket data
-    current_price = None
-    if instrument.type == 'crypto':
-        current_price = get_cached_crypto_price(instrument.symbol)
-        if current_price:
-            logging.info(f"💰 Using WebSocket price for trade: {instrument.symbol} at ${current_price}")
-    
-    if not current_price:
-        current_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
-    
-    if not current_price:
-        flash('Unable to get current price. Please try again.', 'danger')
+    # 🚀 PERFORMANCE: Get current price from database only (no API calls)
+    current_price = instrument.current_price
+    if not current_price or current_price <= 0:
+        flash('Price not available. Please try again in a moment.', 'danger')
         return redirect(url_for('webtrader.webtrader_dashboard'))
 
     if order_type == 'market':
@@ -1116,19 +1036,10 @@ def liquidate_account():
         
         for trade in open_trades:
             try:
-                # Get current price for the instrument - prioritize WebSocket
-                current_price = None
-                if trade.instrument.type == 'crypto':
-                    current_price = get_cached_crypto_price(trade.instrument.symbol)
+                # 🚀 PERFORMANCE: Get current price from database only (no API calls)
+                current_price = trade.instrument.current_price
                 
-                if not current_price:
-                    current_price = get_real_time_price(trade.instrument.symbol, trade.instrument.name, trade.instrument.type)
-                
-                if not current_price:
-                    # Fallback to last known price
-                    current_price = trade.instrument.current_price
-                
-                if current_price:
+                if current_price and current_price > 0:
                     # Calculate profit/loss
                     if trade.trade_type == 'buy':
                         profit_loss = (current_price - trade.price) * trade.amount
