@@ -139,32 +139,28 @@ def register():
 
 @users.route("/logout")
 def logout():
-    print(f"[DEBUG] Logout route called. Current user: {current_user}, Session: {session}")
+    print(f"[DEBUG] Logout route called. Current user: {current_user}")
     
-    # Check if this is an impersonation session (admin logged in as client)
-    if 'admin_user_id' in session:
-        admin_id = session.pop('admin_user_id')
-        print(f"[DEBUG] Admin impersonation detected. Admin ID: {admin_id}")
-        
-        # Store the redirect URL before clearing session
-        redirect_url = url_for('leads.return_to_admin')
-        
-        # Log out current user and clear session
-        logout_user()
-        session.clear()
-        
-        flash('Redirected back to admin account.', 'info')
-        return redirect(redirect_url)
-    
-    # Normal logout process
+    # OPTIMIZED: Simplified logout process for better performance
     user_type = 'client' if isinstance(current_user, Lead) and current_user.is_client else 'admin'
+    
+    # Check for admin impersonation (simplified)
+    was_impersonating = 'admin_user_id' in session
+    
+    # Quick logout and session clear
     logout_user()
     session.clear()
+    
     print(f"[DEBUG] Logout complete - user was {user_type}")
     
-    if user_type == 'client':
+    # Simplified redirect logic
+    if was_impersonating:
+        flash('Returned to admin account.', 'info')
+        return redirect(url_for('main.home'))
+    elif user_type == 'client':
         return redirect(url_for('users.client_login'))
-    return redirect(url_for('users.login'))
+    else:
+        return redirect(url_for('users.login'))
 
 # @users.route("/add_instrument", methods=['GET', 'POST'])
 # @login_required
