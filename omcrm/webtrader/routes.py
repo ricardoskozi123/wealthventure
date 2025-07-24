@@ -877,8 +877,8 @@ def close_trade():
         flash('No trade ID provided', 'error')
         return redirect(url_for('webtrader.webtrader_dashboard'))
     
-    # Get the trade
-    trade = Trade.query.filter_by(id=trade_id, user_id=current_user.id, status='open').first()
+    # 🔧 FIX: Use 'lead_id' instead of 'user_id' (Trade model uses lead_id)
+    trade = Trade.query.filter_by(id=trade_id, lead_id=current_user.id, status='open').first()
     
     if not trade:
         flash('Trade not found or already closed', 'error')
