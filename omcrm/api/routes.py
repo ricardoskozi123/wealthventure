@@ -47,6 +47,7 @@ def import_lead():
     
     Required parameters:
     - api_key: The API key associated with a lead source
+    - affiliate_id: The affiliate ID from the lead source
     - first_name: First name of the lead
     - last_name: Last name of the lead
     - email: Email address of the lead
@@ -56,7 +57,7 @@ def import_lead():
     - country: Country
     - company_name: Company name
     - notes: Additional notes
-    - affiliate_id: Affiliate ID for tracking
+    - funnel_name: Funnel name for tracking
     
     Returns:
     - JSON response with success/error message and lead ID if successful
@@ -80,13 +81,27 @@ def import_lead():
             'success': False,
             'error': 'API key is required'
         }), 400
-    
+
+    affiliate_id = data.get('affiliate_id')
+    if not affiliate_id:
+        return jsonify({
+            'success': False,
+            'error': 'Affiliate ID is required'
+        }), 400
+
     # Find the lead source by API key
     lead_source = LeadSource.get_by_api_key(api_key)
     if not lead_source:
         return jsonify({
             'success': False,
             'error': 'Invalid API key or API access is disabled'
+        }), 401
+
+    # Validate that the affiliate_id matches the lead source
+    if lead_source.affiliate_id != affiliate_id:
+        return jsonify({
+            'success': False,
+            'error': 'Affiliate ID does not match the API key'
         }), 401
     
     # Validate required lead data
@@ -140,17 +155,11 @@ def import_lead():
             notes=data.get('notes'),
             lead_source_id=lead_source.id,
             lead_status_id=default_status.id if default_status else None,
+            # 🔧 NEW: Store affiliate_id and funnel_name in dedicated fields
+            affiliate_id=affiliate_id,
+            funnel_name=data.get('funnel_name'),
             date_created=datetime.utcnow()
         )
-        
-        # Store affiliate ID in notes if provided
-        affiliate_id = data.get('affiliate_id') or lead_source.affiliate_id
-        if affiliate_id:
-            additional_note = f"Affiliate ID: {affiliate_id}"
-            if new_lead.notes:
-                new_lead.notes = f"{new_lead.notes}\n{additional_note}"
-            else:
-                new_lead.notes = additional_note
         
         # Generate a random password (will be reset by admin)
         temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(10))

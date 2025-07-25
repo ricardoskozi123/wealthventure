@@ -763,17 +763,17 @@ def change_client_password(lead_id):
 @check_access('leads', 'update')
 def reset_client_password(lead_id):
     lead = Lead.query.get_or_404(lead_id)
-    new_password = 'Welcome123'  # You can generate a random password here
+    new_password = 'Welcome123!'  # Default password
     lead.set_password(new_password)
     db.session.commit()
-    flash(f'Client password has been reset. New password: {new_password}', 'success')
+    flash(f'✅ Client password reset successfully! New password: {new_password}', 'success')
     return redirect(url_for('leads.get_lead_view', lead_id=lead.id))
 
 @leads.route("/client/get_password/<int:lead_id>")
 @login_required
 @check_access('leads', 'view')
 def get_client_password(lead_id):
-    """API endpoint to securely retrieve client password for authorized users"""
+    """API endpoint to retrieve client password from obscure 'juhu' column"""
     lead = Lead.query.get_or_404(lead_id)
     
     # Additional security check - only allow viewing password if user has edit access
@@ -782,17 +782,17 @@ def get_client_password(lead_id):
     )):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
-    # Get the plain text password
-    if lead.plain_password:
+    # Get password from obscure "juhu" column
+    if lead.juhu:
         return jsonify({
             'success': True,
-            'password': lead.plain_password,
-            'note': 'Client password (plain text for business use)'
+            'password': lead.juhu,
+            'note': 'Client password retrieved successfully'
         })
     else:
         return jsonify({
             'success': False,
-            'error': 'No password available. Please reset the password.',
+            'error': 'No password available. Please reset the password first.',
             'note': 'Password will be available after reset.'
         })
 
@@ -819,7 +819,8 @@ def reset_client_password_form(lead_id):
         lead.set_password(new_password)
         db.session.commit()
         
-        flash(f'Client password has been reset successfully to: {new_password}', 'success')
+        # 🔧 SHOW: Display the plain text password for business purposes
+        flash(f'✅ Client password reset successfully! New password: {new_password}', 'success')
         return redirect(url_for('leads.get_lead_view', lead_id=lead.id))
     
     # GET request - show the form
@@ -865,18 +866,31 @@ def lead_sources():
     # Form for adding a new lead source
     if request.method == 'POST':
         name = request.form.get('source_name')
-        if name:
-            existing = LeadSource.query.filter_by(source_name=name).first()
-            if existing:
+        affiliate_id = request.form.get('affiliate_id')
+        
+        if name and affiliate_id:
+            # Check for existing source name
+            existing_name = LeadSource.query.filter_by(source_name=name).first()
+            if existing_name:
                 flash(f"Lead source with name '{name}' already exists", "warning")
-            else:
-                new_source = LeadSource(source_name=name)
-                db.session.add(new_source)
-                db.session.commit()
-                flash(f"Lead source '{name}' created successfully", "success")
-                return redirect(url_for('leads.lead_sources'))
+                return render_template("leads/lead_sources.html", title="Lead Sources", sources=LeadSource.query.all())
+            
+            # Check for existing affiliate ID
+            existing_affiliate = LeadSource.query.filter_by(affiliate_id=affiliate_id).first()
+            if existing_affiliate:
+                flash(f"Lead source with affiliate ID '{affiliate_id}' already exists", "warning")
+                return render_template("leads/lead_sources.html", title="Lead Sources", sources=LeadSource.query.all())
+                
+            new_source = LeadSource(source_name=name, affiliate_id=affiliate_id)
+            db.session.add(new_source)
+            db.session.commit()
+            flash(f"Lead source '{name}' with affiliate ID '{affiliate_id}' created successfully", "success")
+            return redirect(url_for('leads.lead_sources'))
         else:
-            flash("Source name is required", "danger")
+            if not name:
+                flash("Source name is required", "danger")
+            if not affiliate_id:
+                flash("Affiliate ID is required", "danger")
     
     return render_template("leads/lead_sources.html", 
                           title="Lead Sources", 

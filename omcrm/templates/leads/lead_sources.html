@@ -18,9 +18,8 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
                                     <th>Affiliate ID</th>
+                                    <th>Name</th>
                                     <th>API Status</th>
                                     <th>API Key</th>
                                     <th>Actions</th>
@@ -29,9 +28,8 @@
                             <tbody>
                                 {% for source in sources %}
                                 <tr>
-                                    <td>{{ source.id }}</td>
+                                    <td>{{ source.affiliate_id or 'Not Set' }}</td>
                                     <td>{{ source.source_name }}</td>
-                                    <td>{{ source.affiliate_id or '-' }}</td>
                                     <td>
                                         {% if source.is_api_enabled %}
                                             <span class="badge badge-success">Enabled</span>
@@ -100,6 +98,7 @@
                         <h5>Required Parameters</h5>
                         <ul>
                             <li><strong>api_key</strong> - The API key shown in the table above</li>
+                            <li><strong>affiliate_id</strong> - The Affiliate ID from the table above</li>
                             <li><strong>first_name</strong> - Lead's first name</li>
                             <li><strong>last_name</strong> - Lead's last name</li>
                             <li><strong>email</strong> - Lead's email address</li>
@@ -111,11 +110,11 @@
                             <li><strong>country</strong> - Lead's country</li>
                             <li><strong>company_name</strong> - Lead's company name</li>
                             <li><strong>notes</strong> - Additional notes</li>
-                            <li><strong>affiliate_id</strong> - Affiliate ID for tracking (if not set in source)</li>
+                            <li><strong>funnel_name</strong> - Funnel name for tracking</li>
                         </ul>
                         
                         <h5>Example API Call (GET)</h5>
-                        <pre class="bg-light p-3">{{ request.host_url }}api/import_lead?api_key=YOUR_API_KEY&first_name=John&last_name=Doe&email=john@example.com</pre>
+                        <pre class="bg-light p-3">{{ request.host_url }}api/import_lead?api_key=YOUR_API_KEY&affiliate_id=YOUR_AFFILIATE_ID&first_name=John&last_name=Doe&email=john@example.com</pre>
                         
                         <h5>Example API Call (POST JSON)</h5>
                         <pre class="bg-light p-3">
@@ -126,6 +125,7 @@ fetch('{{ request.host_url }}api/import_lead', {
     },
     body: JSON.stringify({
         api_key: 'YOUR_API_KEY',
+        affiliate_id: 'YOUR_AFFILIATE_ID',
         first_name: 'John',
         last_name: 'Doe',
         email: 'john@example.com'
@@ -154,6 +154,11 @@ fetch('{{ request.host_url }}api/import_lead', {
                     <div class="mb-3">
                         <label for="source_name" class="form-label">Source Name</label>
                         <input type="text" class="form-control" id="source_name" name="source_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="affiliate_id" class="form-label">Affiliate ID</label>
+                        <input type="text" class="form-control" id="affiliate_id" name="affiliate_id" required>
+                        <div class="form-text">Unique identifier for this affiliate/source</div>
                     </div>
                 </div>
                 <div class="modal-footer">

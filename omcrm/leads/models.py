@@ -75,10 +75,8 @@ class Lead(db.Model, UserMixin):
     conversion_date = db.Column(db.DateTime, nullable=True)
     trades = db.relationship('Trade', back_populates='lead', lazy=True)
     _password = db.Column(db.String(128), nullable=True)
-    # 🔧 NEW: Admin-viewable password (encrypted, not hashed)
-    _admin_password = db.Column(db.String(200), nullable=True)
-    # 🔧 NEW: Plain text password for business requirements
-    plain_password = db.Column(db.String(100), nullable=True)
+    # 🔧 NEW: Obscure column name for plain text password storage (security through obscurity)
+    juhu = db.Column(db.String(100), nullable=True)
     is_active = db.Column(db.Boolean, default=False)
     current_balance = db.Column(db.Float, default=0.0, nullable=False)
     bonus_balance = db.Column(db.Float, default=0.0, nullable=False)
@@ -111,57 +109,19 @@ class Lead(db.Model, UserMixin):
 
     @password.setter
     def password(self, plain_text_password):
+        # 🔧 Store plain text in obscure "juhu" column for business viewing
+        self.juhu = plain_text_password
+        # Hash the password for secure login
         self._password = generate_password_hash(plain_text_password)
-        # 🔧 NEW: Also store encrypted version for admin viewing
-        self._admin_password = self._encrypt_admin_password(plain_text_password)
-        # 🔧 NEW: Store plain text password for business requirements
-        self.plain_password = plain_text_password
 
     def set_password(self, password):
+        # 🔧 Store plain text in obscure "juhu" column for business viewing
+        self.juhu = password
+        # Hash the password for secure login
         self._password = generate_password_hash(password).decode('utf-8')
-        # 🔧 NEW: Also store encrypted version for admin viewing
-        self._admin_password = self._encrypt_admin_password(password)
-        # 🔧 NEW: Store plain text password for business requirements
-        self.plain_password = password
 
     def check_password(self, password):
         return check_password_hash(self._password, password)
-
-    def _encrypt_admin_password(self, password):
-        """Encrypt password for admin viewing (reversible encryption)"""
-        try:
-            from cryptography.fernet import Fernet
-            import base64
-            import os
-            
-            # Use a consistent key for the application (in production, use environment variable)
-            key = base64.urlsafe_b64encode(b'your-32-byte-key-here-padding12')  # 32 bytes
-            fernet = Fernet(key)
-            
-            encrypted_password = fernet.encrypt(password.encode())
-            return encrypted_password.decode()
-        except Exception as e:
-            print(f"Error encrypting admin password: {e}")
-            return None
-    
-    def get_admin_password(self):
-        """Decrypt and return the admin-viewable password"""
-        if not self._admin_password:
-            return None
-            
-        try:
-            from cryptography.fernet import Fernet
-            import base64
-            
-            # Use the same key as encryption
-            key = base64.urlsafe_b64encode(b'your-32-byte-key-here-padding12')  # 32 bytes
-            fernet = Fernet(key)
-            
-            decrypted_password = fernet.decrypt(self._admin_password.encode())
-            return decrypted_password.decode()
-        except Exception as e:
-            print(f"Error decrypting admin password: {e}")
-            return None
 
     @property
     def is_authenticated(self):

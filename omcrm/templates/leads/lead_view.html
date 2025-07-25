@@ -203,13 +203,20 @@
                                             <i data-feather="key" class="text-primary me-1"></i> Password:
                                         </th>
                                         <td>
+                                            {% if lead.juhu %}
                                             <div class="input-group" style="max-width: 250px;">
-                                                <input type="password" id="clientPassword" value="••••••••" class="form-control form-control-sm" readonly>
+                                                <input type="password" id="clientPassword" value="{{ lead.juhu }}" class="form-control form-control-sm" readonly>
                                                 <button class="btn btn-outline-secondary btn-sm" type="button" onclick="togglePasswordVisibility()">
                                                     <i data-feather="eye" id="passwordToggleIcon"></i>
                                                 </button>
                                             </div>
                                             <small class="text-muted">Click eye icon to reveal</small>
+                                            {% else %}
+                                            <div class="alert alert-warning" role="alert">
+                                                <i data-feather="shield" class="me-1"></i>
+                                                <small><strong>No password available</strong> - Use "Reset Password" to set a new one.</small>
+                                            </div>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     {% endif %}
@@ -409,42 +416,26 @@
 </style>
 
 <script>
-// 🔐 Password visibility toggle functionality
+// 🔄 Initialize feather icons on page load
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+});
+
 function togglePasswordVisibility() {
     const passwordInput = document.getElementById('clientPassword');
     const toggleIcon = document.getElementById('passwordToggleIcon');
     
     if (passwordInput.type === 'password') {
-        // Show password - get actual password from server
-        fetch(`/leads/client/get_password/{{ lead.id }}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    passwordInput.type = 'text';
-                    passwordInput.value = data.password;
-                    toggleIcon.setAttribute('data-feather', 'eye-off');
-                    feather.replace(); // Re-render feather icons
-                } else {
-                    alert(data.error || 'Error retrieving password');
-                    console.log('Note:', data.note);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error retrieving password');
-            });
+        // Show password
+        passwordInput.type = 'text';
+        toggleIcon.setAttribute('data-feather', 'eye-off');
+        feather.replace(); // Re-render feather icons
     } else {
         // Hide password
         passwordInput.type = 'password';
-        passwordInput.value = '••••••••';
         toggleIcon.setAttribute('data-feather', 'eye');
         feather.replace(); // Re-render feather icons
     }
 }
-
-// 🔄 Initialize feather icons on page load
-document.addEventListener('DOMContentLoaded', function() {
-    feather.replace();
-});
 </script>
 {% endblock %}
