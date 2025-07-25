@@ -161,6 +161,7 @@
             position: relative;
             background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
             overflow: hidden;
+            padding-top: 120px; /* Add space for navbar */
         }
 
         .hero-background {
@@ -180,10 +181,10 @@
         }
 
         .hero-title {
-            font-size: clamp(3rem, 8vw, 6rem);
+            font-size: clamp(2.5rem, 6vw, 4.5rem); /* Reduced from 3rem, 8vw, 6rem */
             font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 2rem;
+            line-height: 1.2; /* Improved line height */
+            margin-bottom: 1.5rem; /* Reduced margin */
             background: linear-gradient(135deg, var(--text-primary) 0%, var(--neon-blue) 50%, var(--trading-green) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -196,17 +197,17 @@
         }
 
         .hero-subtitle {
-            font-size: 1.4rem;
+            font-size: 1.2rem; /* Reduced from 1.4rem */
             color: var(--text-secondary);
-            margin-bottom: 3rem;
+            margin-bottom: 2rem; /* Reduced margin */
             max-width: 600px;
             line-height: 1.6;
         }
 
         .hero-stats {
             display: flex;
-            gap: 3rem;
-            margin-top: 3rem;
+            gap: 2rem; /* Reduced gap */
+            margin-top: 2rem; /* Reduced margin */
             flex-wrap: wrap;
         }
 
@@ -215,7 +216,7 @@
         }
 
         .hero-stat-number {
-            font-size: 2.5rem;
+            font-size: 2rem; /* Reduced from 2.5rem */
             font-weight: 800;
             color: var(--trading-green);
             font-family: 'JetBrains Mono', monospace;
@@ -223,7 +224,7 @@
 
         .hero-stat-label {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Reduced slightly */
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -553,18 +554,176 @@
             50% { transform: translateY(-30px) rotate(180deg); }
         }
 
+        /* Enhanced About Section */
+        .about-section {
+            padding: 8rem 0;
+            background: var(--dark-bg);
+            position: relative;
+        }
+
+        .about-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .about-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 212, 170, 0.1);
+        }
+
+        .about-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .about-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .about-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Platform Showcase Section */
+        .platform-section {
+            padding: 8rem 0;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+        }
+
+        .platform-mockup {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platform-mockup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--trading-green), var(--neon-blue), var(--crypto-gold));
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: '✓';
+            color: var(--trading-green);
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, var(--dark-bg), var(--darker-bg));
+            text-align: center;
+            position: relative;
+        }
+
+        .cta-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .secondary-cta {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--trading-green);
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .secondary-cta:hover {
+            background: var(--trading-green);
+            color: white;
+            transform: translateY(-2px);
+        }
+
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
+            .hero-section {
+                padding-top: 100px; /* Reduced for mobile */
+            }
+            
             .hero-title {
-                font-size: 3rem;
+                font-size: 2.2rem; /* Fixed mobile size */
+                line-height: 1.1;
             }
             
             .hero-subtitle {
-                font-size: 1.2rem;
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
             }
             
             .hero-stats {
-                gap: 2rem;
+                gap: 1.5rem;
+                margin-top: 1.5rem;
+            }
+            
+            .hero-stat-number {
+                font-size: 1.8rem;
             }
             
             .price-ticker-grid {
@@ -573,6 +732,45 @@
             
             .stat-number {
                 font-size: 3rem;
+            }
+            
+            .about-section, .platform-section, .features-section, .testimonials-section {
+                padding: 4rem 0; /* Reduced padding on mobile */
+            }
+            
+            .cta-section {
+                padding: 3rem 0;
+            }
+            
+            .cta-title {
+                font-size: 2rem;
+            }
+            
+            .cta-subtitle {
+                font-size: 1rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cta-button, .secondary-cta {
+                width: 100%;
+                max-width: 280px;
+                text-align: center;
+            }
+            
+            .about-card, .testimonial-card {
+                padding: 2rem;
+            }
+            
+            .platform-mockup {
+                margin-top: 3rem;
+            }
+            
+            .feature-list {
+                margin-bottom: 2rem;
             }
         }
 
@@ -629,7 +827,7 @@
                         <a class="nav-link" href="#testimonials">Traders</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#contact">Contact</a>
+                        <a class="nav-link" href="#footer">Contact</a>
                     </li>
                 </ul>
                 
@@ -786,6 +984,182 @@
         </div>
     </section>
 
+    <!-- Enhanced About Section -->
+    <section id="platform" class="about-section">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto" data-aos="fade-up">
+                    <h2 class="display-4 fw-bold mb-4" style="color: var(--text-primary);">
+                        Why Choose Our Platform?
+                    </h2>
+                    <p class="lead" style="color: var(--text-secondary); font-size: 1.2rem;">
+                        Built by traders, for traders. Experience the difference that professional-grade tools make.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="about-card">
+                        <div class="about-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 class="about-title">24/7 Global Markets</h3>
+                        <p class="about-description">
+                            Trade cryptocurrencies, forex, stocks, and commodities around the clock. 
+                            Never miss an opportunity with our global market coverage.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="about-card">
+                        <div class="about-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="about-title">Expert Support</h3>
+                        <p class="about-description">
+                            Get help from professional traders and technical experts. 
+                            Our support team understands trading and is here 24/7.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="about-card">
+                        <div class="about-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 class="about-title">Trading Academy</h3>
+                        <p class="about-description">
+                            Learn from the best with our comprehensive trading courses, 
+                            market analysis, and educational resources.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="about-card">
+                        <div class="about-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <h3 class="about-title">Low Fees</h3>
+                        <p class="about-description">
+                            Competitive spreads and transparent pricing. 
+                            No hidden fees, just professional trading at institutional rates.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="about-card">
+                        <div class="about-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <h3 class="about-title">Real-Time Data</h3>
+                        <p class="about-description">
+                            Live market data, instant order execution, and real-time portfolio tracking. 
+                            Stay ahead with the fastest data feeds.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <div class="about-card">
+                        <div class="about-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <h3 class="about-title">Customizable</h3>
+                        <p class="about-description">
+                            Personalize your trading workspace with custom layouts, 
+                            indicators, and trading strategies that match your style.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Showcase Section -->
+    <section class="platform-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+                    <h2 class="display-5 fw-bold mb-4" style="color: var(--text-primary);">
+                        Professional Trading Tools
+                    </h2>
+                    <p class="lead mb-4" style="color: var(--text-secondary);">
+                        Everything you need to make informed trading decisions and execute strategies with precision.
+                    </p>
+                    
+                    <ul class="feature-list">
+                        <li>Advanced charting with 100+ technical indicators</li>
+                        <li>One-click trading and order management</li>
+                        <li>Portfolio analytics and risk management</li>
+                        <li>Automated trading strategies and alerts</li>
+                        <li>Real-time market news and analysis</li>
+                        <li>Multi-asset trading from one platform</li>
+                        <li>Professional-grade risk controls</li>
+                        <li>Institutional liquidity access</li>
+                    </ul>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('users.register') }}" class="cta-button me-3">
+                            <i class="fas fa-rocket me-2"></i>Start Free Trial
+                        </a>
+                        <a href="#features" class="secondary-cta">
+                            <i class="fas fa-info-circle me-2"></i>Learn More
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    <div class="platform-mockup">
+                        <div class="text-center mb-4">
+                            <h4 style="color: var(--text-primary);">
+                                <i class="fas fa-chart-bar me-2" style="color: var(--trading-green);"></i>Portfolio Overview
+                            </h4>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div style="background: rgba(0, 212, 170, 0.1); padding: 1rem; border-radius: 10px; border-left: 4px solid var(--trading-green);">
+                                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Total Equity</div>
+                                    <div style="color: var(--text-primary); font-size: 1.5rem; font-weight: bold; font-family: 'JetBrains Mono', monospace;">$47,250.00</div>
+                                    <div style="color: var(--trading-green); font-size: 0.8rem;">+12.4% Today</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div style="background: rgba(0, 245, 255, 0.1); padding: 1rem; border-radius: 10px; border-left: 4px solid var(--neon-blue);">
+                                    <div style="color: var(--text-secondary); font-size: 0.9rem;">Open Positions</div>
+                                    <div style="color: var(--text-primary); font-size: 1.5rem; font-weight: bold; font-family: 'JetBrains Mono', monospace;">8</div>
+                                    <div style="color: var(--neon-blue); font-size: 0.8rem;">4 Profitable</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(0, 0, 0, 0.2); border-radius: 10px; padding: 1rem;">
+                            <div style="color: var(--text-primary); font-size: 0.9rem; margin-bottom: 1rem;">Recent Trades</div>
+                            
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <span style="color: var(--text-secondary);">BTC/USD</span>
+                                <span style="color: var(--trading-green);">+$1,240</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <span style="color: var(--text-secondary);">ETH/USD</span>
+                                <span style="color: var(--trading-green);">+$856</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                                <span style="color: var(--text-secondary);">AAPL</span>
+                                <span style="color: var(--trading-red);">-$124</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Enhanced Features Section -->
     <section id="features" class="features-section">
         <div class="container">
@@ -876,6 +1250,52 @@
         </div>
     </section>
 
+    <!-- Enhanced CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content" data-aos="fade-up" data-aos-duration="1000">
+                <h2 class="cta-title">Ready to Transform Your Trading?</h2>
+                <p class="cta-subtitle">
+                    Join thousands of successful traders who've already discovered the power of our platform. 
+                    Start your journey to financial freedom today.
+                </p>
+                
+                <div class="cta-buttons">
+                    <a href="{{ url_for('users.register') }}" class="cta-button">
+                        <i class="fas fa-rocket me-2"></i>Start Trading Now
+                    </a>
+                    <a href="#testimonials" class="secondary-cta">
+                        <i class="fas fa-users me-2"></i>See Success Stories
+                    </a>
+                </div>
+                
+                <div class="row mt-5 g-4">
+                    <div class="col-md-4 text-center" data-aos="fade-up" data-aos-delay="100">
+                        <div style="font-size: 3rem; color: var(--trading-green); margin-bottom: 1rem;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h5 style="color: var(--text-primary); margin-bottom: 0.5rem;">Secure & Regulated</h5>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Licensed and regulated by top financial authorities</p>
+                    </div>
+                    <div class="col-md-4 text-center" data-aos="fade-up" data-aos-delay="200">
+                        <div style="font-size: 3rem; color: var(--neon-blue); margin-bottom: 1rem;">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h5 style="color: var(--text-primary); margin-bottom: 0.5rem;">24/7 Support</h5>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Expert trading support whenever you need it</p>
+                    </div>
+                    <div class="col-md-4 text-center" data-aos="fade-up" data-aos-delay="300">
+                        <div style="font-size: 3rem; color: var(--crypto-gold); margin-bottom: 1rem;">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <h5 style="color: var(--text-primary); margin-bottom: 0.5rem;">Award Winning</h5>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Recognized as best trading platform 2024</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Testimonials with Professional Traders -->
     <section id="testimonials" class="testimonials-section">
         <div class="container">
@@ -934,7 +1354,7 @@
     </section>
 
     <!-- Enhanced Footer -->
-    <footer style="background: var(--darker-bg); padding: 4rem 0 2rem; border-top: 1px solid var(--glass-border);">
+    <footer id="footer" style="background: var(--darker-bg); padding: 4rem 0 2rem; border-top: 1px solid var(--glass-border);">
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 mb-4">
