@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import DateTimeLocalField, IntegerField
+from wtforms import DateTimeLocalField, IntegerField, DateField
 from wtforms import StringField, SubmitField, FloatField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, Optional, NumberRange
 from wtforms.widgets import TextArea
@@ -23,15 +23,38 @@ def get_clients_query():
 
 
 def get_client_label(client):
-    return f"{client.first_name} {client.last_name} - {client.company_name}"
+    return f"{client.first_name} {client.last_name} - {client.email if client.email else '(no email)'}"
 
 
 class NewDeal(FlaskForm):
     title = StringField('Deal Title', validators=[DataRequired('Deal title is mandatory')])
     expected_close_price = FloatField('Expected Close Price',
                                        validators=[DataRequired('Expected Close Price is mandatory')])
-    expected_close_date = DateTimeLocalField('Expected Close Date', format='%Y-%m-%dT%H:%M',
+    # 🔧 CHANGED: Use DateField instead of DateTimeLocalField (date only, no time)
+    expected_close_date = DateField('Expected Close Date', format='%Y-%m-%d',
                                      validators=[Optional()])
+    # 🔧 REMOVED: deal_stages field - will be set to "In Progress" by default in creation
+    clients = QuerySelectField('Client', query_factory=get_clients_query, get_pk=lambda a: a.id,
+                               get_label=get_client_label, blank_text='Select A Client', allow_blank=True,
+                               validators=[DataRequired(message='Please choose a client for the deal')])
+    assignees = QuerySelectField('Assign To', query_factory=User.user_list_query, get_pk=lambda a: a.id,
+                                  get_label=User.get_label, default=User.get_current_user)
+    probability = IntegerField('Probability (%)', validators=[
+        DataRequired(message='Probability is mandatory'),
+        NumberRange(min=0, max=100, message='Probability must be between 0 and 100')
+    ], default=50)
+    notes = StringField('Notes', widget=TextArea())
+    submit = SubmitField('Create New Deal')
+
+
+# 🔧 NEW: Separate form for editing deals (includes deal stage selection)
+class EditDeal(FlaskForm):
+    title = StringField('Deal Title', validators=[DataRequired('Deal title is mandatory')])
+    expected_close_price = FloatField('Expected Close Price',
+                                       validators=[DataRequired('Expected Close Price is mandatory')])
+    expected_close_date = DateField('Expected Close Date', format='%Y-%m-%d',
+                                     validators=[Optional()])
+    # 🔧 INCLUDED: deal_stages field for editing (user can change stage)
     deal_stages = QuerySelectField('Deal Stage', query_factory=DealStage.deal_stage_list_query, get_pk=lambda a: a.id,
                                   get_label=DealStage.get_label, allow_blank=False,
                                   validators=[DataRequired(message='Please select deal stage')])
@@ -45,7 +68,7 @@ class NewDeal(FlaskForm):
         NumberRange(min=0, max=100, message='Probability must be between 0 and 100')
     ], default=50)
     notes = StringField('Notes', widget=TextArea())
-    submit = SubmitField('Create New Deal')
+    submit = SubmitField('Update Deal')
 
 
 def filter_deals_adv_filters_query():

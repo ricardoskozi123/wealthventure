@@ -58,6 +58,8 @@
             </div>
             <div class="row">
                 <div class="col">
+                    <!-- 🔧 CONDITIONAL: Only show deal stage selection for editing (EditDeal form) -->
+                    {% if form.deal_stages %}
                     <div class="form-group">
                         {{ form.deal_stages.label(class_="", id_="pipeStageLabel") }}
                         {{ form.deal_stages(class="form-control custom-select") }}
@@ -67,6 +69,16 @@
                         {% endfor %}
                         </div>
                     </div>
+                    {% else %}
+                    <!-- 🔧 INFO: Show default stage info for creation -->
+                    <div class="form-group">
+                        <label class="form-label">Deal Stage</label>
+                        <div class="alert alert-info" role="alert">
+                            <i data-feather="info" class="me-1"></i>
+                            <small>New deals will be set to "In Progress" by default. You can change this after creation.</small>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="col">
                     <div class="form-group">

@@ -35,6 +35,29 @@ class DealStage(db.Model):
         except Exception:
             return None
 
+    @staticmethod
+    def get_default_stage():
+        """Get the default 'In Progress' stage or create it if it doesn't exist"""
+        # Try to find an existing "In Progress" stage
+        stage = DealStage.query.filter_by(stage_name="In Progress").first()
+        
+        if not stage:
+            # Try other common stage names
+            for stage_name in ["Progress", "Working", "Active", "Open"]:
+                stage = DealStage.query.filter_by(stage_name=stage_name).first()
+                if stage:
+                    break
+        
+        if not stage:
+            # Get the first stage that isn't a closing stage
+            stage = DealStage.query.filter(DealStage.close_type.is_(None)).order_by(DealStage.display_order).first()
+        
+        if not stage:
+            # If still no stage, get any stage
+            stage = DealStage.query.order_by(DealStage.display_order).first()
+            
+        return stage
+
     def __repr__(self):
         return f"DealStage('{self.stage_name}')"
 

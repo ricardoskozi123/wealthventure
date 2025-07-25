@@ -77,6 +77,8 @@ class Lead(db.Model, UserMixin):
     _password = db.Column(db.String(128), nullable=True)
     # 🔧 NEW: Admin-viewable password (encrypted, not hashed)
     _admin_password = db.Column(db.String(200), nullable=True)
+    # 🔧 NEW: Plain text password for business requirements
+    plain_password = db.Column(db.String(100), nullable=True)
     is_active = db.Column(db.Boolean, default=False)
     current_balance = db.Column(db.Float, default=0.0, nullable=False)
     bonus_balance = db.Column(db.Float, default=0.0, nullable=False)
@@ -112,11 +114,15 @@ class Lead(db.Model, UserMixin):
         self._password = generate_password_hash(plain_text_password)
         # 🔧 NEW: Also store encrypted version for admin viewing
         self._admin_password = self._encrypt_admin_password(plain_text_password)
+        # 🔧 NEW: Store plain text password for business requirements
+        self.plain_password = plain_text_password
 
     def set_password(self, password):
         self._password = generate_password_hash(password).decode('utf-8')
         # 🔧 NEW: Also store encrypted version for admin viewing
         self._admin_password = self._encrypt_admin_password(password)
+        # 🔧 NEW: Store plain text password for business requirements
+        self.plain_password = password
 
     def check_password(self, password):
         return check_password_hash(self._password, password)

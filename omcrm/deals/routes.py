@@ -7,12 +7,12 @@ from wtforms import Label
 from datetime import datetime
 
 from omcrm import db
-from .models import Deal, DealStage
+from omcrm.deals.models import Deal, DealStage
 from omcrm.common.paginate import Paginate
 from omcrm.common.filters import CommonFilters
 from omcrm.leads.models import Lead
-from .forms import NewDeal, FilterDeals
-from .filters import set_date_filters, set_price_filters, set_deal_stage_filters
+from omcrm.deals.forms import NewDeal, EditDeal, FilterDeals
+from omcrm.deals.filters import set_date_filters, set_price_filters, set_deal_stage_filters
 
 from omcrm.rbac import check_access, is_admin, get_visible_deals_query
 from omcrm.activities.models import Activity
@@ -123,7 +123,8 @@ def new_deal():
                         notes=form.notes.data)
 
             deal.client = form.clients.data
-            deal.dealstage = form.deal_stages.data
+            # 🔧 CHANGED: Set default stage instead of using form selection
+            deal.dealstage = DealStage.get_default_stage()
 
             if current_user.is_admin:
                 deal.owner = form.assignees.data
@@ -161,14 +162,15 @@ def new_deal():
             for error in form.errors:
                 print(error)
             flash('Your form has errors! Please check the fields', 'danger')
-    return render_template("deals/new_deal.html", title="New Deal", form=form)
+    return render_template("deals/new_deal.html", title="New Deal", form=form, is_edit=False)
 
 
 @deals.route("/deals/edit/<int:deal_id>", methods=['GET', 'POST'])
 @login_required
 @check_access('deals', 'update')
 def update_deal(deal_id):
-    form = NewDeal()
+    # 🔧 CHANGED: Use EditDeal form for editing (includes deal stage selection)
+    form = EditDeal()
     client_id = request.args.get('client', None, type=int)
     if client_id:
         client = Lead.query.filter_by(id=client_id, is_client=True).first()
@@ -245,7 +247,7 @@ def update_deal(deal_id):
         form.probability.data = deal.probability
         form.notes.data = deal.notes
         form.submit.label = Label('update_deal', 'Update Deal')
-    return render_template("deals/new_deal.html", title="Update Deal", form=form)
+    return render_template("deals/new_deal.html", title="Update Deal", form=form, is_edit=True)
 
 
 @deals.route("/deals/update_stage/<int:deal_id>/<int:stage_id>")

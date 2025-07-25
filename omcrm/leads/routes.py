@@ -782,20 +782,18 @@ def get_client_password(lead_id):
     )):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
-    # Get the admin-viewable password
-    admin_password = lead.get_admin_password()
-    
-    if admin_password:
+    # Get the plain text password
+    if lead.plain_password:
         return jsonify({
             'success': True,
-            'password': admin_password,
-            'note': 'This is the password that was last set by an admin.'
+            'password': lead.plain_password,
+            'note': 'Client password (plain text for business use)'
         })
     else:
         return jsonify({
             'success': False,
-            'error': 'No admin password available. Password may have been set before this feature was implemented.',
-            'note': 'Please reset the password to make it viewable.'
+            'error': 'No password available. Please reset the password.',
+            'note': 'Password will be available after reset.'
         })
 
 @leads.route("/client/reset_password_form/<int:lead_id>", methods=['GET', 'POST'])
