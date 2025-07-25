@@ -49,6 +49,9 @@
                                         <th class="text-center">Create</th>
                                         <th class="text-center">Update</th>
                                         <th class="text-center">Delete</th>
+                                        <th class="text-center">Impersonate</th>
+                                        <th class="text-center" style="min-width: 120px;">View All Clients<br><small class="text-muted">(Manager)</small></th>
+                                        <th class="text-center" style="min-width: 120px;">View All Leads<br><small class="text-muted">(Manager)</small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -67,6 +70,27 @@
                                         </td>
                                         <td class="text-center">
                                             {{ permission.form.can_delete(class="form-check-input") }}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if permission.form.can_impersonate %}
+                                                {{ permission.form.can_impersonate(class="form-check-input") }}
+                                            {% else %}
+                                                <input type="checkbox" class="form-check-input" disabled>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if permission.form.can_view_all_clients %}
+                                                {{ permission.form.can_view_all_clients(class="form-check-input") }}
+                                            {% else %}
+                                                <input type="checkbox" class="form-check-input" disabled>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if permission.form.can_view_all_leads %}
+                                                {{ permission.form.can_view_all_leads(class="form-check-input") }}
+                                            {% else %}
+                                                <input type="checkbox" class="form-check-input" disabled>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     {% endfor %}

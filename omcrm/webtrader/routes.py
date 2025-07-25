@@ -900,25 +900,43 @@ def close_trade():
             # For sell trades: profit = (entry_price - current_price) * amount
             profit_loss = (trade.price - current_price) * trade.amount
         
+        # 🔧 DEBUG: Log balance update details
+        old_balance = current_user.current_balance
+        logging.info(f"💰 BALANCE UPDATE: Trade ID={trade_id}, Old Balance=${old_balance:.2f}, P/L=${profit_loss:.2f}")
+        
         # Update trade
         trade.status = 'closed'
         trade.close_price = current_price
         trade.profit_loss = profit_loss
         trade.close_date = datetime.utcnow()
         
-        # Update user balance
+        # 🔧 CRITICAL FIX: Update user balance with proper validation
+        if current_user.current_balance is None:
+            current_user.current_balance = 0.0
+            
         current_user.current_balance += profit_loss
+        new_balance = current_user.current_balance
         
+        # 🔧 DEBUG: Log new balance
+        logging.info(f"💰 NEW BALANCE: ${new_balance:.2f} (change: ${profit_loss:.2f})")
+        
+        # Force explicit commit with error handling
         db.session.commit()
         
+        # 🔧 VERIFY: Check if balance was actually saved
+        db.session.refresh(current_user)
+        actual_balance = current_user.current_balance
+        logging.info(f"💰 VERIFIED BALANCE AFTER COMMIT: ${actual_balance:.2f}")
+        
         if profit_loss >= 0:
-            flash(f'Trade closed successfully! Profit: ${profit_loss:.2f}', 'success')
+            flash(f'Trade closed successfully! Profit: ${profit_loss:.2f}. New balance: ${actual_balance:.2f}', 'success')
         else:
-            flash(f'Trade closed. Loss: ${abs(profit_loss):.2f}', 'warning')
+            flash(f'Trade closed. Loss: ${abs(profit_loss):.2f}. New balance: ${actual_balance:.2f}', 'warning')
             
     except Exception as e:
         db.session.rollback()
-        flash('Error closing trade: ' + str(e), 'error')
+        logging.error(f"❌ Error closing trade: {str(e)}")
+        flash(f'Error closing trade: {str(e)}', 'error')
     
     return redirect(url_for('webtrader.webtrader_dashboard'))
 
