@@ -101,6 +101,8 @@
                     <th width="220" scope="col">Email</th>
                     <th width="150" scope="col">Phone</th>
                     <th width="150" scope="col">Country</th>
+                    <th width="140" scope="col">Affiliate</th>
+                    <th width="140" scope="col">Funnel</th>
                     <th width="180" scope="col">Owner</th>
                     <th width="180" scope="col">Available to Trade</th>
                     <th width="180" scope="col">Conversion Date</th>
@@ -200,6 +202,22 @@
                             <img src="https://flagcdn.com/24x18/{{ country_code }}.png" alt="{{ client.country }}" class="country-flag"> {{ client.country }}
                         {% else %}
                             <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if client.affiliate_id %}
+                            <span class="badge bg-success">{{ client.affiliate_id }}</span>
+                        {% elif client.source and client.source.affiliate_id %}
+                            <span class="badge bg-secondary">{{ client.source.affiliate_id }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if client.funnel_name %}
+                            <span class="badge bg-primary">{{ client.funnel_name }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
                         {% endif %}
                     </td>
                     <td>{% with owner=client.owner %}{% include 'common/owner_cell.html' %}{% endwith %}</td>

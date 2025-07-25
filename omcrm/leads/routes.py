@@ -246,6 +246,10 @@ def update_lead(lead_id):
             lead.country = form.country.data
             lead.owner = form.assignees.data
             
+            # 🔧 NEW: Update attribution fields
+            lead.funnel_name = form.funnel_name.data
+            lead.affiliate_id = form.affiliate_id.data
+            
             # Handle trading permission for clients
             if lead.is_client:
                 lead.available_to_trade = form.available_to_trade.data
@@ -275,6 +279,10 @@ def update_lead(lead_id):
         form.phone.data = lead.phone
         form.country.data = lead.country
         form.assignees.data = lead.owner
+        
+        # 🔧 NEW: Populate attribution fields
+        form.funnel_name.data = lead.funnel_name
+        form.affiliate_id.data = lead.affiliate_id
         
         # Set trading permission for clients
         if lead.is_client and hasattr(lead, 'available_to_trade'):
@@ -774,13 +782,21 @@ def get_client_password(lead_id):
     )):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
-    # For security, we'll return a placeholder since we can't decrypt the hashed password
-    # In a real system, you'd store passwords in a way that allows retrieval for admin purposes
-    return jsonify({
-        'success': True,
-        'password': '••••••••',  # We can't retrieve the actual password from hash
-        'note': 'Password is hashed and cannot be retrieved. Use reset to set new password.'
-    })
+    # Get the admin-viewable password
+    admin_password = lead.get_admin_password()
+    
+    if admin_password:
+        return jsonify({
+            'success': True,
+            'password': admin_password,
+            'note': 'This is the password that was last set by an admin.'
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'error': 'No admin password available. Password may have been set before this feature was implemented.',
+            'note': 'Please reset the password to make it viewable.'
+        })
 
 @leads.route("/client/reset_password_form/<int:lead_id>", methods=['GET', 'POST'])
 @login_required

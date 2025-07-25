@@ -60,6 +60,8 @@
                     <th width="220" scope="col">Email</th>
                     <th width="150" scope="col">Phone</th>
                     <th width="150" scope="col">Country</th>
+                    <th width="140" scope="col">Affiliate</th>
+                    <th width="140" scope="col">Funnel</th>
                     <th width="180" scope="col">Owner</th>
                 </tr>
             </thead>
@@ -151,6 +153,22 @@
                             <img src="https://flagcdn.com/24x18/{{ country_code }}.png" alt="{{ lead.country }}" class="country-flag"> {{ lead.country }}
                         {% else %}
                             <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if lead.affiliate_id %}
+                            <span class="badge bg-success">{{ lead.affiliate_id }}</span>
+                        {% elif lead.source and lead.source.affiliate_id %}
+                            <span class="badge bg-secondary">{{ lead.source.affiliate_id }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if lead.funnel_name %}
+                            <span class="badge bg-primary">{{ lead.funnel_name }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
                         {% endif %}
                     </td>
                     <td>{% with owner=lead.owner %}{% include 'common/owner_cell.html' %}{% endwith %}</td>

@@ -172,18 +172,6 @@
                                     </tr>
                                     <tr>
                                         <th>
-                                            <i data-feather="share-2" class="text-primary me-1"></i> Source:
-                                        </th>
-                                        <td>
-                                            {% if lead.source %}
-                                                <span class="badge bg-info">{{ lead.source.source_name }}</span>
-                                            {% else %}
-                                                <span class="text-muted">Not specified</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
                                             <i data-feather="users" class="text-primary me-1"></i> Affiliate:
                                         </th>
                                         <td>
@@ -428,7 +416,7 @@ function togglePasswordVisibility() {
     
     if (passwordInput.type === 'password') {
         // Show password - get actual password from server
-        fetch(`/leads/get_client_password/{{ lead.id }}`)
+        fetch(`/leads/client/get_password/{{ lead.id }}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -437,7 +425,8 @@ function togglePasswordVisibility() {
                     toggleIcon.setAttribute('data-feather', 'eye-off');
                     feather.replace(); // Re-render feather icons
                 } else {
-                    alert('Error retrieving password');
+                    alert(data.error || 'Error retrieving password');
+                    console.log('Note:', data.note);
                 }
             })
             .catch(error => {
