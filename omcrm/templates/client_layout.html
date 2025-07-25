@@ -44,11 +44,9 @@
           <!-- Sidebar user panel (optional) -->
           <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-              {% if current_user.profile_image %}
-                <img src="{{ url_for('static', filename='profile_imgs/' + current_user.profile_image) }}" class="img-circle elevation-2" alt="User Image" style="width: 35px; height: 35px; object-fit: cover;">
-              {% else %}
-                <i class="fas fa-user-circle text-white fa-2x"></i>
-              {% endif %}
+              <div style="width: 35px; height: 35px; background: linear-gradient(45deg, #007bff, #28a745); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+                {{ current_user.first_name[0] if current_user.first_name else 'U' }}{{ current_user.last_name[0] if current_user.last_name else '' }}
+              </div>
             </div>
             <div class="info">
               <a href="{{ url_for('client.profile') }}" class="d-block">{{ current_user.first_name }} {{ current_user.last_name }}</a>
@@ -86,12 +84,6 @@
                 <a href="{{ url_for('client.withdraw') }}" class="nav-link {% if request.endpoint == 'client.withdraw' %}active{% endif %}">
                   <i class="nav-icon fas fa-wallet"></i>
                   <p>Withdraw Funds</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('reports.deal_reports') }}" class="nav-link {% if request.endpoint == 'reports.deal_reports' %}active{% endif %}">
-                  <i class="nav-icon fas fa-file-alt"></i>
-                  <p>Reports</p>
                 </a>
               </li>
               <li class="nav-header">ACCOUNT</li>
