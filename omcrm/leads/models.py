@@ -66,6 +66,9 @@ class Lead(db.Model, UserMixin):
     lead_source_id = db.Column(db.Integer, db.ForeignKey('lead_source.id', ondelete='SET NULL'), nullable=True)
     lead_status_id = db.Column(db.Integer, db.ForeignKey('lead_status.id', ondelete='SET NULL'), nullable=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
+    # 🔧 NEW: Funnel tracking for lead attribution
+    funnel_name = db.Column(db.String(100), nullable=True)
+    affiliate_id = db.Column(db.String(100), nullable=True)  # Store affiliate ID directly
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     comments = db.relationship('Comment', backref='lead', cascade="all, delete-orphan", lazy=True)
     is_client = db.Column(db.Boolean, default=False)

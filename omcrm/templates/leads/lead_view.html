@@ -15,7 +15,7 @@
                         <i data-feather="edit-2" class="me-1"></i> Edit
                     </a>
                     {% if lead.is_client %}
-                        <a href="{{ url_for('leads.reset_client_password', lead_id=lead.id) }}" 
+                        <a href="{{ url_for('leads.reset_client_password_form', lead_id=lead.id) }}" 
                             class="btn btn-warning me-2">
                             <i data-feather="key" class="me-1"></i> Reset Password
                         </a>
@@ -170,6 +170,61 @@
                                             {% endif %}
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="share-2" class="text-primary me-1"></i> Source:
+                                        </th>
+                                        <td>
+                                            {% if lead.source %}
+                                                <span class="badge bg-info">{{ lead.source.source_name }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Not specified</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="users" class="text-primary me-1"></i> Affiliate:
+                                        </th>
+                                        <td>
+                                            {% if lead.affiliate_id %}
+                                                <span class="badge bg-success">{{ lead.affiliate_id }}</span>
+                                            {% elif lead.source and lead.source.affiliate_id %}
+                                                <span class="badge bg-secondary">{{ lead.source.affiliate_id }}</span>
+                                                <small class="text-muted">(from source)</small>
+                                            {% else %}
+                                                <span class="text-muted">No affiliate</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="filter" class="text-primary me-1"></i> Funnel:
+                                        </th>
+                                        <td>
+                                            {% if lead.funnel_name %}
+                                                <span class="badge bg-primary">{{ lead.funnel_name }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Not specified</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% if lead.is_client %}
+                                    <tr>
+                                        <th>
+                                            <i data-feather="key" class="text-primary me-1"></i> Password:
+                                        </th>
+                                        <td>
+                                            <div class="input-group" style="max-width: 250px;">
+                                                <input type="password" id="clientPassword" value="••••••••" class="form-control form-control-sm" readonly>
+                                                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="togglePasswordVisibility()">
+                                                    <i data-feather="eye" id="passwordToggleIcon"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted">Click eye icon to reveal</small>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
                                 </tbody>
                             </table>
                         </div>
@@ -364,4 +419,43 @@
         height: 16px;
     }
 </style>
+
+<script>
+// 🔐 Password visibility toggle functionality
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('clientPassword');
+    const toggleIcon = document.getElementById('passwordToggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        // Show password - get actual password from server
+        fetch(`/leads/get_client_password/{{ lead.id }}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    passwordInput.type = 'text';
+                    passwordInput.value = data.password;
+                    toggleIcon.setAttribute('data-feather', 'eye-off');
+                    feather.replace(); // Re-render feather icons
+                } else {
+                    alert('Error retrieving password');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error retrieving password');
+            });
+    } else {
+        // Hide password
+        passwordInput.type = 'password';
+        passwordInput.value = '••••••••';
+        toggleIcon.setAttribute('data-feather', 'eye');
+        feather.replace(); // Re-render feather icons
+    }
+}
+
+// 🔄 Initialize feather icons on page load
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+});
+</script>
 {% endblock %}

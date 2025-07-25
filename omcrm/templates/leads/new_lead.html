@@ -120,6 +120,39 @@
                             </div>
                         </div>
                         
+                        <!-- 🔧 NEW: Lead Attribution Section -->
+                        <div class="card mb-4" style="background-color: #f8f9fc; border: 1px solid #e3e6f0;">
+                            <div class="card-header" style="background-color: transparent; border-bottom: 1px solid #e3e6f0;">
+                                <h6 class="card-title mb-0">
+                                    <i data-feather="target" class="me-1"></i>
+                                    Lead Attribution
+                                </h6>
+                                <small class="text-muted">Track marketing source and funnel information</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form.funnel_name.label(class="form-label") }}
+                                            {{ form.funnel_name(class="form-control", placeholder="e.g., Landing Page A, Email Campaign") }}
+                                            {% if form.funnel_name.description %}
+                                                <div class="form-text">{{ form.funnel_name.description }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ form.affiliate_id.label(class="form-label") }}
+                                            {{ form.affiliate_id(class="form-control", placeholder="e.g., AFF001, partner-name") }}
+                                            {% if form.affiliate_id.description %}
+                                                <div class="form-text">{{ form.affiliate_id.description }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         {% if current_user.is_admin %}
                         <div class="mb-4">
                             {{ form.assignees.label(class="form-label") }}

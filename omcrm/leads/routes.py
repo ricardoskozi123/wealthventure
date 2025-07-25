@@ -194,7 +194,10 @@ def new_lead():
                 company_name=form.company_name.data,
                 email=form.email.data,
                 phone=form.phone.data,
-                country=form.country.data
+                country=form.country.data,
+                # 🔧 NEW: Lead attribution fields
+                funnel_name=form.funnel_name.data,
+                affiliate_id=form.affiliate_id.data
             )
 
             if current_user.is_admin:
@@ -757,6 +760,56 @@ def reset_client_password(lead_id):
     db.session.commit()
     flash(f'Client password has been reset. New password: {new_password}', 'success')
     return redirect(url_for('leads.get_lead_view', lead_id=lead.id))
+
+@leads.route("/client/get_password/<int:lead_id>")
+@login_required
+@check_access('leads', 'view')
+def get_client_password(lead_id):
+    """API endpoint to securely retrieve client password for authorized users"""
+    lead = Lead.query.get_or_404(lead_id)
+    
+    # Additional security check - only allow viewing password if user has edit access
+    if not current_user.is_admin and (not current_user.role or not any(
+        res.name == 'leads' and res.can_edit for res in current_user.role.resources
+    )):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    # For security, we'll return a placeholder since we can't decrypt the hashed password
+    # In a real system, you'd store passwords in a way that allows retrieval for admin purposes
+    return jsonify({
+        'success': True,
+        'password': '••••••••',  # We can't retrieve the actual password from hash
+        'note': 'Password is hashed and cannot be retrieved. Use reset to set new password.'
+    })
+
+@leads.route("/client/reset_password_form/<int:lead_id>", methods=['GET', 'POST'])
+@login_required
+@check_access('leads', 'update')
+def reset_client_password_form(lead_id):
+    """Form-based password reset with custom password input"""
+    lead = Lead.query.get_or_404(lead_id)
+    
+    if request.method == 'POST':
+        new_password = request.form.get('new_password', '').strip()
+        
+        # Validate password
+        if not new_password:
+            flash('Password cannot be empty', 'error')
+            return redirect(url_for('leads.reset_client_password_form', lead_id=lead_id))
+        
+        if len(new_password) < 6:
+            flash('Password must be at least 6 characters long', 'error')
+            return redirect(url_for('leads.reset_client_password_form', lead_id=lead_id))
+        
+        # Set new password
+        lead.set_password(new_password)
+        db.session.commit()
+        
+        flash(f'Client password has been reset successfully to: {new_password}', 'success')
+        return redirect(url_for('leads.get_lead_view', lead_id=lead.id))
+    
+    # GET request - show the form
+    return render_template('leads/reset_password_form.html', lead=lead, title='Reset Client Password')
 
 @leads.route('/leads/manage_balance/<int:lead_id>', methods=['GET', 'POST'])
 @login_required

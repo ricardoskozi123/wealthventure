@@ -28,6 +28,10 @@ class NewLead(FlaskForm):
     assignees = QuerySelectField('Assign To', query_factory=User.user_list_query, get_pk=lambda a: a.id,
                                  get_label=User.get_label, default=User.get_current_user)
     
+    # 🔧 NEW: Lead attribution fields
+    funnel_name = StringField('Funnel Name', description='Marketing funnel or campaign name')
+    affiliate_id = StringField('Affiliate ID', description='Affiliate partner identifier')
+    
     # Trading permission toggle for clients
     available_to_trade = BooleanField('Allow Client to Trade', default=True)
     
