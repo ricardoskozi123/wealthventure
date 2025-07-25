@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from omcrm import create_app, db
 from omcrm.users.models import Resource
+from sqlalchemy import text
 
 def add_manager_permissions():
     """Add manager permission columns to Resource table"""
@@ -25,11 +26,16 @@ def add_manager_permissions():
             
             if 'can_view_all_clients' not in columns:
                 print("Adding can_view_all_clients column...")
-                db.engine.execute('ALTER TABLE resource ADD COLUMN can_view_all_clients BOOLEAN DEFAULT FALSE NOT NULL')
+                # Use text() wrapper for raw SQL and session.execute()
+                db.session.execute(text('ALTER TABLE resource ADD COLUMN can_view_all_clients BOOLEAN DEFAULT FALSE NOT NULL'))
                 
             if 'can_view_all_leads' not in columns:
                 print("Adding can_view_all_leads column...")
-                db.engine.execute('ALTER TABLE resource ADD COLUMN can_view_all_leads BOOLEAN DEFAULT FALSE NOT NULL')
+                # Use text() wrapper for raw SQL and session.execute()
+                db.session.execute(text('ALTER TABLE resource ADD COLUMN can_view_all_leads BOOLEAN DEFAULT FALSE NOT NULL'))
+            
+            # Commit the schema changes
+            db.session.commit()
             
             # Update existing resources to have these permissions set to False by default
             resources = Resource.query.all()
