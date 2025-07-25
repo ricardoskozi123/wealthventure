@@ -1,0 +1,1199 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Professional Trading Platform - Trade crypto, stocks, and forex with advanced tools and real-time data">
+    <meta name="author" content="Trading Platform">
+    <title>{{ platform_name or 'TradePro' }} - Professional Trading Platform</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom CSS with Trading Theme -->
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --trading-green: #00d4aa;
+            --trading-red: #ff6b6b;
+            --crypto-gold: #f7931a;
+            --neon-blue: #00f5ff;
+            --neon-purple: #bf00ff;
+            --neon-green: #39ff14;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #050507;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-accent: #00f5ff;
+            --success: #00d4aa;
+            --danger: #ff6b6b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Enhanced Particle Background */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(odd) {
+            background: linear-gradient(45deg, var(--trading-green), var(--crypto-gold));
+            animation-direction: reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.1; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+
+        /* Enhanced Navigation */
+        .navbar {
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--text-primary) !important;
+            text-decoration: none;
+        }
+
+        .navbar-brand i {
+            background: linear-gradient(45deg, var(--neon-blue), var(--trading-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--neon-blue) !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            background: linear-gradient(45deg, var(--neon-blue), var(--trading-green));
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+            left: 0;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.3);
+            border: none;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 212, 170, 0.4);
+        }
+
+        /* Epic Hero Section */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+            overflow: hidden;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover;
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--neon-blue) 50%, var(--trading-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShine 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes textShine {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.2); }
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--trading-green);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hero-stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Trading Dashboard Mockup */
+        .dashboard-mockup {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-mockup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--trading-green), var(--neon-blue), var(--crypto-gold));
+        }
+
+        .price-ticker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .price-ticker {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .price-ticker::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .price-ticker:hover::before {
+            left: 100%;
+        }
+
+        .price-ticker:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 212, 170, 0.2);
+        }
+
+        .ticker-symbol {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .ticker-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            display: block;
+            margin: 0.5rem 0;
+        }
+
+        .ticker-change {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .ticker-change.positive {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--trading-green);
+        }
+
+        .ticker-change.negative {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--trading-red);
+        }
+
+        /* Trading Chart Simulation */
+        .chart-container {
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .trading-chart {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .chart-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80%;
+            background: linear-gradient(to right, var(--trading-green), var(--neon-blue));
+            clip-path: polygon(0 90%, 10% 80%, 20% 85%, 30% 70%, 40% 75%, 50% 60%, 60% 65%, 70% 50%, 80% 55%, 90% 40%, 100% 45%, 100% 100%, 0 100%);
+            animation: chartPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes chartPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* Enhanced Features Section */
+        .features-section {
+            padding: 8rem 0;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+            position: relative;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--trading-green), var(--neon-blue));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 212, 170, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: rotateY(360deg);
+            box-shadow: 0 0 30px rgba(0, 212, 170, 0.5);
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Testimonials with Trader Photos */
+        .testimonials-section {
+            padding: 8rem 0;
+            background: var(--dark-bg);
+        }
+
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 212, 170, 0.1);
+        }
+
+        .trader-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .trader-photo::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            background: linear-gradient(45deg, var(--trading-green), var(--neon-blue), var(--crypto-gold));
+            border-radius: 50%;
+            z-index: -1;
+            animation: photoGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes photoGlow {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .testimonial-text {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .trader-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .trader-title {
+            color: var(--trading-green);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Enhanced Stats Section */
+        .stats-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .stat-number {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Floating Action Elements */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            color: var(--trading-green);
+            opacity: 0.1;
+            animation: floatIcon 8s ease-in-out infinite;
+        }
+
+        .floating-icon:nth-child(even) {
+            color: var(--neon-blue);
+            animation-delay: -4s;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .hero-stats {
+                gap: 2rem;
+            }
+            
+            .price-ticker-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-number {
+                font-size: 3rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-text {
+            background: linear-gradient(90deg, var(--trading-green), var(--neon-blue), var(--crypto-gold), var(--trading-green));
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 2s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Particles Background -->
+    <div class="particles-container" id="particles"></div>
+    
+    <!-- Floating Trading Icons -->
+    <div class="floating-elements">
+        <i class="floating-icon fas fa-chart-line" style="top: 10%; left: 10%;"></i>
+        <i class="floating-icon fas fa-coins" style="top: 20%; right: 15%;"></i>
+        <i class="floating-icon fab fa-bitcoin" style="top: 70%; left: 5%;"></i>
+        <i class="floating-icon fas fa-dollar-sign" style="top: 80%; right: 10%;"></i>
+        <i class="floating-icon fas fa-chart-area" style="top: 40%; left: 20%;"></i>
+        <i class="floating-icon fab fa-ethereum" style="top: 60%; right: 20%;"></i>
+    </div>
+
+    <!-- Enhanced Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>{{ platform_name or 'OMCRM' }}
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#platform">Platform</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#testimonials">Traders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('users.login') }}">Sign In</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="cta-button" href="{{ url_for('users.register') }}">
+                            <i class="fas fa-rocket me-2"></i>Start Trading
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Epic Hero Section -->
+    <section class="hero-section">
+        <div class="hero-background"></div>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content" data-aos="fade-up" data-aos-duration="1000">
+                    <h1 class="hero-title">
+                        Trade Like a
+                        <span class="loading-text">Pro</span>
+                        With AI Power
+                    </h1>
+                    
+                    <p class="hero-subtitle">
+                        Join the next generation of traders using AI-powered analytics, lightning-fast execution, 
+                        and institutional-grade tools. Experience trading the way it should be.
+                    </p>
+                    
+                    <div class="d-flex flex-wrap gap-4 align-items-center mb-4">
+                        <a href="{{ url_for('users.register') }}" class="cta-button">
+                            <i class="fas fa-rocket me-2"></i>Start Trading Now
+                        </a>
+                        <a href="#platform" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-play me-2"></i>Watch Demo
+                        </a>
+                    </div>
+                    
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" data-count="150">0</div>
+                            <div class="hero-stat-label">Million+ Trades</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" data-count="500">0</div>
+                            <div class="hero-stat-label">Billion Volume</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-number" data-count="99.9">0</div>
+                            <div class="hero-stat-label">% Uptime</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    <div class="dashboard-mockup">
+                        <div class="text-center mb-4">
+                            <h4 class="text-white">
+                                <i class="fas fa-chart-line me-2 text-success"></i>Live Trading Dashboard
+                            </h4>
+                        </div>
+                        
+                        <div class="price-ticker-grid">
+                            <div class="price-ticker">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fab fa-bitcoin me-2" style="color: var(--crypto-gold);"></i>
+                                        <span class="ticker-symbol">BTC/USD</span>
+                                    </div>
+                                    <span class="ticker-change positive">+2.34%</span>
+                                </div>
+                                <div class="ticker-price">$118,622.00</div>
+                            </div>
+                            
+                            <div class="price-ticker">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fab fa-ethereum me-2" style="color: var(--neon-blue);"></i>
+                                        <span class="ticker-symbol">ETH/USD</span>
+                                    </div>
+                                    <span class="ticker-change positive">+1.82%</span>
+                                </div>
+                                <div class="ticker-price">$3,727.00</div>
+                            </div>
+                            
+                            <div class="price-ticker">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-chart-area me-2" style="color: var(--neon-purple);"></i>
+                                        <span class="ticker-symbol">SOL/USD</span>
+                                    </div>
+                                    <span class="ticker-change positive">+4.21%</span>
+                                </div>
+                                <div class="ticker-price">$147.00</div>
+                            </div>
+                            
+                            <div class="price-ticker">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-coins me-2" style="color: var(--trading-green);"></i>
+                                        <span class="ticker-symbol">AAPL</span>
+                                    </div>
+                                    <span class="ticker-change negative">-0.85%</span>
+                                </div>
+                                <div class="ticker-price">$214.50</div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <div class="trading-chart">
+                                <div class="chart-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="2.5">0</div>
+                        <div class="stat-label">Million+ Users</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="850">0</div>
+                        <div class="stat-label">Billion Volume</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="180">0</div>
+                        <div class="stat-label">Countries</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="0.1">0</div>
+                        <div class="stat-label">MS Execution</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto" data-aos="fade-up">
+                    <h2 class="display-4 fw-bold mb-4" style="background: linear-gradient(45deg, var(--text-primary), var(--trading-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Professional Trading Arsenal
+                    </h2>
+                    <p class="lead" style="color: var(--text-secondary); font-size: 1.3rem;">
+                        Everything you need to dominate the markets, powered by cutting-edge technology
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="feature-title">Lightning Execution</h3>
+                        <p class="feature-description">
+                            Ultra-low latency trading with sub-millisecond execution speeds. Every microsecond counts in modern trading.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="feature-title">AI Analytics</h3>
+                        <p class="feature-description">
+                            Advanced machine learning algorithms analyze market patterns and provide intelligent trading insights.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Bank-Grade Security</h3>
+                        <p class="feature-description">
+                            Military-grade encryption and multi-layer security protocols protect your assets and data.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">Advanced Charting</h3>
+                        <p class="feature-description">
+                            Professional TradingView integration with 100+ technical indicators and drawing tools.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 class="feature-title">Algo Trading</h3>
+                        <p class="feature-description">
+                            Build and deploy sophisticated trading algorithms with our visual strategy builder.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Mobile Trading</h3>
+                        <p class="feature-description">
+                            Trade anywhere with our powerful mobile app featuring full platform functionality.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials with Professional Traders -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto" data-aos="fade-up">
+                    <h2 class="display-4 fw-bold mb-4" style="color: var(--text-primary);">
+                        Trusted by Professional Traders
+                    </h2>
+                    <p class="lead" style="color: var(--text-secondary);">
+                        See what top traders say about our platform
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-card">
+                        <div class="trader-photo">
+                            MS
+                        </div>
+                        <div class="testimonial-text">
+                            "The execution speed is incredible. I've improved my scalping strategies significantly with this platform's sub-millisecond latency."
+                        </div>
+                        <div class="trader-name">Michael Sterling</div>
+                        <div class="trader-title">Quantitative Trader</div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="testimonial-card">
+                        <div class="trader-photo">
+                            AC
+                        </div>
+                        <div class="testimonial-text">
+                            "The AI analytics helped me identify market trends I never would have spotted manually. My hit rate has improved by 40%."
+                        </div>
+                        <div class="trader-name">Alexandra Chen</div>
+                        <div class="trader-title">Crypto Specialist</div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="testimonial-card">
+                        <div class="trader-photo">
+                            RJ
+                        </div>
+                        <div class="testimonial-text">
+                            "Finally, a platform that doesn't lag during high volatility. The stability during market crashes is phenomenal."
+                        </div>
+                        <div class="trader-name">Robert Johnson</div>
+                        <div class="trader-title">Day Trader</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Footer -->
+    <footer style="background: var(--darker-bg); padding: 4rem 0 2rem; border-top: 1px solid var(--glass-border);">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">{{ platform_name or 'OMCRM' }}</h5>
+                    <p style="color: var(--text-secondary);">
+                        The future of professional trading is here. Join millions of traders who trust our platform.
+                    </p>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="fw-bold mb-3" style="color: var(--trading-green);">Platform</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">WebTrader</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Mobile App</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">API</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Algorithms</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="fw-bold mb-3" style="color: var(--neon-blue);">Markets</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Crypto</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Stocks</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Forex</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Commodities</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="fw-bold mb-3" style="color: var(--crypto-gold);">Support</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Help Center</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Contact</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">API Docs</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Status</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="fw-bold mb-3" style="color: var(--neon-purple);">Company</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">About</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Careers</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Press</a></li>
+                        <li class="mb-2"><a href="#" style="color: var(--text-secondary); text-decoration: none;">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr style="border-color: var(--glass-border); margin: 3rem 0 2rem;">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p style="color: var(--text-secondary); margin-bottom: 0;">
+                        © 2024 {{ platform_name or 'OMCRM' }}. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="social-links">
+                        <a href="#" style="color: var(--text-secondary); margin-left: 1rem; font-size: 1.2rem;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: var(--text-secondary); margin-left: 1rem; font-size: 1.2rem;"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" style="color: var(--text-secondary); margin-left: 1rem; font-size: 1.2rem;"><i class="fab fa-telegram"></i></a>
+                        <a href="#" style="color: var(--text-secondary); margin-left: 1rem; font-size: 1.2rem;"><i class="fab fa-discord"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Initialize AOS animations
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100,
+            easing: 'ease-out-cubic'
+        });
+
+        // Enhanced particle creation
+        function createEnhancedParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = window.innerWidth > 768 ? 80 : 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random size
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                // Random position
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                // Random animation
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Enhanced counter animation
+        function animateCounter(element, target, duration = 2000) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= target) {
+                    start = target;
+                    clearInterval(timer);
+                }
+                
+                if (target === 99.9 || target === 0.1) {
+                    element.textContent = start.toFixed(1);
+                } else if (target === 2.5) {
+                    element.textContent = start.toFixed(1);
+                } else {
+                    element.textContent = Math.floor(start);
+                }
+            }, 16);
+        }
+
+        // Enhanced price ticker animation
+        function animateRealTimePrices() {
+            const tickers = document.querySelectorAll('.price-ticker');
+            
+            setInterval(() => {
+                tickers.forEach(ticker => {
+                    const priceElement = ticker.querySelector('.ticker-price');
+                    const changeElement = ticker.querySelector('.ticker-change');
+                    
+                    if (priceElement && changeElement) {
+                        // Get current price
+                        const currentPrice = parseFloat(priceElement.textContent.replace(/[$,]/g, ''));
+                        
+                        // Generate realistic price movement
+                        const volatility = currentPrice > 1000 ? 0.005 : 0.02; // Lower volatility for high-value assets
+                        const change = (Math.random() - 0.5) * volatility;
+                        const newPrice = currentPrice * (1 + change);
+                        const changePercent = change * 100;
+                        
+                        // Update price with proper formatting
+                        if (currentPrice > 1000) {
+                            priceElement.textContent = `$${newPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                        } else {
+                            priceElement.textContent = `$${newPrice.toFixed(2)}`;
+                        }
+                        
+                        // Update change percentage
+                        changeElement.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                        changeElement.className = `ticker-change ${changePercent >= 0 ? 'positive' : 'negative'}`;
+                        
+                        // Add pulse effect
+                        ticker.style.transform = 'scale(1.02)';
+                        setTimeout(() => {
+                            ticker.style.transform = 'scale(1)';
+                        }, 150);
+                    }
+                });
+            }, 2000); // Update every 2 seconds for realistic feel
+        }
+
+        // Enhanced scroll effects
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            const scrolled = window.scrollY;
+            
+            if (scrolled > 50) {
+                navbar.style.background = 'rgba(5, 5, 7, 0.95)';
+                navbar.style.backdropFilter = 'blur(30px)';
+                navbar.style.borderBottom = '1px solid rgba(0, 212, 170, 0.2)';
+            } else {
+                navbar.style.background = 'rgba(10, 10, 15, 0.9)';
+                navbar.style.backdropFilter = 'blur(20px)';
+                navbar.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
+            }
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Enhanced intersection observer for stats
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statNumbers = entry.target.querySelectorAll('.stat-number, .hero-stat-number');
+                    statNumbers.forEach(element => {
+                        const target = parseFloat(element.getAttribute('data-count'));
+                        animateCounter(element, target, 2500);
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Mouse parallax effect for enhanced interactivity
+        document.addEventListener('mousemove', function(e) {
+            const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            const mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+            
+            // Parallax effect on particles
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach((particle, index) => {
+                const speed = (index % 5 + 1) * 0.8;
+                particle.style.transform = `translate(${mouseX * speed}px, ${mouseY * speed}px)`;
+            });
+            
+            // Parallax effect on floating icons
+            const floatingIcons = document.querySelectorAll('.floating-icon');
+            floatingIcons.forEach((icon, index) => {
+                const speed = (index % 3 + 1) * 1.2;
+                icon.style.transform = `translate(${mouseX * speed}px, ${mouseY * speed}px)`;
+            });
+        });
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            createEnhancedParticles();
+            animateRealTimePrices();
+            
+            // Observe stats sections for counter animation
+            const statsSection = document.querySelector('.stats-section');
+            const heroSection = document.querySelector('.hero-section');
+            
+            if (statsSection) observer.observe(statsSection);
+            if (heroSection) observer.observe(heroSection);
+            
+            // Add loading completion effect
+            setTimeout(() => {
+                document.body.style.overflow = 'auto';
+            }, 100);
+        });
+
+        // Performance optimization: reduce animations on mobile
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.particle').forEach(particle => {
+                particle.style.animationDuration = '8s';
+            });
+        }
+    </script>
+</body>
+</html> 

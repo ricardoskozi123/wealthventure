@@ -24,7 +24,7 @@ def home():
     """
     # If user is not authenticated, show the public landing page
     if not current_user.is_authenticated:
-        return render_template("landing.html", 
+        return render_template("landing_enhanced.html", 
                                title="Professional Trading Platform",
                                platform_name="OMCRM")
     
