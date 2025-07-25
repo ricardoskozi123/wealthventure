@@ -750,36 +750,41 @@ def update_all_prices():
 @login_required
 def cancel_order():
     """Cancel a pending order and refund the reserved amount"""
-    trade_id = request.form.get('trade_id')
-    trade = Trade.query.get_or_404(trade_id)
+    order_id = request.form.get('order_id')
     
-    # Verify ownership
-    if trade.lead_id != current_user.id:
-        flash('Access denied. This is not your trade.', 'danger')
+    if not order_id:
+        flash('No order ID provided', 'error')
         return redirect(url_for('webtrader.webtrader_dashboard'))
     
-    # Verify trade is still open
-    if trade.status != 'open':
-        flash('This trade is already closed.', 'warning')
+    # Find the pending order
+    order = Trade.query.filter_by(id=order_id, lead_id=current_user.id, status='pending').first()
+    
+    if not order:
+        flash('Order not found or already processed', 'error')
         return redirect(url_for('webtrader.webtrader_dashboard'))
-
-    # Get latest price
-    current_price = get_real_time_price(trade.instrument.symbol, trade.instrument.name, trade.instrument.type)
-    if not current_price:
-        flash('Unable to get current price. Please try again.', 'danger')
-        return redirect(url_for('webtrader.webtrader_dashboard'))
-
-    # Execute different order types
-    if trade.order_type == 'market':
-        execute_market_order(current_user, trade.instrument, trade.amount, current_price, trade.trade_type)
-    elif trade.order_type in ['limit', 'stop_loss', 'take_profit']:
-        if not trade.target_price or trade.target_price <= 0:
-            flash('Target price is required for limit, stop-loss, and take-profit orders.', 'danger')
-            return redirect(url_for('webtrader.webtrader_dashboard'))
+    
+    try:
+        # 🔧 CRITICAL FIX: Calculate the reserved amount to refund
+        reserved_amount = order.amount * order.target_price
+        
+        # Cancel the order
+        order.status = 'cancelled'
+        
+        # 🔧 CRITICAL FIX: Refund the reserved money
+        if current_user.current_balance is None:
+            current_user.current_balance = 0.0
             
-        store_order(current_user, trade.instrument, trade.amount, trade.order_type, trade.target_price, trade.trade_type)
-    else:
-        flash('Invalid order type.', 'danger')
+        current_user.current_balance += reserved_amount
+        
+        db.session.commit()
+        
+        flash(f'Order cancelled successfully! Refunded: ${reserved_amount:.2f}', 'success')
+        logging.info(f"💰 Order {order_id} cancelled, refunded ${reserved_amount:.2f} to user {current_user.id}")
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"❌ Error cancelling order: {str(e)}")
+        flash(f'Error cancelling order: {str(e)}', 'error')
 
     return redirect(url_for('webtrader.webtrader_dashboard'))
 
@@ -900,9 +905,14 @@ def close_trade():
             # For sell trades: profit = (entry_price - current_price) * amount
             profit_loss = (trade.price - current_price) * trade.amount
         
+        # 🔧 CRITICAL FIX: Calculate the original trade cost that was deducted when opening
+        original_trade_cost = trade.amount * trade.price
+        
         # 🔧 DEBUG: Log balance update details
         old_balance = current_user.current_balance
-        logging.info(f"💰 BALANCE UPDATE: Trade ID={trade_id}, Old Balance=${old_balance:.2f}, P/L=${profit_loss:.2f}")
+        logging.info(f"💰 BALANCE UPDATE: Trade ID={trade_id}, Old Balance=${old_balance:.2f}")
+        logging.info(f"💰 TRADE DETAILS: Amount={trade.amount}, Entry Price=${trade.price:.2f}, Original Cost=${original_trade_cost:.2f}")
+        logging.info(f"💰 CURRENT PRICE: ${current_price:.2f}, P/L=${profit_loss:.2f}")
         
         # Update trade
         trade.status = 'closed'
@@ -910,15 +920,20 @@ def close_trade():
         trade.profit_loss = profit_loss
         trade.close_date = datetime.utcnow()
         
-        # 🔧 CRITICAL FIX: Update user balance with proper validation
+        # 🔧 CRITICAL FIX: Refund original trade cost AND add profit/loss
         if current_user.current_balance is None:
             current_user.current_balance = 0.0
-            
+        
+        # Refund the original money that was "locked up" in the trade
+        current_user.current_balance += original_trade_cost
+        logging.info(f"💰 AFTER REFUNDING ORIGINAL COST: ${current_user.current_balance:.2f} (+${original_trade_cost:.2f})")
+        
+        # Add the profit or loss
         current_user.current_balance += profit_loss
         new_balance = current_user.current_balance
         
         # 🔧 DEBUG: Log new balance
-        logging.info(f"💰 NEW BALANCE: ${new_balance:.2f} (change: ${profit_loss:.2f})")
+        logging.info(f"💰 FINAL BALANCE: ${new_balance:.2f} (Original Cost: +${original_trade_cost:.2f}, P/L: {'+' if profit_loss >= 0 else ''}${profit_loss:.2f})")
         
         # Force explicit commit with error handling
         db.session.commit()
@@ -928,10 +943,13 @@ def close_trade():
         actual_balance = current_user.current_balance
         logging.info(f"💰 VERIFIED BALANCE AFTER COMMIT: ${actual_balance:.2f}")
         
+        # Calculate total change for user message
+        total_change = original_trade_cost + profit_loss
+        
         if profit_loss >= 0:
-            flash(f'Trade closed successfully! Profit: ${profit_loss:.2f}. New balance: ${actual_balance:.2f}', 'success')
+            flash(f'Trade closed successfully! Refunded: ${original_trade_cost:.2f} + Profit: ${profit_loss:.2f} = +${total_change:.2f}. New balance: ${actual_balance:.2f}', 'success')
         else:
-            flash(f'Trade closed. Loss: ${abs(profit_loss):.2f}. New balance: ${actual_balance:.2f}', 'warning')
+            flash(f'Trade closed. Refunded: ${original_trade_cost:.2f} + Loss: ${profit_loss:.2f} = +${total_change:.2f}. New balance: ${actual_balance:.2f}', 'warning')
             
     except Exception as e:
         db.session.rollback()
@@ -1014,6 +1032,7 @@ def liquidate_account():
         
         liquidated_count = 0
         total_pnl = 0.0
+        total_refund = 0.0
         
         for trade in open_trades:
             try:
@@ -1027,6 +1046,9 @@ def liquidate_account():
                     else:
                         profit_loss = (trade.price - current_price) * trade.amount
                     
+                    # 🔧 CRITICAL FIX: Calculate original trade cost to refund
+                    original_trade_cost = trade.amount * trade.price
+                    
                     # Close the trade
                     trade.status = 'closed'
                     trade.close_price = current_price
@@ -1034,23 +1056,27 @@ def liquidate_account():
                     trade.close_date = datetime.utcnow()
                     
                     total_pnl += profit_loss
+                    total_refund += original_trade_cost
                     liquidated_count += 1
                     
-                    logging.info(f"Liquidated trade {trade.id}: {trade.instrument.symbol} P/L: ${profit_loss:.2f}")
+                    logging.info(f"Liquidated trade {trade.id}: {trade.instrument.symbol} Original Cost: ${original_trade_cost:.2f}, P/L: ${profit_loss:.2f}")
                     
             except Exception as e:
                 logging.error(f"Error liquidating trade {trade.id}: {str(e)}")
                 continue
         
-        # Update user balance
-        current_user.current_balance += total_pnl
+        # 🔧 CRITICAL FIX: Refund original trade costs AND add profit/loss
+        current_user.current_balance += total_refund  # Refund all original trade costs
+        current_user.current_balance += total_pnl     # Add all profit/loss
+        
+        total_change = total_refund + total_pnl
         
         db.session.commit()
         
         if total_pnl >= 0:
-            flash(f'Account liquidated! {liquidated_count} trades closed. Total Profit: ${total_pnl:.2f}', 'success')
+            flash(f'Account liquidated! {liquidated_count} trades closed. Refunded: ${total_refund:.2f} + Profit: ${total_pnl:.2f} = +${total_change:.2f}', 'success')
         else:
-            flash(f'Account liquidated! {liquidated_count} trades closed. Total Loss: ${abs(total_pnl):.2f}', 'warning')
+            flash(f'Account liquidated! {liquidated_count} trades closed. Refunded: ${total_refund:.2f} + Loss: ${total_pnl:.2f} = +${total_change:.2f}', 'warning')
             
     except Exception as e:
         db.session.rollback()
