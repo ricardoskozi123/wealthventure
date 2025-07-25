@@ -21,22 +21,56 @@
     .btn-group .btn {
         margin-right: 0.25rem;
     }
-    /* Fix tab text color - make it dark and visible */
-    #transactionTabs .nav-link {
+    /* Fix tab text color - make it dark and visible with more specific selectors */
+    .content .container-fluid #transactionTabs .nav-link {
         color: #212529 !important;
         font-weight: 600 !important;
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-bottom-color: transparent;
+        background-color: #f8f9fa !important;
+        border: 1px solid #dee2e6 !important;
+        border-bottom-color: transparent !important;
     }
-    #transactionTabs .nav-link:hover {
+    .content .container-fluid #transactionTabs .nav-link:hover {
         color: #495057 !important;
-        background-color: #e9ecef;
+        background-color: #e9ecef !important;
     }
-    #transactionTabs .nav-link.active {
+    .content .container-fluid #transactionTabs .nav-link.active {
         color: #495057 !important;
-        background-color: #fff;
-        border-color: #dee2e6 #dee2e6 #fff;
+        background-color: #fff !important;
+        border-color: #dee2e6 #dee2e6 #fff !important;
+    }
+    /* Additional fallback with even more specific selector */
+    section.content div.container-fluid div.card div.card-body ul#transactionTabs li.nav-item a.nav-link {
+        color: #212529 !important;
+        font-weight: 600 !important;
+    }
+    section.content div.container-fluid div.card div.card-body ul#transactionTabs li.nav-item a.nav-link:hover {
+        color: #495057 !important;
+    }
+    section.content div.container-fluid div.card div.card-body ul#transactionTabs li.nav-item a.nav-link.active {
+        color: #495057 !important;
+    }
+    /* Ultra-specific targeting for transaction tabs using custom class */
+    a.transaction-tab-link.nav-link {
+        color: #212529 !important;
+        font-weight: 600 !important;
+        background-color: #f8f9fa !important;
+        border: 1px solid #dee2e6 !important;
+        border-bottom-color: transparent !important;
+    }
+    a.transaction-tab-link.nav-link:hover {
+        color: #495057 !important;
+        background-color: #e9ecef !important;
+    }
+    a.transaction-tab-link.nav-link.active {
+        color: #495057 !important;
+        background-color: #fff !important;
+        border-color: #dee2e6 #dee2e6 #fff !important;
+    }
+    /* Nuclear option - inline style backup in case CSS is still overridden */
+    .transaction-tabs .transaction-tab-link {
+        color: #212529 !important;
+        font-weight: 600 !important;
+        background-color: #f8f9fa !important;
     }
 </style>
 {% endblock %}
@@ -181,12 +215,12 @@
                         <h3 class="card-title">All Transactions</h3>
                     </div>
                     <div class="card-body">
-                        <ul class="nav nav-tabs" id="transactionTabs" role="tablist">
+                        <ul class="nav nav-tabs transaction-tabs" id="transactionTabs" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" id="deposits-tab" data-bs-toggle="tab" data-bs-target="#deposits" type="button" role="tab" aria-controls="deposits" aria-selected="true">Deposits</a>
+                                <a class="nav-link active transaction-tab-link" id="deposits-tab" data-bs-toggle="tab" data-bs-target="#deposits" type="button" role="tab" aria-controls="deposits" aria-selected="true" style="color: #212529 !important; font-weight: 600 !important;">Deposits</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="withdrawals-tab" data-bs-toggle="tab" data-bs-target="#withdrawals" type="button" role="tab" aria-controls="withdrawals" aria-selected="false">Withdrawals</a>
+                                <a class="nav-link transaction-tab-link" id="withdrawals-tab" data-bs-toggle="tab" data-bs-target="#withdrawals" type="button" role="tab" aria-controls="withdrawals" aria-selected="false" style="color: #212529 !important; font-weight: 600 !important;">Withdrawals</a>
                             </li>
                         </ul>
                         <div class="tab-content" id="transactionTabsContent">
@@ -495,6 +529,52 @@
                 window.cleanupModals();
             }
         });
+        
+        // Force tab text color to be dark (fallback in case CSS is overridden)
+        function forceTabColors() {
+            const tabLinks = document.querySelectorAll('.transaction-tab-link');
+            tabLinks.forEach(function(tab) {
+                tab.style.color = '#212529';
+                tab.style.fontWeight = '600';
+                tab.style.backgroundColor = '#f8f9fa';
+                
+                // Add hover effect
+                tab.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.color = '#495057';
+                        this.style.backgroundColor = '#e9ecef';
+                    }
+                });
+                
+                tab.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.color = '#212529';
+                        this.style.backgroundColor = '#f8f9fa';
+                    } else {
+                        this.style.color = '#495057';
+                        this.style.backgroundColor = '#fff';
+                    }
+                });
+                
+                // Handle active state
+                tab.addEventListener('click', function() {
+                    // Remove active styling from all tabs
+                    tabLinks.forEach(function(t) {
+                        t.style.color = '#212529';
+                        t.style.backgroundColor = '#f8f9fa';
+                    });
+                    
+                    // Add active styling to clicked tab
+                    this.style.color = '#495057';
+                    this.style.backgroundColor = '#fff';
+                });
+            });
+        }
+        
+        // Apply tab colors immediately and after a short delay
+        forceTabColors();
+        setTimeout(forceTabColors, 100);
+        setTimeout(forceTabColors, 500);
     });
 </script>
 {% endblock %} 
