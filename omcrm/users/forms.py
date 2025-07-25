@@ -63,6 +63,10 @@ class ResourceForm(FlaskForm):
     can_create = BooleanField('Create')
     can_edit = BooleanField('Update')
     can_delete = BooleanField('Delete')
+    can_impersonate = BooleanField('Impersonate')
+    # 🔧 NEW: Manager-level permissions
+    can_view_all_clients = BooleanField('View All Clients (Manager)')
+    can_view_all_leads = BooleanField('View All Leads (Manager)')
 
 
 class NewRoleForm(FlaskForm):

@@ -176,6 +176,11 @@ class Role(db.Model):
             self.resources[ind].can_delete = resources[ind].can_delete.data
             if hasattr(resources[ind], 'can_impersonate'):
                 self.resources[ind].can_impersonate = resources[ind].can_impersonate.data
+            # 🔧 NEW: Handle manager-level permissions
+            if hasattr(resources[ind], 'can_view_all_clients'):
+                self.resources[ind].can_view_all_clients = resources[ind].can_view_all_clients.data
+            if hasattr(resources[ind], 'can_view_all_leads'):
+                self.resources[ind].can_view_all_leads = resources[ind].can_view_all_leads.data
 
 
 class Resource(db.Model):
@@ -186,3 +191,6 @@ class Resource(db.Model):
     can_create = db.Column(db.Boolean, nullable=False)
     can_delete = db.Column(db.Boolean, nullable=False)
     can_impersonate = db.Column(db.Boolean, nullable=False, default=False)
+    # 🔧 NEW: Manager-level permissions
+    can_view_all_clients = db.Column(db.Boolean, nullable=False, default=False)
+    can_view_all_leads = db.Column(db.Boolean, nullable=False, default=False)

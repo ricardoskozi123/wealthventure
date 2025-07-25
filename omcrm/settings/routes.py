@@ -100,6 +100,14 @@ def settings_staff_update(user_id):
                 resource.can_create = permission.can_create.data
                 resource.can_edit = permission.can_edit.data
                 resource.can_delete = permission.can_delete.data
+                # Handle impersonate permission if it exists
+                if hasattr(permission, 'can_impersonate'):
+                    resource.can_impersonate = permission.can_impersonate.data
+                # 🔧 NEW: Handle manager-level permissions
+                if hasattr(permission, 'can_view_all_clients'):
+                    resource.can_view_all_clients = permission.can_view_all_clients.data
+                if hasattr(permission, 'can_view_all_leads'):
+                    resource.can_view_all_leads = permission.can_view_all_leads.data
 
             try:
                 db.session.commit()
@@ -226,7 +234,10 @@ def settings_roles_new():
                 resource.can_create = permission.form.can_create.data
                 resource.can_edit = permission.form.can_edit.data
                 resource.can_delete = permission.form.can_delete.data
-                resource.can_impersonate = False  # We're not using impersonate anymore
+                resource.can_impersonate = permission.form.can_impersonate.data if hasattr(permission.form, 'can_impersonate') else False
+                # 🔧 NEW: Handle manager-level permissions
+                resource.can_view_all_clients = permission.form.can_view_all_clients.data if hasattr(permission.form, 'can_view_all_clients') else False
+                resource.can_view_all_leads = permission.form.can_view_all_leads.data if hasattr(permission.form, 'can_view_all_leads') else False
                 role.resources.append(resource)
 
             db.session.add(role)

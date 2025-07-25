@@ -1376,10 +1376,10 @@
                                     <td class="current-price-cell">--.--</td> {# Cell for current price #}
                                     <td class="profit-loss-cell">--.--</td> {# Cell for P/L #}
                                     <td>
-                                        <form method="POST" action="{{ url_for('webtrader.close_trade') }}" style="display:inline;">
+                                        <form method="POST" action="{{ url_for('webtrader.close_trade') }}" style="display:inline;" class="close-trade-form">
                                              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                             <input type="hidden" name="trade_id" value="{{ trade.id }}">
-                                            <button type="submit" class="btn btn-danger btn-sm">Close</button>
+                                            <button type="submit" class="btn btn-danger btn-sm close-trade-btn">Close</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -3977,6 +3977,104 @@
                 chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: #ff6b6b; background: #1a1a1a; font-size: 16px;"><i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>Chart error for ' + symbol + '</div>';
             }
         }
+    </script>
+
+    <!-- 🛡️ TRADE CLOSE CONFIRMATION - Prevent accidental trade closures -->
+    <script>
+        // Add click event listeners to all close trade buttons
+        const closeTradeButtons = document.querySelectorAll('.close-trade-btn');
+        
+        closeTradeButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent immediate form submission
+                
+                // Get trade information for the confirmation
+                const form = button.closest('.close-trade-form');
+                const tradeRow = button.closest('tr');
+                const symbol = tradeRow.querySelector('td:first-child').textContent.trim();
+                const amount = tradeRow.querySelector('td:nth-child(2)').textContent.trim();
+                const tradeType = tradeRow.querySelector('td:nth-child(4) .badge').textContent.trim();
+                const currentPL = tradeRow.querySelector('.profit-loss-cell').textContent.trim();
+                
+                // Create custom confirmation modal
+                const modalHtml = `
+                    <div class="modal fade" id="closeTradeModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content" style="background: #1a1a1f; border: 1px solid #333; color: white;">
+                                <div class="modal-header" style="border-bottom: 1px solid #333;">
+                                    <h5 class="modal-title" style="color: #ff6b6b;">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Confirm Trade Closure
+                                    </h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-warning" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; color: #ffc107;">
+                                        <strong>⚠️ Warning:</strong> You are about to close this trade permanently.
+                                    </div>
+                                    
+                                    <div class="trade-details" style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                                        <h6 style="color: #00d4aa; margin-bottom: 0.8rem;">Trade Details:</h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <strong>Symbol:</strong> ${symbol}<br>
+                                                <strong>Amount:</strong> ${amount}
+                                            </div>
+                                            <div class="col-6">
+                                                <strong>Type:</strong> <span class="badge badge-${tradeType.toLowerCase()}" style="background: ${tradeType === 'BUY' ? '#00d4aa' : '#ff6b6b'};">${tradeType}</span><br>
+                                                <strong>Current P/L:</strong> <span style="color: ${currentPL.includes('-') ? '#ff6b6b' : '#00d4aa'};">${currentPL}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p style="color: #ccc; margin-bottom: 1.5rem;">
+                                        This action cannot be undone. Are you sure you want to close this trade?
+                                    </p>
+                                </div>
+                                <div class="modal-footer" style="border-top: 1px solid #333;">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-1"></i>Cancel
+                                    </button>
+                                    <button type="button" class="btn btn-danger" id="confirmCloseBtn">
+                                        <i class="fas fa-check me-1"></i>Yes, Close Trade
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById('closeTradeModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Add modal to page
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('closeTradeModal'));
+                modal.show();
+                
+                // Handle confirmation
+                document.getElementById('confirmCloseBtn').addEventListener('click', function() {
+                    modal.hide();
+                    // Show loading state
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Closing...';
+                    button.disabled = true;
+                    
+                    // Submit the form after a brief delay for UX
+                    setTimeout(function() {
+                        form.submit();
+                    }, 300);
+                });
+                
+                // Clean up modal after it's hidden
+                document.getElementById('closeTradeModal').addEventListener('hidden.bs.modal', function() {
+                    this.remove();
+                });
+            });
+        });
+
     </script>
 </body>
 </html>

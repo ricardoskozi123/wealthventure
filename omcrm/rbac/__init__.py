@@ -115,26 +115,64 @@ def is_team_leader(function):
 
 def get_visible_leads_query(base_query):
     """
-    SIMPLIFIED FOR DEBUGGING - Returns all leads regardless of permissions
+    Apply team-based permissions to leads query.
+    Managers with 'can_view_all_leads' permission can see all leads.
+    Regular users see only their assigned leads.
     """
-    # For debugging: don't filter at all, return all leads
-    return base_query
+    if current_user.is_admin:
+        return base_query
+    
+    # Check if user has permission to view all leads
+    if current_user.role:
+        for res in current_user.role.resources:
+            if res.name == 'leads' and hasattr(res, 'can_view_all_leads') and res.can_view_all_leads:
+                # Manager can see all leads
+                return base_query
+    
+    # Regular user - filter by owner_id
+    from omcrm.leads.models import Lead
+    return base_query.filter(Lead.owner_id == current_user.id)
 
 
 def get_visible_clients_query(base_query):
     """
-    SIMPLIFIED FOR DEBUGGING - Returns all clients regardless of permissions
+    Apply team-based permissions to clients query.
+    Managers with 'can_view_all_clients' permission can see all clients.
+    Regular users see only their assigned clients.
     """
-    # For debugging: don't filter at all, return all clients
-    return base_query
+    if current_user.is_admin:
+        return base_query
+    
+    # Check if user has permission to view all clients
+    if current_user.role:
+        for res in current_user.role.resources:
+            if res.name == 'leads' and hasattr(res, 'can_view_all_clients') and res.can_view_all_clients:
+                # Manager can see all clients
+                return base_query
+    
+    # Regular user - filter by owner_id
+    from omcrm.leads.models import Lead
+    return base_query.filter(Lead.owner_id == current_user.id)
 
 
 def get_visible_deals_query(base_query):
     """
-    SIMPLIFIED FOR DEBUGGING - Returns all deals regardless of permissions
+    Apply team-based permissions to deals query.
+    For now, follows the same logic as leads.
     """
-    # For debugging: don't filter at all, return all deals
-    return base_query
+    if current_user.is_admin:
+        return base_query
+        
+    # Check if user has permission to view all leads (deals follow leads permissions)
+    if current_user.role:
+        for res in current_user.role.resources:
+            if res.name == 'leads' and hasattr(res, 'can_view_all_leads') and res.can_view_all_leads:
+                # Manager can see all deals
+                return base_query
+    
+    # Regular user - filter by owner_id
+    from omcrm.deals.models import Deal
+    return base_query.filter(Deal.owner_id == current_user.id)
 
 
 def can_impersonate_clients():
