@@ -882,16 +882,16 @@ def lead_sources():
                 return render_template("leads/lead_sources.html", title="Lead Sources", sources=LeadSource.query.all())
                 
             new_source = LeadSource(source_name=name, affiliate_id=affiliate_id)
-                db.session.add(new_source)
-                db.session.commit()
+            db.session.add(new_source)
+            db.session.commit()
             flash(f"Lead source '{name}' with affiliate ID '{affiliate_id}' created successfully", "success")
-                return redirect(url_for('leads.lead_sources'))
+            return redirect(url_for('leads.lead_sources'))
         else:
             if not name:
-            flash("Source name is required", "danger")
+                flash("Source name is required", "danger")
             if not affiliate_id:
                 flash("Affiliate ID is required", "danger")
-    
+                
     return render_template("leads/lead_sources.html", 
                           title="Lead Sources", 
                           sources=sources)
