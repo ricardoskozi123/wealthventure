@@ -2177,6 +2177,559 @@
                 animation: fadeIn 0.3s ease;
             }
         }
+
+        /* MOBILE FIXES - Better Layout and Positioning */
+        @media (max-width: 768px) {
+            /* Fix Body and Container */
+            body {
+                margin: 0;
+                padding: 0;
+                overflow-x: hidden;
+                background: var(--dark-bg);
+                height: 100vh;
+                position: relative;
+            }
+            
+            .trading-platform {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                width: 100vw;
+                overflow: hidden;
+            }
+            
+            /* Mobile Header - Cleaner */
+            .header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background: var(--darker-bg);
+                border-bottom: 1px solid var(--border-color);
+                padding: 8px 15px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            }
+            
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .mobile-sidebar-toggle {
+                display: flex !important;
+                align-items: center;
+                gap: 6px;
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-size: 0.8rem;
+                font-weight: 500;
+            }
+            
+            .logo-text {
+                font-size: 1rem;
+                font-weight: 600;
+                color: white;
+            }
+            
+            /* FIXED: Mobile Balance - Show ONLY main balance */
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .balance-info {
+                background: var(--success-color);
+                padding: 4px 10px;
+                border-radius: 15px;
+                display: flex !important;
+                align-items: center;
+                gap: 4px;
+            }
+            
+            /* Hide all balance items except the first one on mobile */
+            .balance-item.desktop-only {
+                display: none !important;
+            }
+            
+            .balance-item:not(.desktop-only) {
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .balance-label {
+                font-size: 0.55rem;
+                color: white;
+                opacity: 0.9;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin: 0;
+                line-height: 1;
+            }
+            
+            .balance-value {
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: white;
+                margin: 0;
+                line-height: 1.1;
+            }
+            
+            .dropdown-toggle {
+                font-size: 0.75rem;
+                color: var(--text-color);
+                text-decoration: none;
+                white-space: nowrap;
+                padding: 4px 8px;
+                background: var(--medium-bg);
+                border-radius: 12px;
+            }
+            
+            .header-buttons {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            
+            .logout-btn {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+                background: var(--danger-color);
+                border: none;
+                color: white;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                gap: 3px;
+            }
+            
+            /* Remove Market Data Ticker on Mobile */
+            .market-data {
+                display: none;
+            }
+            
+            /* Content Wrapper - Adjusted for smaller header */
+            .content-wrapper {
+                margin-top: 50px; /* Just header height */
+                height: calc(100vh - 50px);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            
+            /* FIXED: Instruments Sidebar - Better Design */
+            .instruments-list {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 90vw;
+                max-width: 350px;
+                height: 100vh;
+                background: var(--darker-bg);
+                z-index: 1100;
+                transition: left 0.3s ease;
+                overflow-y: auto;
+                box-shadow: 5px 0 30px rgba(0, 0, 0, 0.7);
+                border-right: 1px solid var(--border-color);
+            }
+            
+            .instruments-list.mobile-open {
+                left: 0;
+            }
+            
+            .mobile-sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1050;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(2px);
+            }
+            
+            .mobile-sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .instruments-header {
+                padding: 15px;
+                border-bottom: 1px solid var(--border-color);
+                background: var(--medium-bg);
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .instruments-header h5 {
+                margin: 0;
+                font-size: 1rem;
+                color: var(--text-color);
+                font-weight: 600;
+            }
+            
+            /* Market Filter Buttons - Horizontal Scroll */
+            .market-filter-buttons {
+                display: flex;
+                padding: 10px;
+                gap: 8px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                background: var(--light-bg);
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            
+            .market-filter-buttons::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .market-filter-btn {
+                flex: 0 0 auto;
+                padding: 8px 16px;
+                background: var(--medium-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 20px;
+                color: var(--text-color);
+                font-size: 0.8rem;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.2s ease;
+            }
+            
+            .market-filter-btn.active {
+                background: var(--primary-color);
+                color: white;
+                border-color: var(--primary-color);
+            }
+            
+            .market-filter-btn:hover {
+                background: var(--primary-color);
+                color: white;
+            }
+            
+            /* Instruments Table - Better Mobile */
+            .instruments-table {
+                width: 100%;
+                font-size: 0.85rem;
+                margin: 0;
+            }
+            
+            .instruments-table th,
+            .instruments-table td {
+                padding: 12px 10px;
+                border-bottom: 1px solid var(--border-color);
+                text-align: left;
+            }
+            
+            .instruments-table th:nth-child(2),
+            .instruments-table td:nth-child(2) {
+                text-align: right;
+            }
+            
+            .instruments-table th:nth-child(3),
+            .instruments-table td:nth-child(3) {
+                text-align: right;
+            }
+            
+            .instruments-table tr:hover {
+                background: var(--light-bg);
+                cursor: pointer;
+            }
+            
+            .instruments-table tr:active {
+                background: var(--primary-color);
+                color: white;
+            }
+            
+            /* FIXED: Chart Area - Better Positioning */
+            .chart-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                background: var(--dark-bg);
+                margin: 0;
+                padding: 0;
+            }
+            
+            .chart-container {
+                height: 250px; /* Reduced height for mobile */
+                background: var(--darker-bg);
+                border-radius: 0;
+                margin: 0;
+                border-bottom: 1px solid var(--border-color);
+                flex-shrink: 0;
+            }
+            
+            /* Trades Section - Fills remaining space */
+            .trades-section {
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: var(--medium-bg);
+                margin: 0;
+                padding: 0;
+                min-height: 200px;
+            }
+            
+            /* Mobile Tabs - Improved */
+            .webtrader-tabs {
+                background: var(--medium-bg);
+                border-bottom: 1px solid var(--border-color);
+                margin: 0;
+                padding: 0;
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            
+            .webtrader-tabs::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .webtrader-tab-link {
+                flex: 0 0 auto;
+                padding: 12px 16px !important;
+                font-size: 0.8rem !important;
+                white-space: nowrap;
+                color: var(--secondary-text) !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                transition: all 0.2s ease !important;
+            }
+            
+            .webtrader-tab-link:hover {
+                color: var(--text-color) !important;
+                background: rgba(13, 110, 253, 0.1) !important;
+            }
+            
+            .webtrader-tab-link.active {
+                color: var(--text-color) !important;
+                background: var(--dark-bg) !important;
+                border-bottom: 2px solid var(--primary-color) !important;
+            }
+            
+            .webtrader-tabs .badge {
+                font-size: 0.6rem;
+                padding: 2px 5px;
+                border-radius: 10px;
+                min-width: 16px;
+                text-align: center;
+            }
+            
+            /* Tab Content */
+            #tradeTabContent {
+                background: var(--dark-bg);
+                padding: 0;
+                min-height: auto;
+                margin: 0;
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .table-responsive {
+                margin: 0;
+                padding: 8px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Trade Tables - Optimized for Mobile */
+            .trades-table {
+                font-size: 0.7rem;
+                min-width: 100%;
+                margin: 0;
+            }
+            
+            .trades-table th,
+            .trades-table td {
+                padding: 6px 3px;
+                white-space: nowrap;
+                text-align: center;
+                border-bottom: 1px solid var(--border-color);
+                vertical-align: middle;
+            }
+            
+            .trades-table th:first-child,
+            .trades-table td:first-child {
+                text-align: left;
+                padding-left: 6px;
+                font-weight: 600;
+            }
+            
+            /* Hide date and current price columns on mobile */
+            .trades-table th:nth-child(5),
+            .trades-table td:nth-child(5),
+            .trades-table th:nth-child(6),
+            .trades-table td:nth-child(6) {
+                display: none;
+            }
+            
+            /* Trading Panel - iOS Style Bottom Sheet */
+            .trading-panel-pro {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                background: var(--darker-bg);
+                border-top: 1px solid var(--border-color);
+                border-radius: 16px 16px 0 0;
+                z-index: 800;
+                transform: translateY(calc(100% - 60px));
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                max-height: 75vh;
+                box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.5);
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .trading-panel-pro.expanded {
+                transform: translateY(0);
+            }
+            
+            .trade-header {
+                padding: 15px 20px;
+                background: var(--medium-bg);
+                border-radius: 16px 16px 0 0;
+                text-align: center;
+                cursor: pointer;
+                position: relative;
+                border-bottom: 1px solid var(--border-color);
+                flex-shrink: 0;
+            }
+            
+            .trade-header::before {
+                content: '';
+                position: absolute;
+                top: 6px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 36px;
+                height: 4px;
+                background: var(--secondary-text);
+                border-radius: 2px;
+                opacity: 0.6;
+            }
+            
+            .trade-header::after {
+                content: '▲';
+                position: absolute;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--secondary-text);
+                font-size: 1rem;
+                transition: transform 0.3s ease;
+            }
+            
+            .trading-panel-pro.expanded .trade-header::after {
+                transform: translateY(-50%) rotate(180deg);
+            }
+            
+            #trade-panel-symbol {
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--text-color);
+                margin: 0;
+            }
+            
+            .trading-form-pro {
+                flex: 1;
+                padding: 15px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Mobile Buy/Sell Buttons - Improved */
+            .price-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .btn-price {
+                padding: 16px 12px;
+                border-radius: 10px;
+                border: none;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 70px;
+                transition: all 0.2s ease;
+                font-weight: 600;
+                cursor: pointer;
+            }
+            
+            .btn-price:active {
+                transform: scale(0.98);
+            }
+            
+            .btn-price span {
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+                opacity: 0.9;
+            }
+            
+            .btn-price strong {
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+            
+            .btn-sell-price {
+                background: linear-gradient(135deg, #ff4757, #ff3838);
+                color: white;
+            }
+            
+            .btn-sell-price.active {
+                box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+            }
+            
+            .btn-buy-price {
+                background: linear-gradient(135deg, #2ed573, #1dd1a1);
+                color: white;
+            }
+            
+            .btn-buy-price.active {
+                box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
+            }
+            
+            /* Mobile Safe Areas */
+            .trading-panel-pro {
+                padding-bottom: max(env(safe-area-inset-bottom), 15px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -2200,33 +2753,38 @@
             <div class="user-info">
                 <div class="balance-info">
                     <div class="balance-item">
-                        <span class="balance-label">BALANCE:</span>
-                        <span class="balance-value" id="user-balance">${{ "%.2f"|format(current_user.current_balance) }}</span>
+                        <div class="balance-label">Balance</div>
+                        <div class="balance-value">${{ "{:.2f}".format(current_user.balance) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
-                        <span class="balance-label">EQUITY:</span>
-                        <span class="balance-value" id="user-equity">${{ "%.2f"|format(current_user.equity) }}</span>
+                        <div class="balance-label">Equity</div>
+                        <div class="balance-value">${{ "{:.2f}".format(current_user.equity or 0) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
-                        <span class="balance-label">CREDIT:</span>
-                        <span class="balance-value">${{ "%.2f"|format(current_user.credit_balance) }}</span>
+                        <div class="balance-label">Credit</div>
+                        <div class="balance-value">${{ "{:.2f}".format(current_user.credit or 0) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
-                        <span class="balance-label">BONUS:</span>
-                        <span class="balance-value">${{ "%.2f"|format(current_user.bonus_balance) }}</span>
+                        <div class="balance-label">Bonus</div>
+                        <div class="balance-value">${{ "{:.2f}".format(current_user.bonus or 0) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
-                        <span class="balance-label">MARGIN:</span>
-                        <span class="balance-value" id="user-margin">$0.00</span>
+                        <div class="balance-label">Margin</div>
+                        <div class="balance-value">${{ "{:.2f}".format(current_user.margin or 0) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
-                        <span class="balance-label">FREE MARGIN:</span>
-                        <span class="balance-value" id="user-free-margin">$0.00</span>
+                        <div class="balance-label">Free Margin</div>
+                        <div class="balance-value">${{ "{:.2f}".format(current_user.free_margin or 0) }}</div>
                     </div>
-                    <div class="balance-item desktop-only">
-                        <span class="balance-label">MARGIN LEVEL:</span>
-                        <span class="balance-value" id="user-margin-level">∞%</span>
-                    </div>
+                </div>
+                <div class="dropdown">
+                    <a class="dropdown-toggle desktop-only" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Margin Level: <span class="text-warning">{{ "{:.2f}".format(current_user.margin_level or 0) }}%</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><span class="dropdown-item-text">Margin Call at 50%</span></li>
+                        <li><span class="dropdown-item-text">Stop Out at 20%</span></li>
+                    </ul>
                 </div>
                 
                 <!-- Replace the username span with a dropdown menu -->
@@ -2288,15 +2846,9 @@
             <div class="instruments-list" id="instrumentsSidebar">
                 <div class="instruments-header">
                     <h5>Trading Instruments</h5>
-                    <div>
-                        <button class="btn btn-sm btn-outline-secondary desktop-only">
-                            <i class="fas fa-filter"></i>
-                        </button>
-                        <!-- Mobile Close Button -->
-                        <button class="btn btn-sm btn-outline-secondary mobile-only" onclick="toggleMobileSidebar()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+                    <button class="mobile-only btn btn-sm btn-outline-light" onclick="toggleMobileSidebar()">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
                 
                 <div class="market-filter-buttons">
