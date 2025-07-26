@@ -916,9 +916,9 @@ def close_trade():
         
         # Update trade
         trade.status = 'closed'
-        trade.close_price = current_price
+        trade.closing_price = current_price  # Changed from close_price to closing_price
         trade.profit_loss = profit_loss
-        trade.close_date = datetime.utcnow()
+        trade.closing_date = datetime.utcnow()  # Changed from close_date to closing_date
         
         # 🔧 CRITICAL FIX: Refund original trade cost AND add profit/loss
         if current_user.current_balance is None:
