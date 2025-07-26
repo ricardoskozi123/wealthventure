@@ -3,148 +3,339 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Trading CRM">
-    <meta name="author" content="Admin">
-    <meta name="generator" content="Jekyll v3.8.5">
-    <title>TradingCRM - Client Portal</title>
+    <meta name="description" content="Modern Trading Platform">
+    <meta name="author" content="OliCRM">
+    <meta name="generator" content="Modern Client Portal">
+    <title>OliCRM - Trading Platform</title>
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.1.0/dist/css/adminlte.min.css">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    <!-- Toast Notification CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notification-popup.css') }}">
+
+    <!-- Custom CSS (same as admin) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
+    
+    <!-- Client-specific modern styling -->
     <style>
-      .main-sidebar .nav-link.active {
-        background-color: #007bff;
-        color: #fff;
+      /* Client-specific modern styling */
+      .client-sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.85);
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
       }
-      .main-sidebar .nav-link:hover {
-        background-color: rgba(0, 123, 255, 0.1);
+      
+      .client-sidebar .nav-link:hover {
+        background-color: rgba(67, 97, 238, 0.2);
+        color: white;
+        transform: translateX(4px);
       }
-      .nav-item .nav-icon {
-        margin-right: 0.5rem;
+      
+      .client-sidebar .nav-link.active {
+        background: linear-gradient(135deg, #4361ee, #3f51b5);
+        color: white;
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+      }
+      
+      .client-sidebar .nav-link i {
+        margin-right: 12px;
+        width: 20px;
+        text-align: center;
+      }
+      
+      .balance-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        color: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+      
+      .trading-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+      
+      .trading-actions .btn {
+        flex: 1;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 8px 16px;
+      }
+      
+      .section-divider {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin: 20px 0;
+        padding-top: 15px;
+      }
+      
+      .section-title {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
       }
     </style>
   </head>
-  <body class="hold-transition sidebar-mini">
+  <body class="webtrader-page">
     {% include 'includes/return_to_admin.html' %}
-    <div class="wrapper">
-      <!-- Main Sidebar Container -->
-      <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <!-- Brand Logo -->
-        <a href="{{ url_for('client.dashboard') }}" class="brand-link">
-          <img src="{{ url_for('static', filename='imgs/bootstrap-solid.svg') }}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-          <span class="brand-text font-weight-light">TradingCRM</span>
-        </a>
-
-        <!-- Sidebar -->
-        <div class="sidebar">
-          <!-- Sidebar user panel (optional) -->
-          <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-              <div style="width: 35px; height: 35px; background: linear-gradient(45deg, #007bff, #28a745); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">
+    <div class="dashboard-container">
+      <!-- Modern Sidebar -->
+      <nav class="sidebar client-sidebar">
+        <div class="sidebar-header">
+          <a href="{{ url_for('client.dashboard') }}" class="brand-logo">
+            <i data-feather="trending-up" class="me-2"></i>
+            Trading Portal
+          </a>
+          <button class="btn-toggle-sidebar d-md-none">
+            <i data-feather="menu"></i>
+          </button>
+        </div>
+        <div class="sidebar-content">
+          <!-- Modern User Profile -->
+          <div class="user-profile">
+            <div class="user-avatar">
+              <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #4361ee, #3f51b5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);">
                 {{ current_user.first_name[0] if current_user.first_name else 'U' }}{{ current_user.last_name[0] if current_user.last_name else '' }}
               </div>
             </div>
-            <div class="info">
-              <a href="{{ url_for('client.profile') }}" class="d-block">{{ current_user.first_name }} {{ current_user.last_name }}</a>
+            <div class="user-info">
+              <p class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</p>
+              <p class="user-role">Trading Client</p>
             </div>
           </div>
 
-          <!-- Sidebar Menu -->
-          <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+          <!-- Balance Card -->
+          <div class="balance-card">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1 opacity-75">Account Balance</h6>
+                <h3 class="mb-0 fw-bold">${{ '%.2f'|format(current_user.get_total_balance()) }}</h3>
+              </div>
+              <i data-feather="dollar-sign" style="width: 32px; height: 32px; opacity: 0.7;"></i>
+            </div>
+            <div class="trading-actions">
+              <a href="{{ url_for('client.deposit') }}" class="btn btn-light btn-sm">
+                <i data-feather="plus" style="width: 16px; height: 16px;"></i> Deposit
+              </a>
+              <a href="{{ url_for('client.withdraw') }}" class="btn btn-outline-light btn-sm">
+                <i data-feather="minus" style="width: 16px; height: 16px;"></i> Withdraw
+              </a>
+            </div>
+          </div>
+
+          <!-- Navigation Links -->
+          <ul class="nav-links">
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'client.dashboard' %}active{% endif %}" href="{{ url_for('client.dashboard') }}">
+                <i data-feather="grid"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'webtrader.webtrader_dashboard' %}active{% endif %}" href="{{ url_for('webtrader.webtrader_dashboard') }}">
+                <i data-feather="trending-up"></i>
+                <span>WebTrader</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'client.trade_analytics' %}active{% endif %}" href="{{ url_for('client.trade_analytics') }}">
+                <i data-feather="bar-chart-2"></i>
+                <span>Trading Analytics</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'client.deposit' %}active{% endif %}" href="{{ url_for('client.deposit') }}">
+                <i data-feather="plus-circle"></i>
+                <span>Deposit Funds</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'client.withdraw' %}active{% endif %}" href="{{ url_for('client.withdraw') }}">
+                <i data-feather="minus-circle"></i>
+                <span>Withdraw Funds</span>
+              </a>
+            </li>
+          </ul>
+
+          <!-- Account Section -->
+          <div class="section-divider">
+            <h6 class="section-title">Account</h6>
+            <ul class="nav-links">
               <li class="nav-item">
-                <a href="{{ url_for('client.dashboard') }}" class="nav-link {% if request.endpoint == 'client.dashboard' %}active{% endif %}">
-                  <i class="nav-icon fas fa-tachometer-alt"></i>
-                  <p>Dashboard</p>
+                <a class="nav-link {% if request.endpoint == 'client.profile' %}active{% endif %}" href="{{ url_for('client.profile') }}">
+                  <i data-feather="user"></i>
+                  <span>Profile Settings</span>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="nav-link {% if request.endpoint == 'webtrader.webtrader_dashboard' %}active{% endif %}">
-                  <i class="nav-icon fas fa-chart-line"></i>
-                  <p>WebTrader</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('client.trade_analytics') }}" class="nav-link {% if request.endpoint == 'client.trade_analytics' %}active{% endif %}">
-                  <i class="nav-icon fas fa-chart-bar"></i>
-                  <p>Trading Analytics</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('client.deposit') }}" class="nav-link {% if request.endpoint == 'client.deposit' %}active{% endif %}">
-                  <i class="nav-icon fas fa-money-bill-wave"></i>
-                  <p>Deposit Funds</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('client.withdraw') }}" class="nav-link {% if request.endpoint == 'client.withdraw' %}active{% endif %}">
-                  <i class="nav-icon fas fa-wallet"></i>
-                  <p>Withdraw Funds</p>
-                </a>
-              </li>
-              <li class="nav-header">ACCOUNT</li>
-              <li class="nav-item">
-                <a href="{{ url_for('client.profile') }}" class="nav-link {% if request.endpoint == 'client.profile' %}active{% endif %}">
-                  <i class="nav-icon fas fa-user-cog"></i>
-                  <p>Profile Settings</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('users.logout') }}" class="nav-link">
-                  <i class="nav-icon fas fa-sign-out-alt"></i>
-                  <p>Sign Out</p>
+                <a class="nav-link" href="{{ url_for('client.transactions') }}">
+                  <i data-feather="credit-card"></i>
+                  <span>Transaction History</span>
                 </a>
               </li>
             </ul>
-          </nav>
-          <!-- /.sidebar-menu -->
+          </div>
+          
+          <!-- Logout Section -->
+          <div class="sidebar-section mt-auto">
+            <ul class="nav-links">
+              <li class="nav-item">
+                <a class="nav-link text-danger" href="{{ url_for('users.logout') }}">
+                  <i data-feather="log-out"></i>
+                  <span>Sign Out</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <!-- /.sidebar -->
-      </aside>
+      </nav>
 
-      <!-- Content Wrapper. Contains page content -->
-      <div class="content-wrapper">
-        <!-- Main content -->
-        <div class="content">
-          <div class="container-fluid">
-            <div class="row">
-              <div class="col-12">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                  {% if messages %}
-                    {% for category, message in messages %}
-                      <div class="alert alert-{{ category }}">
-                        {{ message }}
-                      </div>
-                    {% endfor %}
-                  {% endif %}
-                {% endwith %}
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Modern Top Navigation -->
+        <header class="top-navbar">
+          <div class="navbar-left">
+            <button class="btn-toggle-sidebar d-md-none">
+              <i data-feather="menu"></i>
+            </button>
+            <div class="search-container">
+              <i data-feather="search"></i>
+              <input type="text" class="search-input" placeholder="Search trades, analytics...">
+            </div>
+          </div>
+          <div class="navbar-right">
+            <div class="navbar-notification">
+              <button class="btn-notification" id="notification-bell">
+                <i data-feather="bell"></i>
+                <span class="badge notification-badge" id="notification-count" style="display: none;">0</span>
+              </button>
+              <div class="notification-dropdown" id="notification-dropdown" style="display: none;">
+                <div class="notification-header">
+                  <h6 class="mb-0">Trading Alerts</h6>
+                  <button class="btn-close-notification" id="close-notifications">
+                    <i data-feather="x" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </div>
+                <div class="notification-body" id="notification-list">
+                  <div class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted mb-0 mt-2">Loading alerts...</p>
+                  </div>
+                </div>
               </div>
             </div>
-            {% block content %}{% endblock %}
-          </div><!-- /.container-fluid -->
-        </div>
-        <!-- /.content -->
+            <div class="navbar-user dropdown">
+              <button class="btn-user dropdown-toggle" data-bs-toggle="dropdown">
+                <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #4361ee, #3f51b5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px;">
+                  {{ current_user.first_name[0] if current_user.first_name else 'U' }}{{ current_user.last_name[0] if current_user.last_name else '' }}
+                </div>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item" href="{{ url_for('client.profile') }}">
+                  <i data-feather="user"></i> Profile
+                </a>
+                <a class="dropdown-item" href="{{ url_for('client.trade_analytics') }}">
+                  <i data-feather="bar-chart-2"></i> Analytics
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{{ url_for('users.logout') }}">
+                  <i data-feather="log-out"></i> Sign out
+                </a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="content">
+          <!-- Flash messages with modern styling -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="flash-messages">
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+          
+          <!-- Page specific content -->
+          {% block content %}{% endblock %}
+        </main>
       </div>
-      <!-- /.content-wrapper -->
-
-      <!-- Main Footer -->
-      <footer class="main-footer">
-        <div class="float-right d-none d-sm-inline">
-          Trading Platform
-        </div>
-        <strong>Copyright &copy; {{ 2024 }} TradingCRM.</strong> All rights reserved.
-      </footer>
     </div>
-    <!-- ./wrapper -->
 
-    <!-- Bootstrap 4 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.1.0/dist/js/adminlte.min.js"></script>
+    <!-- Bootstrap 5 Bundle JS (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/notification.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/toast-notification.js') }}"></script>
+
+    <!-- Initialize Feather Icons -->
+    <script>
+      feather.replace();
+      
+      // Client-specific enhancements
+      document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth animations to navigation
+        document.querySelectorAll('.client-sidebar .nav-link').forEach(link => {
+          link.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(4px)';
+          });
+          
+          link.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('active')) {
+              this.style.transform = 'translateX(0)';
+            }
+          });
+        });
+        
+        // Add trading-specific notifications
+        if (typeof window.checkTradingAlerts === 'undefined') {
+          window.checkTradingAlerts = function() {
+            // Placeholder for trading alerts
+            console.log('Checking for trading alerts...');
+          };
+          
+          // Check alerts every 30 seconds
+          setInterval(window.checkTradingAlerts, 30000);
+        }
+      });
+    </script>
 
     {% block scripts %}{% endblock %}
   </body>

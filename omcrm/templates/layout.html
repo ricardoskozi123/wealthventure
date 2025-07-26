@@ -61,73 +61,95 @@
             </div>
           </div>
           <ul class="nav-links">
+            {% if can_view_sidebar_item('dashboard') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and request.endpoint == 'main.home' %}active{% endif %}" href="{{ url_for('main.home') }}">
                 <i data-feather="home"></i>
                 <span>Dashboard</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('leads') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'leads.' in request.endpoint %}active{% endif %}" href="{{ url_for('leads.get_leads_view') }}">
                 <i data-feather="file"></i>
                 <span>Leads</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('pipeline') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'deals.' in request.endpoint %}active{% endif %}" href="{{ url_for('deals.get_deals_view') }}">
                 <i data-feather="dollar-sign"></i>
                 <span>Pipeline</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('activities') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'activities.' in request.endpoint %}active{% endif %}" href="{{ url_for('activities.activities_list') }}">
                 <i data-feather="calendar"></i>
                 <span>Activities</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('tasks') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'tasks.' in request.endpoint %}active{% endif %}" href="{{ url_for('tasks.task_list') }}">
                 <i data-feather="check-square"></i>
                 <span>Tasks</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('lead_sources') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and request.endpoint == 'leads.lead_sources' %}active{% endif %}" href="{{ url_for('leads.lead_sources') }}">
                 <i data-feather="list"></i>
                 <span>Lead Sources</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('client_statuses') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and request.endpoint == 'leads.manage_lead_statuses' %}active{% endif %}" href="{{ url_for('leads.manage_lead_statuses') }}">
                 <i data-feather="tag"></i>
                 <span>Client Statuses</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('trading_instruments') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'webtrader.' in request.endpoint %}active{% endif %}" href="{{ url_for('webtrader.list_instruments') }}">
                 <i data-feather="trending-up"></i>
                 <span>Trading Instruments</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('clients') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and request.endpoint == 'leads.get_clients_view' %}active{% endif %}" href="{{ url_for('leads.get_clients_view') }}">
                 <i data-feather="users"></i>
                 <span>Clients</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('reports') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'reports.' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.deal_reports') }}">
                 <i data-feather="bar-chart-2"></i>
                 <span>Reports</span>
               </a>
             </li>
+            {% endif %}
+            {% if can_view_sidebar_item('pipeline_stages') %}
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('deals.manage_deal_stages') }}">
                 <i class="fas fa-tasks"></i>
                 Manage Pipeline Stages
               </a>
             </li>
-            {% if current_user.is_admin %}
+            {% endif %}
+            {% if current_user.is_admin and can_view_sidebar_item('transactions') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'transactions.' in request.endpoint %}active{% endif %}" href="{{ url_for('transactions.transactions_dashboard') }}">
                 <i data-feather="credit-card"></i>
@@ -135,6 +157,7 @@
               </a>
             </li>
             {% endif %}
+            {% if can_view_sidebar_item('settings') %}
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
                 <i data-feather="settings"></i>
@@ -164,37 +187,8 @@
                 <a class="dropdown-item" href="#">System Settings</a>
               </div>
             </li>
+            {% endif %}
           </ul>
-          
-          <div class="sidebar-section">
-            <h6 class="section-title">Saved Reports</h6>
-            <ul class="nav-links">
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <i data-feather="file-text"></i>
-                  <span>Current month</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <i data-feather="file-text"></i>
-                  <span>Last quarter</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <i data-feather="file-text"></i>
-                  <span>Social engagement</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">
-                  <i data-feather="file-text"></i>
-                  <span>Year-end sale</span>
-                </a>
-              </li>
-            </ul>
-          </div>
           
           <div class="sidebar-section mt-auto">
             <ul class="nav-links">

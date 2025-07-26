@@ -71,6 +71,11 @@ def create_app(config_class=DevelopmentConfig):
     app.config.from_object(config_obj)
     app.url_map.strict_slashes = False
     app.jinja_env.globals.update(zip=zip)
+    
+    # Import and add RBAC functions to Jinja2 global namespace
+    from omcrm.rbac import is_allowed, can_view_sidebar_item
+    app.jinja_env.globals.update(is_allowed=is_allowed)
+    app.jinja_env.globals.update(can_view_sidebar_item=can_view_sidebar_item)
 
     migrate.init_app(app, db)
     db.init_app(app)

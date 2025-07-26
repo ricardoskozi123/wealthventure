@@ -176,11 +176,39 @@ class Role(db.Model):
             self.resources[ind].can_delete = resources[ind].can_delete.data
             if hasattr(resources[ind], 'can_impersonate'):
                 self.resources[ind].can_impersonate = resources[ind].can_impersonate.data
-            # 🔧 NEW: Handle manager-level permissions
+            # 🔧 Handle manager-level permissions
             if hasattr(resources[ind], 'can_view_all_clients'):
                 self.resources[ind].can_view_all_clients = resources[ind].can_view_all_clients.data
             if hasattr(resources[ind], 'can_view_all_leads'):
                 self.resources[ind].can_view_all_leads = resources[ind].can_view_all_leads.data
+                
+            # 🔧 NEW: Handle sidebar navigation permissions
+            if hasattr(resources[ind], 'can_view_dashboard'):
+                self.resources[ind].can_view_dashboard = resources[ind].can_view_dashboard.data
+            if hasattr(resources[ind], 'can_view_leads'):
+                self.resources[ind].can_view_leads = resources[ind].can_view_leads.data
+            if hasattr(resources[ind], 'can_view_pipeline'):
+                self.resources[ind].can_view_pipeline = resources[ind].can_view_pipeline.data
+            if hasattr(resources[ind], 'can_view_activities'):
+                self.resources[ind].can_view_activities = resources[ind].can_view_activities.data
+            if hasattr(resources[ind], 'can_view_tasks'):
+                self.resources[ind].can_view_tasks = resources[ind].can_view_tasks.data
+            if hasattr(resources[ind], 'can_view_lead_sources'):
+                self.resources[ind].can_view_lead_sources = resources[ind].can_view_lead_sources.data
+            if hasattr(resources[ind], 'can_view_client_statuses'):
+                self.resources[ind].can_view_client_statuses = resources[ind].can_view_client_statuses.data
+            if hasattr(resources[ind], 'can_view_trading_instruments'):
+                self.resources[ind].can_view_trading_instruments = resources[ind].can_view_trading_instruments.data
+            if hasattr(resources[ind], 'can_view_clients_page'):
+                self.resources[ind].can_view_clients_page = resources[ind].can_view_clients_page.data
+            if hasattr(resources[ind], 'can_view_reports'):
+                self.resources[ind].can_view_reports = resources[ind].can_view_reports.data
+            if hasattr(resources[ind], 'can_view_pipeline_stages'):
+                self.resources[ind].can_view_pipeline_stages = resources[ind].can_view_pipeline_stages.data
+            if hasattr(resources[ind], 'can_view_transactions'):
+                self.resources[ind].can_view_transactions = resources[ind].can_view_transactions.data
+            if hasattr(resources[ind], 'can_view_settings'):
+                self.resources[ind].can_view_settings = resources[ind].can_view_settings.data
 
 
 class Resource(db.Model):
@@ -191,6 +219,21 @@ class Resource(db.Model):
     can_create = db.Column(db.Boolean, nullable=False)
     can_delete = db.Column(db.Boolean, nullable=False)
     can_impersonate = db.Column(db.Boolean, nullable=False, default=False)
-    # 🔧 NEW: Manager-level permissions
+    # 🔧 Manager-level permissions
     can_view_all_clients = db.Column(db.Boolean, nullable=False, default=False)
     can_view_all_leads = db.Column(db.Boolean, nullable=False, default=False)
+    
+    # 🔧 NEW: Sidebar Navigation Permissions
+    can_view_dashboard = db.Column(db.Boolean, nullable=False, default=True)
+    can_view_leads = db.Column(db.Boolean, nullable=False, default=True)
+    can_view_pipeline = db.Column(db.Boolean, nullable=False, default=True)
+    can_view_activities = db.Column(db.Boolean, nullable=False, default=True)
+    can_view_tasks = db.Column(db.Boolean, nullable=False, default=True)
+    can_view_lead_sources = db.Column(db.Boolean, nullable=False, default=False)
+    can_view_client_statuses = db.Column(db.Boolean, nullable=False, default=False)
+    can_view_trading_instruments = db.Column(db.Boolean, nullable=False, default=False)
+    can_view_clients_page = db.Column(db.Boolean, nullable=False, default=True)
+    can_view_reports = db.Column(db.Boolean, nullable=False, default=True)
+    can_view_pipeline_stages = db.Column(db.Boolean, nullable=False, default=False)
+    can_view_transactions = db.Column(db.Boolean, nullable=False, default=False)
+    can_view_settings = db.Column(db.Boolean, nullable=False, default=True)

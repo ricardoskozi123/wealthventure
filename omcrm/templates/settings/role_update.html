@@ -38,64 +38,199 @@
 
                 <!-- PERMISSIONS -->
                 <div class="row">
-                    <div class="col-lg-8">
+                    <div class="col-lg-12">
                         <h4 class="mb-3">User Permissions</h4>
-                        <div class="table-responsive">
-                            <table class="table table-hover border">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Resource</th>
-                                        <th class="text-center">View</th>
-                                        <th class="text-center">Create</th>
-                                        <th class="text-center">Update</th>
-                                        <th class="text-center">Delete</th>
-                                        <th class="text-center">Impersonate</th>
-                                        <th class="text-center" style="min-width: 120px;">View All Clients<br><small class="text-muted">(Manager)</small></th>
-                                        <th class="text-center" style="min-width: 120px;">View All Leads<br><small class="text-muted">(Manager)</small></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for permission in form.permissions %}
-                                    <tr>
-                                        {{ permission.form.hidden_tag() }}
-                                        <th scope="row">{{ permission.form.name(class="fw-bold text-capitalize") }}</th>
-                                        <td class="text-center">
-                                            {{ permission.form.can_view(class="form-check-input") }}
-                                        </td>
-                                        <td class="text-center">
-                                            {{ permission.form.can_create(class="form-check-input") }}
-                                        </td>
-                                        <td class="text-center">
-                                            {{ permission.form.can_edit(class="form-check-input") }}
-                                        </td>
-                                        <td class="text-center">
-                                            {{ permission.form.can_delete(class="form-check-input") }}
-                                        </td>
-                                        <td class="text-center">
-                                            {% if permission.form.can_impersonate %}
-                                                {{ permission.form.can_impersonate(class="form-check-input") }}
-                                            {% else %}
-                                                <input type="checkbox" class="form-check-input" disabled>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            {% if permission.form.can_view_all_clients %}
-                                                {{ permission.form.can_view_all_clients(class="form-check-input") }}
-                                            {% else %}
-                                                <input type="checkbox" class="form-check-input" disabled>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            {% if permission.form.can_view_all_leads %}
-                                                {{ permission.form.can_view_all_leads(class="form-check-input") }}
-                                            {% else %}
-                                                <input type="checkbox" class="form-check-input" disabled>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        
+                        <!-- Standard CRUD Permissions -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i data-feather="shield" class="me-2"></i>Standard Permissions
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover border">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Resource</th>
+                                            <th class="text-center">View</th>
+                                            <th class="text-center">Create</th>
+                                            <th class="text-center">Update</th>
+                                            <th class="text-center">Delete</th>
+                                            <th class="text-center">Impersonate</th>
+                                            <th class="text-center" style="min-width: 120px;">View All Clients<br><small class="text-muted">(Manager)</small></th>
+                                            <th class="text-center" style="min-width: 120px;">View All Leads<br><small class="text-muted">(Manager)</small></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for permission in form.permissions %}
+                                        <tr>
+                                            {{ permission.form.hidden_tag() }}
+                                            <th scope="row">{{ permission.form.name(class="fw-bold text-capitalize") }}</th>
+                                            <td class="text-center">
+                                                {{ permission.form.can_view(class="form-check-input") }}
+                                            </td>
+                                            <td class="text-center">
+                                                {{ permission.form.can_create(class="form-check-input") }}
+                                            </td>
+                                            <td class="text-center">
+                                                {{ permission.form.can_edit(class="form-check-input") }}
+                                            </td>
+                                            <td class="text-center">
+                                                {{ permission.form.can_delete(class="form-check-input") }}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_impersonate %}
+                                                    {{ permission.form.can_impersonate(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_all_clients %}
+                                                    {{ permission.form.can_view_all_clients(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_all_leads %}
+                                                    {{ permission.form.can_view_all_leads(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Navigation Permissions -->
+                        <div class="mb-4">
+                            <h5 class="text-success mb-3">
+                                <i data-feather="sidebar" class="me-2"></i>Sidebar Navigation Permissions
+                            </h5>
+                            <p class="text-muted mb-3">Control which sidebar menu items are visible to users with this role.</p>
+                            <div class="table-responsive">
+                                <table class="table table-hover border">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th>Resource</th>
+                                            <th class="text-center">Dashboard</th>
+                                            <th class="text-center">Leads</th>
+                                            <th class="text-center">Pipeline</th>
+                                            <th class="text-center">Activities</th>
+                                            <th class="text-center">Tasks</th>
+                                            <th class="text-center">Lead Sources</th>
+                                            <th class="text-center">Client Statuses</th>
+                                            <th class="text-center">Trading Instruments</th>
+                                            <th class="text-center">Clients</th>
+                                            <th class="text-center">Reports</th>
+                                            <th class="text-center">Pipeline Stages</th>
+                                            <th class="text-center">Transactions</th>
+                                            <th class="text-center">Settings</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for permission in form.permissions %}
+                                        <tr>
+                                            <th scope="row">{{ permission.form.name(class="fw-bold text-capitalize") }}</th>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_dashboard %}
+                                                    {{ permission.form.can_view_dashboard(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_leads %}
+                                                    {{ permission.form.can_view_leads(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_pipeline %}
+                                                    {{ permission.form.can_view_pipeline(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_activities %}
+                                                    {{ permission.form.can_view_activities(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_tasks %}
+                                                    {{ permission.form.can_view_tasks(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_lead_sources %}
+                                                    {{ permission.form.can_view_lead_sources(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_client_statuses %}
+                                                    {{ permission.form.can_view_client_statuses(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_trading_instruments %}
+                                                    {{ permission.form.can_view_trading_instruments(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_clients_page %}
+                                                    {{ permission.form.can_view_clients_page(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_reports %}
+                                                    {{ permission.form.can_view_reports(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_pipeline_stages %}
+                                                    {{ permission.form.can_view_pipeline_stages(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_transactions %}
+                                                    {{ permission.form.can_view_transactions(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if permission.form.can_view_settings %}
+                                                    {{ permission.form.can_view_settings(class="form-check-input") }}
+                                                {% else %}
+                                                    <input type="checkbox" class="form-check-input" disabled>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -192,3 +192,52 @@ def can_impersonate_clients():
     #         return True
     #         
     # return False
+
+
+# 🔧 NEW: Sidebar Navigation Permission Helper
+def can_view_sidebar_item(item_name):
+    """
+    Check if the current user can view a specific sidebar navigation item
+    """
+    if not current_user.is_authenticated:
+        return False
+        
+    # Admins can see everything
+    if getattr(current_user, 'is_admin', False):
+        return True
+        
+    if not current_user.role:
+        return False
+        
+    # Find the resource permission for this user's role
+    resource = None
+    for res in current_user.role.resources:
+        if res.name == 'leads':  # We use 'leads' resource as the primary permission resource
+            resource = res
+            break
+            
+    if not resource:
+        return False
+        
+    # Map sidebar items to permission attributes
+    permission_map = {
+        'dashboard': 'can_view_dashboard',
+        'leads': 'can_view_leads', 
+        'pipeline': 'can_view_pipeline',
+        'activities': 'can_view_activities',
+        'tasks': 'can_view_tasks',
+        'lead_sources': 'can_view_lead_sources',
+        'client_statuses': 'can_view_client_statuses',
+        'trading_instruments': 'can_view_trading_instruments',
+        'clients': 'can_view_clients_page',
+        'reports': 'can_view_reports',
+        'pipeline_stages': 'can_view_pipeline_stages',
+        'transactions': 'can_view_transactions',
+        'settings': 'can_view_settings'
+    }
+    
+    permission_attr = permission_map.get(item_name)
+    if not permission_attr:
+        return True  # Default to showing if permission not mapped
+        
+    return getattr(resource, permission_attr, True)  # Default to True if attribute doesn't exist

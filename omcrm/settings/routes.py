@@ -103,11 +103,39 @@ def settings_staff_update(user_id):
                 # Handle impersonate permission if it exists
                 if hasattr(permission, 'can_impersonate'):
                     resource.can_impersonate = permission.can_impersonate.data
-                # 🔧 NEW: Handle manager-level permissions
+                # 🔧 Handle manager-level permissions
                 if hasattr(permission, 'can_view_all_clients'):
                     resource.can_view_all_clients = permission.can_view_all_clients.data
                 if hasattr(permission, 'can_view_all_leads'):
                     resource.can_view_all_leads = permission.can_view_all_leads.data
+                
+                # 🔧 NEW: Handle sidebar navigation permissions
+                if hasattr(permission, 'can_view_dashboard'):
+                    resource.can_view_dashboard = permission.can_view_dashboard.data
+                if hasattr(permission, 'can_view_leads'):
+                    resource.can_view_leads = permission.can_view_leads.data
+                if hasattr(permission, 'can_view_pipeline'):
+                    resource.can_view_pipeline = permission.can_view_pipeline.data
+                if hasattr(permission, 'can_view_activities'):
+                    resource.can_view_activities = permission.can_view_activities.data
+                if hasattr(permission, 'can_view_tasks'):
+                    resource.can_view_tasks = permission.can_view_tasks.data
+                if hasattr(permission, 'can_view_lead_sources'):
+                    resource.can_view_lead_sources = permission.can_view_lead_sources.data
+                if hasattr(permission, 'can_view_client_statuses'):
+                    resource.can_view_client_statuses = permission.can_view_client_statuses.data
+                if hasattr(permission, 'can_view_trading_instruments'):
+                    resource.can_view_trading_instruments = permission.can_view_trading_instruments.data
+                if hasattr(permission, 'can_view_clients_page'):
+                    resource.can_view_clients_page = permission.can_view_clients_page.data
+                if hasattr(permission, 'can_view_reports'):
+                    resource.can_view_reports = permission.can_view_reports.data
+                if hasattr(permission, 'can_view_pipeline_stages'):
+                    resource.can_view_pipeline_stages = permission.can_view_pipeline_stages.data
+                if hasattr(permission, 'can_view_transactions'):
+                    resource.can_view_transactions = permission.can_view_transactions.data
+                if hasattr(permission, 'can_view_settings'):
+                    resource.can_view_settings = permission.can_view_settings.data
 
             try:
                 db.session.commit()
@@ -235,9 +263,25 @@ def settings_roles_new():
                 resource.can_edit = permission.form.can_edit.data
                 resource.can_delete = permission.form.can_delete.data
                 resource.can_impersonate = permission.form.can_impersonate.data if hasattr(permission.form, 'can_impersonate') else False
-                # 🔧 NEW: Handle manager-level permissions
+                # 🔧 Handle manager-level permissions
                 resource.can_view_all_clients = permission.form.can_view_all_clients.data if hasattr(permission.form, 'can_view_all_clients') else False
                 resource.can_view_all_leads = permission.form.can_view_all_leads.data if hasattr(permission.form, 'can_view_all_leads') else False
+                
+                # 🔧 NEW: Handle sidebar navigation permissions
+                resource.can_view_dashboard = permission.form.can_view_dashboard.data if hasattr(permission.form, 'can_view_dashboard') else True
+                resource.can_view_leads = permission.form.can_view_leads.data if hasattr(permission.form, 'can_view_leads') else True
+                resource.can_view_pipeline = permission.form.can_view_pipeline.data if hasattr(permission.form, 'can_view_pipeline') else True
+                resource.can_view_activities = permission.form.can_view_activities.data if hasattr(permission.form, 'can_view_activities') else True
+                resource.can_view_tasks = permission.form.can_view_tasks.data if hasattr(permission.form, 'can_view_tasks') else True
+                resource.can_view_lead_sources = permission.form.can_view_lead_sources.data if hasattr(permission.form, 'can_view_lead_sources') else False
+                resource.can_view_client_statuses = permission.form.can_view_client_statuses.data if hasattr(permission.form, 'can_view_client_statuses') else False
+                resource.can_view_trading_instruments = permission.form.can_view_trading_instruments.data if hasattr(permission.form, 'can_view_trading_instruments') else False
+                resource.can_view_clients_page = permission.form.can_view_clients_page.data if hasattr(permission.form, 'can_view_clients_page') else True
+                resource.can_view_reports = permission.form.can_view_reports.data if hasattr(permission.form, 'can_view_reports') else True
+                resource.can_view_pipeline_stages = permission.form.can_view_pipeline_stages.data if hasattr(permission.form, 'can_view_pipeline_stages') else False
+                resource.can_view_transactions = permission.form.can_view_transactions.data if hasattr(permission.form, 'can_view_transactions') else False
+                resource.can_view_settings = permission.form.can_view_settings.data if hasattr(permission.form, 'can_view_settings') else True
+                
                 role.resources.append(resource)
 
             db.session.add(role)

@@ -64,9 +64,24 @@ class ResourceForm(FlaskForm):
     can_edit = BooleanField('Update')
     can_delete = BooleanField('Delete')
     can_impersonate = BooleanField('Impersonate')
-    # 🔧 NEW: Manager-level permissions
+    # 🔧 Manager-level permissions
     can_view_all_clients = BooleanField('View All Clients (Manager)')
     can_view_all_leads = BooleanField('View All Leads (Manager)')
+    
+    # 🔧 NEW: Sidebar Navigation Permissions
+    can_view_dashboard = BooleanField('Dashboard')
+    can_view_leads = BooleanField('Leads')
+    can_view_pipeline = BooleanField('Pipeline')
+    can_view_activities = BooleanField('Activities')
+    can_view_tasks = BooleanField('Tasks')
+    can_view_lead_sources = BooleanField('Lead Sources')
+    can_view_client_statuses = BooleanField('Client Statuses')
+    can_view_trading_instruments = BooleanField('Trading Instruments')
+    can_view_clients_page = BooleanField('Clients')
+    can_view_reports = BooleanField('Reports')
+    can_view_pipeline_stages = BooleanField('Pipeline Stages')
+    can_view_transactions = BooleanField('Transactions')
+    can_view_settings = BooleanField('Settings')
 
 
 class NewRoleForm(FlaskForm):

@@ -1,63 +1,176 @@
 {% extends "client_layout.html" %}
 
 {% block content %}
-<div class="content-header">
+<!-- Modern Hero Section -->
+<div class="content-section">
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0 text-dark">Welcome, {{ current_user.first_name }}</h1>
+        <div class="row align-items-center mb-4">
+            <div class="col-md-8">
+                <h1 class="page-title mb-2">Welcome back, {{ current_user.first_name }}! 👋</h1>
+                <p class="page-subtitle text-muted">Here's your trading overview for today</p>
             </div>
-            <div class="col-sm-6 text-right">
-                <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="btn btn-lg btn-primary">
-                    <i class="fas fa-chart-line mr-2"></i>Access WebTrader
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="btn btn-primary btn-lg px-4 py-3">
+                    <i data-feather="trending-up" class="me-2"></i>Launch WebTrader
                 </a>
             </div>
         </div>
-    </div>
-</div>
 
-<section class="content">
-    <div class="container-fluid">
-        <!-- Account Overview Section -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Account Overview</h3>
+        <!-- Modern Account Overview Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card balance-card">
+                    <div class="stats-card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="stats-title">Current Balance</h6>
+                                <h3 class="stats-value">${{ '%.2f'|format(current_user.current_balance) }}</h3>
+                                <span class="stats-change text-success">
+                                    <i data-feather="trending-up" style="width: 14px; height: 14px;"></i> +2.5%
+                                </span>
+                            </div>
+                            <div class="stats-icon balance-icon">
+                                <i data-feather="dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 col-sm-6 col-12">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-info"><i class="fas fa-wallet"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Balance</span>
-                                <span class="info-box-number">${{ current_user.current_balance }}</span>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card equity-card">
+                    <div class="stats-card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="stats-title">Total Equity</h6>
+                                <h3 class="stats-value">${{ '%.2f'|format(current_user.equity) }}</h3>
+                                <span class="stats-change text-info">
+                                    <i data-feather="activity" style="width: 14px; height: 14px;"></i> Live
+                                </span>
+                            </div>
+                            <div class="stats-icon equity-icon">
+                                <i data-feather="pie-chart"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6 col-12">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-success"><i class="fas fa-chart-line"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Equity</span>
-                                <span class="info-box-number">${{ current_user.equity }}</span>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card credit-card">
+                    <div class="stats-card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="stats-title">Credit Balance</h6>
+                                <h3 class="stats-value">${{ '%.2f'|format(current_user.credit_balance) }}</h3>
+                                <span class="stats-change text-warning">
+                                    <i data-feather="gift" style="width: 14px; height: 14px;"></i> Bonus
+                                </span>
+                            </div>
+                            <div class="stats-icon credit-icon">
+                                <i data-feather="credit-card"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6 col-12">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-warning"><i class="fas fa-credit-card"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Credit</span>
-                                <span class="info-box-number">${{ current_user.credit_balance }}</span>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card trades-card">
+                    <div class="stats-card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="stats-title">Open Trades</h6>
+                                <h3 class="stats-value">{{ current_user.trades|selectattr('status', 'equalto', 'open')|list|length }}</h3>
+                                <span class="stats-change text-primary">
+                                    <i data-feather="zap" style="width: 14px; height: 14px;"></i> Active
+                                </span>
+                            </div>
+                            <div class="stats-icon trades-icon">
+                                <i data-feather="bar-chart-2"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6 col-12">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-danger"><i class="fas fa-gift"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Bonus</span>
-                                <span class="info-box-number">${{ current_user.bonus_balance }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-8">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="zap" class="me-2"></i>Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="action-card">
+                                    <div class="action-icon trade-action">
+                                        <i data-feather="trending-up"></i>
+                                    </div>
+                                    <h6>Start Trading</h6>
+                                    <p class="text-muted mb-0">Access the WebTrader platform</p>
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{{ url_for('client.deposit') }}" class="action-card">
+                                    <div class="action-icon deposit-action">
+                                        <i data-feather="plus-circle"></i>
+                                    </div>
+                                    <h6>Deposit Funds</h6>
+                                    <p class="text-muted mb-0">Add money to your account</p>
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{{ url_for('client.withdraw') }}" class="action-card">
+                                    <div class="action-icon withdraw-action">
+                                        <i data-feather="minus-circle"></i>
+                                    </div>
+                                    <h6>Withdraw Funds</h6>
+                                    <p class="text-muted mb-0">Transfer money out</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="bell" class="me-2"></i>Trading Alerts
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-item">
+                            <div class="alert-icon success">
+                                <i data-feather="check-circle"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Account Verified</h6>
+                                <p class="text-muted mb-0 small">Your account is ready for trading</p>
+                            </div>
+                        </div>
+                        <div class="alert-item">
+                            <div class="alert-icon info">
+                                <i data-feather="info"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Market Update</h6>
+                                <p class="text-muted mb-0 small">Major indices showing positive momentum</p>
+                            </div>
+                        </div>
+                        <div class="alert-item">
+                            <div class="alert-icon warning">
+                                <i data-feather="trending-down"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Price Alert</h6>
+                                <p class="text-muted mb-0 small">BTC/USD reached your target price</p>
                             </div>
                         </div>
                     </div>
@@ -66,118 +179,323 @@
         </div>
 
         <!-- Recent Trades Section -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Recent Trades</h3>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Instrument</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                                <th>P/L</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for trade in trades %}
-                            <tr>
-                                <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                <td>{{ trade.instrument.symbol }}</td>
-                                <td>
-                                    <span class="badge {% if trade.trade_type == 'buy' %}badge-success{% else %}badge-danger{% endif %}">
-                                        {{ trade.trade_type|upper }}
-                                    </span>
-                                </td>
-                                <td>{{ trade.amount }}</td>
-                                <td>${{ "%.2f"|format(trade.price) }}</td>
-                                <td>
-                                    <span class="badge {% if trade.status == 'open' %}badge-primary{% else %}badge-secondary{% endif %}">
-                                        {{ trade.status|upper }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if trade.profit_loss %}
-                                    <span class="{% if trade.profit_loss > 0 %}text-success{% else %}text-danger{% endif %}">
-                                        ${{ "%.2f"|format(trade.profit_loss) }}
-                                    </span>
-                                    {% else %}
-                                    -
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% if not trades %}
-                            <tr>
-                                <td colspan="7" class="text-center">No recent trades</td>
-                            </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
+        <div class="row">
+            <div class="col-12">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i data-feather="activity" class="me-2"></i>Recent Trading Activity
+                            </h5>
+                            <a href="{{ url_for('client.trade_analytics') }}" class="btn btn-outline-primary btn-sm">
+                                View All <i data-feather="external-link" class="ms-1" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if current_user.trades[:5] %}
+                            <div class="table-responsive">
+                                <table class="table table-hover modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Instrument</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Entry Price</th>
+                                            <th>Current P/L</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trade in current_user.trades[:5] %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="instrument-icon">{{ trade.instrument.symbol[:2] if trade.instrument else 'UN' }}</div>
+                                                    <span class="fw-medium">{{ trade.instrument.symbol if trade.instrument else 'Unknown' }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-{{ 'success' if trade.trade_type == 'buy' else 'danger' }}">
+                                                    {{ trade.trade_type|upper }}
+                                                </span>
+                                            </td>
+                                            <td class="fw-medium">${{ '%.2f'|format(trade.amount) }}</td>
+                                            <td>${{ '%.4f'|format(trade.price) }}</td>
+                                            <td>
+                                                {% if trade.profit_loss %}
+                                                    <span class="text-{{ 'success' if trade.profit_loss > 0 else 'danger' }} fw-medium">
+                                                        {{ '+' if trade.profit_loss > 0 else '' }}${{ '%.2f'|format(trade.profit_loss) }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">--</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="status-badge status-{{ trade.status }}">
+                                                    {{ trade.status|title }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i data-feather="bar-chart-2"></i>
+                                </div>
+                                <h6>No trades yet</h6>
+                                <p class="text-muted">Start your trading journey today!</p>
+                                <a href="{{ url_for('webtrader.webtrader_dashboard') }}" class="btn btn-primary">
+                                    <i data-feather="trending-up" class="me-2"></i>Start Trading
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Trade History Chart -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Trade History (Last 30 Days)</h3>
-            </div>
-            <div class="card-body">
-                <div id="trade-history-chart" style="height: 300px;"></div>
-            </div>
-        </div>
     </div>
-</section>
+</div>
 
-{% endblock %}
+<!-- Custom Styles for Dashboard -->
+<style>
+.content-section {
+    padding: 30px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+}
 
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/plotly.js@1.58.4/dist/plotly.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const dates = {{ dates|tojson }};
-        const cumulative_pl = {{ cumulative_pl|tojson }};
-        
-        const trace = {
-            x: dates,
-            y: cumulative_pl,
-            mode: 'lines+markers',
-            line: {
-                color: '#3c8dbc',
-                width: 2
-            },
-            marker: {
-                color: '#3c8dbc',
-                size: 6
-            },
-            fill: 'tozeroy',
-            fillcolor: 'rgba(60, 141, 188, 0.1)'
-        };
-        
-        const layout = {
-            margin: { t: 20, l: 50, r: 20, b: 50 },
-            xaxis: {
-                title: 'Date',
-                showgrid: false
-            },
-            yaxis: {
-                title: 'Cumulative P/L ($)',
-                showgrid: true,
-                gridcolor: 'rgba(0,0,0,0.1)'
-            },
-            autosize: true,
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            showlegend: false
-        };
-        
-        Plotly.newPlot('trade-history-chart', [trace], layout, {responsive: true});
-    });
-</script>
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 1.1rem;
+}
+
+.stats-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card-body {
+    padding: 25px;
+}
+
+.stats-title {
+    color: #6c757d;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.stats-change {
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.balance-icon { background: linear-gradient(135deg, #667eea, #764ba2); }
+.equity-icon { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.credit-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.trades-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+
+.modern-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.card-header {
+    padding: 25px 25px 15px 25px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-body {
+    padding: 20px 25px 25px 25px;
+}
+
+.action-card {
+    display: block;
+    text-decoration: none;
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    text-align: center;
+    color: inherit;
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: inherit;
+}
+
+.action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+    color: white;
+}
+
+.trade-action { background: linear-gradient(135deg, #667eea, #764ba2); }
+.deposit-action { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.withdraw-action { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+.alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.alert-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.alert-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.alert-icon.success { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.alert-icon.info { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.alert-icon.warning { background: linear-gradient(135deg, #fa709a, #fee140); }
+
+.modern-table {
+    margin-bottom: 0;
+}
+
+.modern-table th {
+    border-top: none;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 15px 20px;
+}
+
+.modern-table td {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    vertical-align: middle;
+}
+
+.instrument-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    margin-right: 12px;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.badge-danger { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-open { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; }
+.status-closed { background: linear-gradient(135deg, #a8edea, #fed6e3); color: #333; }
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px auto;
+    color: white;
+}
+
+.empty-icon i {
+    width: 40px;
+    height: 40px;
+}
+</style>
 {% endblock %}
