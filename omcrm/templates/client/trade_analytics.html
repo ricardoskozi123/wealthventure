@@ -215,19 +215,44 @@
 {{ super() }}
 <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
 <script>
-// Add these variables at the top to store actual server data
-const serverData = {
-    cumulative: {{ cumulative_pl_data | safe }},
-    monthly: {{ monthly_performance_data | safe }},
-    instrument: {{ instrument_performance_data | safe }},
-    winLoss: {{ win_loss_distribution_data | safe }}
-};
+// 🔧 CHART DATA - Improved validation and error handling
+let serverData = {};
 
-// 🔧 DEBUG: Log the data
-console.log('📊 Chart Data:', serverData);
+try {
+    serverData = {
+        cumulative: {{ cumulative_pl_data | safe }},
+        monthly: {{ monthly_performance_data | safe }},
+        instrument: {{ instrument_performance_data | safe }},
+        winLoss: {{ win_loss_distribution_data | safe }}
+    };
+    
+    console.log('📊 Server Data Loaded:', serverData);
+    
+    // Validate each chart data
+    Object.keys(serverData).forEach(key => {
+        if (!serverData[key] || typeof serverData[key] !== 'object') {
+            console.warn(`⚠️  Invalid data for ${key}:`, serverData[key]);
+            serverData[key] = null;
+        } else if (!serverData[key].data || !Array.isArray(serverData[key].data)) {
+            console.warn(`⚠️  Missing or invalid data array for ${key}:`, serverData[key]);
+            serverData[key] = null;
+        } else {
+            console.log(`✅ Valid data for ${key}:`, serverData[key].data.length, 'data series');
+        }
+    });
+    
+} catch (error) {
+    console.error('❌ Error parsing server data:', error);
+    serverData = {
+        cumulative: null,
+        monthly: null,
+        instrument: null,
+        winLoss: null
+    };
+}
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Create and display charts with server data
+    console.log('🚀 Starting chart creation...');
     createCharts();
     
     // Filter for showing closed trades only
@@ -295,254 +320,326 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function createCharts() {
+    console.log('📊 Creating charts with data:', serverData);
+    
     // Define common chart config
     var config = {
         responsive: true,
-        displayModeBar: false
+        displayModeBar: false,
+        modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'autoScale2d'],
+        displaylogo: false
     };
     
-    console.log('🔧 Creating charts...');
+    // Check if we have valid server data
+    var hasValidData = serverData && 
+                      Object.values(serverData).some(data => data !== null);
     
-    // Check if serverData has actual data
-    var hasRealData = serverData && 
-                      serverData.cumulative && 
-                      typeof serverData.cumulative === 'object' &&
-                      serverData.cumulative.data &&
-                      Array.isArray(serverData.cumulative.data) &&
-                      serverData.cumulative.data.length > 0;
-    
-    console.log('📊 Has real data:', hasRealData);
+    console.log('📊 Has valid server data:', hasValidData);
     
     try {
-        if (hasRealData) {
-            console.log('✅ Using server data for charts');
-            
-            // Use real server data
-            Plotly.newPlot('cumulativePLChart', serverData.cumulative.data, serverData.cumulative.layout, config);
-            
-            if (serverData.monthly && serverData.monthly.data) {
-                Plotly.newPlot('monthlyPerformanceChart', serverData.monthly.data, serverData.monthly.layout, config);
-            }
-            
-            if (serverData.instrument && serverData.instrument.data) {
-                Plotly.newPlot('instrumentPerformanceChart', serverData.instrument.data, serverData.instrument.layout, config);
-            }
-            
-            if (serverData.winLoss && serverData.winLoss.data) {
-                Plotly.newPlot('winLossDistributionChart', serverData.winLoss.data, serverData.winLoss.layout, config);
-            }
-        } else {
-            console.log('📊 Using placeholder data for charts');
-            
-            // Setup placeholder charts
-            var cumulativeChart = createPlaceholderCumulativeChart();
-            var monthlyChart = createPlaceholderMonthlyChart();
-            var instrumentChart = createPlaceholderInstrumentChart();
-            var winLossChart = createPlaceholderWinLossChart();
-            
-            // Draw placeholder charts
-            Plotly.newPlot('cumulativePLChart', cumulativeChart.data, cumulativeChart.layout, config);
-            Plotly.newPlot('monthlyPerformanceChart', monthlyChart.data, monthlyChart.layout, config);
-            Plotly.newPlot('instrumentPerformanceChart', instrumentChart.data, instrumentChart.layout, config);
-            Plotly.newPlot('winLossDistributionChart', winLossChart.data, winLossChart.layout, config);
-        }
+        // Create charts one by one with error handling
+        createCumulativeChart(config);
+        createMonthlyChart(config);
+        createInstrumentChart(config);
+        createWinLossChart(config);
         
-        console.log('✅ Charts created successfully');
+        console.log('✅ All charts created successfully');
         
     } catch (error) {
         console.error('❌ Error creating charts:', error);
-        
-        // Fallback: show simple placeholder charts
-        var simpleData = [{
-            x: [1, 2, 3, 4, 5],
-            y: [1, 2, 3, 4, 5],
-            type: 'scatter',
-            mode: 'lines'
-        }];
-        
-        var simpleLayout = {
-            title: 'Chart Loading...',
-            autosize: true,
-            margin: {l: 50, r: 20, b: 50, t: 50}
-        };
-        
-        try {
-            Plotly.newPlot('cumulativePLChart', simpleData, simpleLayout, config);
-            Plotly.newPlot('monthlyPerformanceChart', simpleData, simpleLayout, config);
-            Plotly.newPlot('instrumentPerformanceChart', simpleData, simpleLayout, config);
-            Plotly.newPlot('winLossDistributionChart', simpleData, simpleLayout, config);
-        } catch (fallbackError) {
-            console.error('❌ Even fallback charts failed:', fallbackError);
-        }
+        showChartError();
     }
+}
+
+function createCumulativeChart(config) {
+    console.log('📈 Creating cumulative chart...');
     
-    // Redraw charts on window resize
-    window.addEventListener('resize', function() {
-        try {
-            Plotly.relayout('cumulativePLChart', {autosize: true});
-            Plotly.relayout('monthlyPerformanceChart', {autosize: true});
-            Plotly.relayout('instrumentPerformanceChart', {autosize: true});
-            Plotly.relayout('winLossDistributionChart', {autosize: true});
-        } catch (resizeError) {
-            console.log('Chart resize error:', resizeError);
+    try {
+        var chartData, chartLayout;
+        
+        if (serverData.cumulative && serverData.cumulative.data) {
+            console.log('✅ Using server data for cumulative chart');
+            chartData = serverData.cumulative.data;
+            chartLayout = serverData.cumulative.layout || {};
+        } else {
+            console.log('📊 Using placeholder data for cumulative chart');
+            chartData = createPlaceholderCumulativeData();
+            chartLayout = createPlaceholderCumulativeLayout();
         }
-    });
+        
+        // Apply consistent styling
+        chartLayout.paper_bgcolor = 'rgba(0,0,0,0)';
+        chartLayout.plot_bgcolor = 'rgba(0,0,0,0)';
+        chartLayout.font = {color: '#333'};
+        chartLayout.margin = {l: 50, r: 20, b: 50, t: 30, pad: 4};
+        
+        Plotly.newPlot('cumulativePLChart', chartData, chartLayout, config);
+        console.log('✅ Cumulative chart created');
+        
+    } catch (error) {
+        console.error('❌ Error creating cumulative chart:', error);
+        document.getElementById('cumulativePLChart').innerHTML = '<div class="text-center p-4">Chart Error</div>';
+    }
+}
+
+function createMonthlyChart(config) {
+    console.log('📊 Creating monthly chart...');
+    
+    try {
+        var chartData, chartLayout;
+        
+        if (serverData.monthly && serverData.monthly.data) {
+            console.log('✅ Using server data for monthly chart');
+            chartData = serverData.monthly.data;
+            chartLayout = serverData.monthly.layout || {};
+        } else {
+            console.log('📊 Using placeholder data for monthly chart');
+            chartData = createPlaceholderMonthlyData();
+            chartLayout = createPlaceholderMonthlyLayout();
+        }
+        
+        // Apply consistent styling
+        chartLayout.paper_bgcolor = 'rgba(0,0,0,0)';
+        chartLayout.plot_bgcolor = 'rgba(0,0,0,0)';
+        chartLayout.font = {color: '#333'};
+        chartLayout.margin = {l: 50, r: 20, b: 50, t: 30, pad: 4};
+        
+        Plotly.newPlot('monthlyPerformanceChart', chartData, chartLayout, config);
+        console.log('✅ Monthly chart created');
+        
+    } catch (error) {
+        console.error('❌ Error creating monthly chart:', error);
+        document.getElementById('monthlyPerformanceChart').innerHTML = '<div class="text-center p-4">Chart Error</div>';
+    }
+}
+
+function createInstrumentChart(config) {
+    console.log('🔧 Creating instrument chart...');
+    
+    try {
+        var chartData, chartLayout;
+        
+        if (serverData.instrument && serverData.instrument.data) {
+            console.log('✅ Using server data for instrument chart');
+            chartData = serverData.instrument.data;
+            chartLayout = serverData.instrument.layout || {};
+        } else {
+            console.log('📊 Using placeholder data for instrument chart');
+            chartData = createPlaceholderInstrumentData();
+            chartLayout = createPlaceholderInstrumentLayout();
+        }
+        
+        // Apply consistent styling
+        chartLayout.paper_bgcolor = 'rgba(0,0,0,0)';
+        chartLayout.font = {color: '#333'};
+        chartLayout.margin = {l: 20, r: 20, b: 20, t: 30, pad: 4};
+        
+        Plotly.newPlot('instrumentPerformanceChart', chartData, chartLayout, config);
+        console.log('✅ Instrument chart created');
+        
+    } catch (error) {
+        console.error('❌ Error creating instrument chart:', error);
+        document.getElementById('instrumentPerformanceChart').innerHTML = '<div class="text-center p-4">Chart Error</div>';
+    }
+}
+
+function createWinLossChart(config) {
+    console.log('🎯 Creating win/loss chart...');
+    
+    try {
+        var chartData, chartLayout;
+        
+        if (serverData.winLoss && serverData.winLoss.data) {
+            console.log('✅ Using server data for win/loss chart');
+            chartData = serverData.winLoss.data;
+            chartLayout = serverData.winLoss.layout || {};
+        } else {
+            console.log('📊 Using placeholder data for win/loss chart');
+            chartData = createPlaceholderWinLossData();
+            chartLayout = createPlaceholderWinLossLayout();
+        }
+        
+        // Apply consistent styling
+        chartLayout.paper_bgcolor = 'rgba(0,0,0,0)';
+        chartLayout.font = {color: '#333'};
+        chartLayout.margin = {l: 20, r: 20, b: 20, t: 30, pad: 4};
+        
+        Plotly.newPlot('winLossDistributionChart', chartData, chartLayout, config);
+        console.log('✅ Win/loss chart created');
+        
+    } catch (error) {
+        console.error('❌ Error creating win/loss chart:', error);
+        document.getElementById('winLossDistributionChart').innerHTML = '<div class="text-center p-4">Chart Error</div>';
+    }
+}
+
+function showChartError() {
+    var errorMessage = '<div class="text-center p-4"><div class="alert alert-warning">Charts are loading... If you see this for more than a few seconds, try refreshing the page.</div></div>';
+    
+    document.getElementById('cumulativePLChart').innerHTML = errorMessage;
+    document.getElementById('monthlyPerformanceChart').innerHTML = errorMessage;
+    document.getElementById('instrumentPerformanceChart').innerHTML = errorMessage;
+    document.getElementById('winLossDistributionChart').innerHTML = errorMessage;
 }
 
 // Helper functions to create placeholder charts
-function createPlaceholderCumulativeChart() {
+function createPlaceholderCumulativeData() {
     var dates = generateDates(30);
     var values = generateCumulative(30);
     
+    return [{
+        x: dates,
+        y: values,
+        type: 'scatter',
+        mode: 'lines',
+        fill: 'tozeroy',
+        line: {
+            color: 'rgba(75, 192, 192, 1)',
+            width: 2
+        },
+        fillcolor: 'rgba(75, 192, 192, 0.2)'
+    }];
+}
+
+function createPlaceholderCumulativeLayout() {
     return {
-        data: [{
-            x: dates,
-            y: values,
-            type: 'scatter',
-            mode: 'lines',
-            fill: 'tozeroy',
-            line: {
-                color: 'rgba(75, 192, 192, 1)',
-                width: 2
-            },
-            fillcolor: 'rgba(75, 192, 192, 0.2)'
-        }],
-        layout: {
-            autosize: true,
-            margin: {l: 50, r: 20, b: 50, t: 30, pad: 4},
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            showlegend: false,
+        autosize: true,
+        margin: {l: 50, r: 20, b: 50, t: 30, pad: 4},
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        showlegend: false,
+        title: {
+            text: 'Cumulative P/L',
+            font: {size: 14},
+            y: 0.98
+        },
+        xaxis: {
+            showgrid: false,
+            zeroline: false,
             title: {
-                text: 'Cumulative P/L',
-                font: {size: 14},
-                y: 0.98
-            },
-            xaxis: {
-                showgrid: false,
-                zeroline: false,
-                title: {
-                    text: 'Date',
-                    standoff: 10
-                }
-            },
-            yaxis: {
-                showgrid: true,
-                zeroline: true,
-                gridcolor: 'rgba(230,230,230,0.8)',
-                title: {
-                    text: 'P/L ($)',
-                    standoff: 10
-                }
+                text: 'Date',
+                standoff: 10
+            }
+        },
+        yaxis: {
+            showgrid: true,
+            zeroline: true,
+            gridcolor: 'rgba(230,230,230,0.8)',
+            title: {
+                text: 'P/L ($)',
+                standoff: 10
             }
         }
     };
 }
 
-function createPlaceholderMonthlyChart() {
+function createPlaceholderMonthlyData() {
+    return [{
+        x: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        y: [120, -50, 200, -30, 150],
+        type: 'bar',
+        marker: {
+            color: ['rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)', 
+                   'rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)', 
+                   'rgba(75, 192, 192, 0.8)']
+        }
+    }];
+}
+
+function createPlaceholderMonthlyLayout() {
     return {
-        data: [{
-            x: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            y: [120, -50, 200, -30, 150],
-            type: 'bar',
-            marker: {
-                color: ['rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)', 
-                       'rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)', 
-                       'rgba(75, 192, 192, 0.8)']
-            }
-        }],
-        layout: {
-            autosize: true,
-            margin: {l: 50, r: 20, b: 50, t: 30, pad: 4},
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            showlegend: false,
+        autosize: true,
+        margin: {l: 50, r: 20, b: 50, t: 30, pad: 4},
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        showlegend: false,
+        title: {
+            text: 'Monthly Performance',
+            font: {size: 14},
+            y: 0.98
+        },
+        xaxis: {
+            showgrid: false,
             title: {
-                text: 'Monthly Performance',
-                font: {size: 14},
-                y: 0.98
-            },
-            xaxis: {
-                showgrid: false,
-                title: {
-                    text: 'Month',
-                    standoff: 10
-                }
-            },
-            yaxis: {
-                showgrid: true,
-                gridcolor: 'rgba(230,230,230,0.8)',
-                title: {
-                    text: 'P/L ($)',
-                    standoff: 10
-                }
+                text: 'Month',
+                standoff: 10
+            }
+        },
+        yaxis: {
+            showgrid: true,
+            gridcolor: 'rgba(230,230,230,0.8)',
+            title: {
+                text: 'P/L ($)',
+                standoff: 10
             }
         }
     };
 }
 
-function createPlaceholderInstrumentChart() {
+function createPlaceholderInstrumentData() {
+    return [{
+        labels: ['BTC', 'ETH', 'SOL', 'AAPL', 'TSLA'],
+        values: [30, 25, 15, 20, 10],
+        type: 'pie',
+        hole: 0.5,
+        textinfo: 'label+percent',
+        textposition: 'outside',
+        automargin: true,
+        marker: {
+            colors: [
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 206, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)',
+                'rgba(255, 159, 64, 0.8)'
+            ]
+        }
+    }];
+}
+
+function createPlaceholderInstrumentLayout() {
     return {
-        data: [{
-            labels: ['BTC', 'ETH', 'SOL', 'AAPL', 'TSLA'],
-            values: [30, 25, 15, 20, 10],
-            type: 'pie',
-            hole: 0.5,
-            textinfo: 'label+percent',
-            textposition: 'outside',
-            automargin: true,
-            marker: {
-                colors: [
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 206, 86, 0.8)',
-                    'rgba(75, 192, 192, 0.8)',
-                    'rgba(153, 102, 255, 0.8)',
-                    'rgba(255, 159, 64, 0.8)'
-                ]
-            }
-        }],
-        layout: {
-            autosize: true,
-            margin: {l: 20, r: 20, b: 20, t: 30, pad: 4},
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            showlegend: false,
-            title: {
-                text: 'Performance by Instrument',
-                font: {size: 14},
-                y: 0.98
-            }
+        autosize: true,
+        margin: {l: 20, r: 20, b: 20, t: 30, pad: 4},
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        showlegend: false,
+        title: {
+            text: 'Performance by Instrument',
+            font: {size: 14},
+            y: 0.98
         }
     };
 }
 
-function createPlaceholderWinLossChart() {
+function createPlaceholderWinLossData() {
+    return [{
+        labels: ['Winning', 'Losing', 'Break Even'],
+        values: [65, 30, 5],
+        type: 'pie',
+        hole: 0.5,
+        textinfo: 'label+percent',
+        textposition: 'outside',
+        automargin: true,
+        marker: {
+            colors: [
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(201, 203, 207, 0.8)'
+            ]
+        }
+    }];
+}
+
+function createPlaceholderWinLossLayout() {
     return {
-        data: [{
-            labels: ['Winning', 'Losing', 'Break Even'],
-            values: [65, 30, 5],
-            type: 'pie',
-            hole: 0.5,
-            textinfo: 'label+percent',
-            textposition: 'outside',
-            automargin: true,
-            marker: {
-                colors: [
-                    'rgba(75, 192, 192, 0.8)',
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(201, 203, 207, 0.8)'
-                ]
-            }
-        }],
-        layout: {
-            autosize: true,
-            margin: {l: 20, r: 20, b: 20, t: 30, pad: 4},
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            showlegend: false,
-            title: {
-                text: 'Win/Loss Distribution',
-                font: {size: 14},
-                y: 0.98
-            }
+        autosize: true,
+        margin: {l: 20, r: 20, b: 20, t: 30, pad: 4},
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        showlegend: false,
+        title: {
+            text: 'Win/Loss Distribution',
+            font: {size: 14},
+            y: 0.98
         }
     };
 }
@@ -573,5 +670,39 @@ function generateCumulative(count) {
     
     return values;
 }
+
+// Window resize handler for charts
+window.addEventListener('resize', function() {
+    setTimeout(function() {
+        try {
+            console.log('📱 Resizing charts for mobile...');
+            if (typeof Plotly !== 'undefined') {
+                Plotly.Plots.resize('cumulativePLChart');
+                Plotly.Plots.resize('monthlyPerformanceChart'); 
+                Plotly.Plots.resize('instrumentPerformanceChart');
+                Plotly.Plots.resize('winLossDistributionChart');
+                console.log('✅ Charts resized');
+            }
+        } catch (error) {
+            console.log('Chart resize error:', error);
+        }
+    }, 300);
+});
+
+// Mobile orientation change handler
+window.addEventListener('orientationchange', function() {
+    setTimeout(function() {
+        try {
+            if (typeof Plotly !== 'undefined') {
+                Plotly.Plots.resize('cumulativePLChart');
+                Plotly.Plots.resize('monthlyPerformanceChart');
+                Plotly.Plots.resize('instrumentPerformanceChart');
+                Plotly.Plots.resize('winLossDistributionChart');
+            }
+        } catch (error) {
+            console.log('Chart orientation resize error:', error);
+        }
+    }, 500);
+});
 </script>
 {% endblock scripts %} 
