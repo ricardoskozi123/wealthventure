@@ -223,6 +223,9 @@ const serverData = {
     winLoss: {{ win_loss_distribution_data | safe }}
 };
 
+// 🔧 DEBUG: Log the data
+console.log('📊 Chart Data:', serverData);
+
 document.addEventListener('DOMContentLoaded', function() {
     // Create and display charts with server data
     createCharts();
@@ -298,97 +301,91 @@ function createCharts() {
         displayModeBar: false
     };
     
-    // Setup placeholder charts first
-    var cumulativeChart = createPlaceholderCumulativeChart();
-    var monthlyChart = createPlaceholderMonthlyChart();
-    var instrumentChart = createPlaceholderInstrumentChart();
-    var winLossChart = createPlaceholderWinLossChart();
+    console.log('🔧 Creating charts...');
     
-    // Try to draw the charts
+    // Check if serverData has actual data
+    var hasRealData = serverData && 
+                      serverData.cumulative && 
+                      typeof serverData.cumulative === 'object' &&
+                      serverData.cumulative.data &&
+                      Array.isArray(serverData.cumulative.data) &&
+                      serverData.cumulative.data.length > 0;
+    
+    console.log('📊 Has real data:', hasRealData);
+    
     try {
-        // Draw placeholder charts first
-        Plotly.newPlot('cumulativePLChart', cumulativeChart.data, cumulativeChart.layout, config);
-        Plotly.newPlot('monthlyPerformanceChart', monthlyChart.data, monthlyChart.layout, config);
-        Plotly.newPlot('instrumentPerformanceChart', instrumentChart.data, instrumentChart.layout, config);
-        Plotly.newPlot('winLossDistributionChart', winLossChart.data, winLossChart.layout, config);
-        
-        // Then try to update with real data if available
-        if (serverData && Object.keys(serverData).length > 0) {
-            // Update cumulative chart
-            if (serverData.cumulative && serverData.cumulative.data) {
-                // Apply styling to server data
-                let chartData = serverData.cumulative;
-                chartData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
-                chartData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
-                chartData.layout.margin = {l: 50, r: 20, b: 50, t: 30, pad: 4};
-                chartData.layout.title = {
-                    text: 'Cumulative Profit/Loss Over Time',
-                    font: {size: 14},
-                    y: 0.98
-                };
-                
-                if (chartData.data[0]) {
-                    chartData.data[0].fill = 'tozeroy';
-                    chartData.data[0].fillcolor = 'rgba(75, 192, 192, 0.2)';
-                    chartData.data[0].line = {color: 'rgba(75, 192, 192, 1)', width: 2};
-                }
-                
-                Plotly.react('cumulativePLChart', chartData.data, chartData.layout, config);
-            }
+        if (hasRealData) {
+            console.log('✅ Using server data for charts');
             
-            // Update monthly chart
+            // Use real server data
+            Plotly.newPlot('cumulativePLChart', serverData.cumulative.data, serverData.cumulative.layout, config);
+            
             if (serverData.monthly && serverData.monthly.data) {
-                let chartData = serverData.monthly;
-                chartData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
-                chartData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
-                chartData.layout.margin = {l: 50, r: 20, b: 50, t: 30, pad: 4};
-                chartData.layout.title = {
-                    text: 'Monthly Performance',
-                    font: {size: 14},
-                    y: 0.98
-                };
-                
-                Plotly.react('monthlyPerformanceChart', chartData.data, chartData.layout, config);
+                Plotly.newPlot('monthlyPerformanceChart', serverData.monthly.data, serverData.monthly.layout, config);
             }
             
-            // Update instrument chart
             if (serverData.instrument && serverData.instrument.data) {
-                let chartData = serverData.instrument;
-                chartData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
-                chartData.layout.margin = {l: 20, r: 20, b: 20, t: 30, pad: 4};
-                chartData.layout.title = {
-                    text: 'Performance by Instrument',
-                    font: {size: 14},
-                    y: 0.98
-                };
-                
-                Plotly.react('instrumentPerformanceChart', chartData.data, chartData.layout, config);
+                Plotly.newPlot('instrumentPerformanceChart', serverData.instrument.data, serverData.instrument.layout, config);
             }
             
-            // Update win/loss chart
             if (serverData.winLoss && serverData.winLoss.data) {
-                let chartData = serverData.winLoss;
-                chartData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
-                chartData.layout.margin = {l: 20, r: 20, b: 20, t: 30, pad: 4};
-                chartData.layout.title = {
-                    text: 'Win/Loss Distribution',
-                    font: {size: 14},
-                    y: 0.98
-                };
-                
-                Plotly.react('winLossDistributionChart', chartData.data, chartData.layout, config);
+                Plotly.newPlot('winLossDistributionChart', serverData.winLoss.data, serverData.winLoss.layout, config);
             }
+        } else {
+            console.log('📊 Using placeholder data for charts');
+            
+            // Setup placeholder charts
+            var cumulativeChart = createPlaceholderCumulativeChart();
+            var monthlyChart = createPlaceholderMonthlyChart();
+            var instrumentChart = createPlaceholderInstrumentChart();
+            var winLossChart = createPlaceholderWinLossChart();
+            
+            // Draw placeholder charts
+            Plotly.newPlot('cumulativePLChart', cumulativeChart.data, cumulativeChart.layout, config);
+            Plotly.newPlot('monthlyPerformanceChart', monthlyChart.data, monthlyChart.layout, config);
+            Plotly.newPlot('instrumentPerformanceChart', instrumentChart.data, instrumentChart.layout, config);
+            Plotly.newPlot('winLossDistributionChart', winLossChart.data, winLossChart.layout, config);
         }
-    } catch (e) {
-        console.error('Error creating charts:', e);
+        
+        console.log('✅ Charts created successfully');
+        
+    } catch (error) {
+        console.error('❌ Error creating charts:', error);
+        
+        // Fallback: show simple placeholder charts
+        var simpleData = [{
+            x: [1, 2, 3, 4, 5],
+            y: [1, 2, 3, 4, 5],
+            type: 'scatter',
+            mode: 'lines'
+        }];
+        
+        var simpleLayout = {
+            title: 'Chart Loading...',
+            autosize: true,
+            margin: {l: 50, r: 20, b: 50, t: 50}
+        };
+        
+        try {
+            Plotly.newPlot('cumulativePLChart', simpleData, simpleLayout, config);
+            Plotly.newPlot('monthlyPerformanceChart', simpleData, simpleLayout, config);
+            Plotly.newPlot('instrumentPerformanceChart', simpleData, simpleLayout, config);
+            Plotly.newPlot('winLossDistributionChart', simpleData, simpleLayout, config);
+        } catch (fallbackError) {
+            console.error('❌ Even fallback charts failed:', fallbackError);
+        }
     }
     
     // Redraw charts on window resize
     window.addEventListener('resize', function() {
-        Plotly.relayout('cumulativePLChart', {autosize: true});
-        Plotly.relayout('monthlyPerformanceChart', {autosize: true});
-        Plotly.relayout('instrumentPerformanceChart', {autosize: true});
-        Plotly.relayout('winLossDistributionChart', {autosize: true});
+        try {
+            Plotly.relayout('cumulativePLChart', {autosize: true});
+            Plotly.relayout('monthlyPerformanceChart', {autosize: true});
+            Plotly.relayout('instrumentPerformanceChart', {autosize: true});
+            Plotly.relayout('winLossDistributionChart', {autosize: true});
+        } catch (resizeError) {
+            console.log('Chart resize error:', resizeError);
+        }
     });
 }
 

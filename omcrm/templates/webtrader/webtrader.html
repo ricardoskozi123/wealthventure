@@ -1172,6 +1172,55 @@
             background-color: #c82333;
             border-color: #bd2130;
         }
+
+        /* Webtrader Tabs Styling */
+        .webtrader-tabs {
+            background: var(--medium-bg);
+            border-bottom: 2px solid var(--border-color);
+            border-radius: 8px 8px 0 0;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .webtrader-tab-link {
+            color: var(--secondary-text) !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 12px 20px !important;
+            border-radius: 0 !important;
+            font-weight: 500 !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+        }
+        
+        .webtrader-tab-link:hover {
+            color: var(--text-color) !important;
+            background: rgba(67, 97, 238, 0.1) !important;
+        }
+        
+        .webtrader-tab-link.active {
+            color: var(--text-color) !important;
+            background: var(--light-bg) !important;
+            border-bottom: 2px solid var(--primary-color) !important;
+        }
+        
+        .webtrader-tabs .badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+        }
+        
+        #tradeTabContent {
+            background: var(--light-bg);
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+            min-height: 400px;
+        }
+        
+        .tab-pane .table-responsive {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -1340,144 +1389,187 @@
                 
                 <div class="chart-container" id="tradingview_chart"></div>
                 
-                <!-- Trades Section (Moved inside chart-area) -->
+                <!-- Trades Section with Tabs (Moved inside chart-area) -->
                 <div class="trades-section">
-                    <h3 class="section-title">Open Trades</h3>
-                    <div class="table-responsive">
-                        <table class="trades-table open-trades-table"> {# Add class for targeting #}
-                        <thead>
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Amount</th>
-                                    <th>Entry Price</th> {# Renamed for clarity #}
-                                <th>Type</th>
-                                <th>Date</th>
-                                    <th>Current Price</th> {# Added for P/L Calc #}
-                                    <th>P/L ($)</th> {# Added P/L Column #}
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for trade in open_trades %}
-                                {# Add data attributes needed for P/L calculation #}
-                                <tr class="open-trade-row" 
-                                    data-trade-id="{{ trade.id }}" 
-                                    data-instrument-id="{{ trade.instrument.id }}" 
-                                    data-entry-price="{{ trade.price }}" 
-                                    data-trade-amount="{{ trade.amount }}" 
-                                    data-trade-type="{{ trade.trade_type }}">
-                                    <td>{{ trade.instrument.symbol }}</td>
-                                    <td>{{ trade.amount }}</td>
-                                    <td>${{ "%.2f"|format(trade.price) }}</td>
-                                    <td>
-                                        <span class="badge badge-{{ trade.trade_type }}">{{ trade.trade_type | upper }}</span>
-                                    </td>
-                                    <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td class="current-price-cell">--.--</td> {# Cell for current price #}
-                                    <td class="profit-loss-cell">--.--</td> {# Cell for P/L #}
-                                    <td>
-                                        <form method="POST" action="{{ url_for('webtrader.close_trade') }}" style="display:inline;" class="close-trade-form">
-                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <input type="hidden" name="trade_id" value="{{ trade.id }}">
-                                            <button type="submit" class="btn btn-danger btn-sm close-trade-btn">Close</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                                {% if not open_trades %}
-                                <tr>
-                                    <td colspan="6" class="text-center py-4">No open trades</td>
-                                </tr>
-                                {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-                    
-                    <h3 class="section-title mt-4">Pending Orders</h3>
-                    <div class="table-responsive">
-                        <table class="trades-table">
-                            <thead>
-                                <tr>
-                                    <th>Symbol</th>
-                                    <th>Amount</th>
-                                    <th>Price</th>
-                                    <th>Type</th>
-                                    <th>Order Type</th>
-                                    <th>Target Price</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for order in pending_orders %}
-                                <tr>
-                                    <td>{{ order.instrument.symbol }}</td>
-                                    <td>{{ order.amount }}</td>
-                                    <td>${{ "%.2f"|format(order.price) }}</td>
-                                    <td>
-                                        <span class="badge badge-{{ order.trade_type }}">{{ order.trade_type | upper }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge order-type-badge">{{ order.order_type | replace('_', ' ') | title }}</span>
-                                    </td>
-                                    <td>${{ "%.2f"|format(order.target_price) }}</td>
-                                    <td>{{ order.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td>
-                                        <form method="POST" action="{{ url_for('webtrader.cancel_order') }}" style="display:inline;">
-                                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                            <input type="hidden" name="order_id" value="{{ order.id }}">
-                                            <button type="submit" class="btn btn-warning btn-sm">Cancel</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                {% if not pending_orders %}
-                                <tr>
-                                    <td colspan="8" class="text-center py-4">No pending orders</td>
-                                </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-            </div>
+                    <!-- Trade Tabs Navigation -->
+                    <ul class="nav nav-tabs webtrader-tabs" id="tradeTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active webtrader-tab-link" id="open-trades-tab" data-bs-toggle="tab" data-bs-target="#open-trades" type="button" role="tab" aria-controls="open-trades" aria-selected="true">
+                                <i class="fas fa-chart-line me-1"></i>Open Trades <span class="badge bg-success ms-1">{{ open_trades|length }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link webtrader-tab-link" id="pending-orders-tab" data-bs-toggle="tab" data-bs-target="#pending-orders" type="button" role="tab" aria-controls="pending-orders" aria-selected="false">
+                                <i class="fas fa-clock me-1"></i>Pending Orders <span class="badge bg-warning ms-1">{{ pending_orders|length }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link webtrader-tab-link" id="closed-trades-tab" data-bs-toggle="tab" data-bs-target="#closed-trades" type="button" role="tab" aria-controls="closed-trades" aria-selected="false">
+                                <i class="fas fa-history me-1"></i>Closed Trades <span class="badge bg-secondary ms-1">{{ closed_trades|length }}</span>
+                            </a>
+                        </li>
+                    </ul>
 
-                    <h3 class="section-title mt-4">Closed Trades</h3>
-                    <div class="table-responsive">
-                        <table class="trades-table">
-                        <thead>
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Amount</th>
-                                <th>Price</th>
-                                <th>Type</th>
-                                <th>Date</th>
-                                <th>Profit/Loss</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for trade in closed_trades %}
-                                <tr>
-                                    <td>{{ trade.instrument.symbol }}</td>
-                                    <td>{{ trade.amount }}</td>
-                                    <td>${{ "%.2f"|format(trade.price) }}</td>
-                                    <td>
-                                        <span class="badge badge-{{ trade.trade_type }}">{{ trade.trade_type | upper }}</span>
-                                    </td>
-                                    <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td class="{% if trade.profit_loss is not none and trade.profit_loss > 0 %}price-up{% elif trade.profit_loss is not none and trade.profit_loss < 0 %}price-down{% endif %}">
-                                        {{ "%.2f"|format(trade.profit_loss if trade.profit_loss else 0.00) }}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                                {% if not closed_trades %}
-                                <tr>
-                                    <td colspan="6" class="text-center py-4">No closed trades</td>
-                                </tr>
-                                {% endif %}
-                        </tbody>
-                    </table>
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="tradeTabContent">
+                        <!-- Open Trades Tab -->
+                        <div class="tab-pane fade show active" id="open-trades" role="tabpanel" aria-labelledby="open-trades-tab">
+                            <div class="table-responsive">
+                                <table class="trades-table open-trades-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Amount</th>
+                                            <th>Entry Price</th>
+                                            <th>Type</th>
+                                            <th>Date</th>
+                                            <th>Current Price</th>
+                                            <th>P/L ($)</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trade in open_trades %}
+                                        <tr class="open-trade-row" 
+                                            data-trade-id="{{ trade.id }}" 
+                                            data-instrument-id="{{ trade.instrument.id }}" 
+                                            data-entry-price="{{ trade.price }}" 
+                                            data-trade-amount="{{ trade.amount }}" 
+                                            data-trade-type="{{ trade.trade_type }}">
+                                            <td>{{ trade.instrument.symbol }}</td>
+                                            <td>{{ trade.amount }}</td>
+                                            <td>${{ "%.2f"|format(trade.price) }}</td>
+                                            <td>
+                                                <span class="badge badge-{{ trade.trade_type }}">{{ trade.trade_type | upper }}</span>
+                                            </td>
+                                            <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td class="current-price-cell">--.--</td>
+                                            <td class="profit-loss-cell">--.--</td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('webtrader.close_trade') }}" style="display:inline;" class="close-trade-form">
+                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                    <input type="hidden" name="trade_id" value="{{ trade.id }}">
+                                                    <button type="submit" class="btn btn-danger btn-sm close-trade-btn">Close</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        {% if not open_trades %}
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4">No open trades</td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Pending Orders Tab -->
+                        <div class="tab-pane fade" id="pending-orders" role="tabpanel" aria-labelledby="pending-orders-tab">
+                            <div class="table-responsive">
+                                <table class="trades-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Amount</th>
+                                            <th>Price</th>
+                                            <th>Type</th>
+                                            <th>Order Type</th>
+                                            <th>Target Price</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in pending_orders %}
+                                        <tr>
+                                            <td>{{ order.instrument.symbol }}</td>
+                                            <td>{{ order.amount }}</td>
+                                            <td>${{ "%.2f"|format(order.price) }}</td>
+                                            <td>
+                                                <span class="badge badge-{{ order.trade_type }}">{{ order.trade_type | upper }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge order-type-badge">{{ order.order_type | replace('_', ' ') | title }}</span>
+                                            </td>
+                                            <td>${{ "%.2f"|format(order.target_price) }}</td>
+                                            <td>{{ order.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('webtrader.cancel_order') }}" style="display:inline;">
+                                                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                    <button type="submit" class="btn btn-warning btn-sm">Cancel</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        {% if not pending_orders %}
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4">No pending orders</td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Closed Trades Tab -->
+                        <div class="tab-pane fade" id="closed-trades" role="tabpanel" aria-labelledby="closed-trades-tab">
+                            <div class="table-responsive">
+                                <table class="trades-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Amount</th>
+                                            <th>Entry Price</th>
+                                            <th>Exit Price</th>
+                                            <th>Type</th>
+                                            <th>Date</th>
+                                            <th>Holding Period</th>
+                                            <th>Profit/Loss</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for trade in closed_trades %}
+                                        <tr>
+                                            <td>{{ trade.instrument.symbol }}</td>
+                                            <td>{{ trade.amount }}</td>
+                                            <td>${{ "%.2f"|format(trade.price) }}</td>
+                                            <td>
+                                                {% if trade.closing_price %}
+                                                    ${{ "%.2f"|format(trade.closing_price) }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-{{ trade.trade_type }}">{{ trade.trade_type | upper }}</span>
+                                            </td>
+                                            <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>
+                                                {% if trade.status == 'closed' %}
+                                                    {{ trade.get_holding_period() }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="{% if trade.profit_loss is not none and trade.profit_loss > 0 %}price-up{% elif trade.profit_loss is not none and trade.profit_loss < 0 %}price-down{% endif %}">
+                                                ${{ "%.2f"|format(trade.profit_loss if trade.profit_loss else 0.00) }}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        {% if not closed_trades %}
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4">No closed trades</td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
         
          <!-- Trading Panel - Redesigned (Moved to be sibling of chart-area) -->
          <div class="trading-panel-pro">
