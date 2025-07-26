@@ -1221,6 +1221,351 @@
         .tab-pane .table-responsive {
             margin: 0;
         }
+        
+        /* Mobile Responsive Design */
+        @media (max-width: 768px) {
+            .webtrader-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            /* Mobile Header */
+            .top-bar {
+                padding: 10px 15px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .balance-info {
+                order: -1;
+                width: 100%;
+                text-align: center;
+                background: var(--success-color);
+                border-radius: 8px;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .balance-info h4 {
+                margin: 0;
+                font-size: 1.2rem;
+                color: white;
+            }
+            
+            /* Mobile Sidebar - Convert to collapsible */
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 280px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                background: var(--darker-bg);
+                border-right: 2px solid var(--border-color);
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
+            }
+            
+            .mobile-sidebar-toggle {
+                display: block !important;
+                background: var(--primary-color);
+                border: none;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-size: 1rem;
+            }
+            
+            .mobile-sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+            
+            .mobile-sidebar-overlay.active {
+                display: block;
+            }
+            
+            /* Chart Area Mobile */
+            .chart-area {
+                width: 100%;
+                margin: 0;
+                padding: 10px;
+            }
+            
+            .chart-container {
+                height: 300px !important;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            
+            /* Trading Panel Mobile */
+            .trading-panel-pro {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: auto;
+                max-height: 60vh;
+                background: var(--dark-bg);
+                border-top: 2px solid var(--border-color);
+                border-radius: 15px 15px 0 0;
+                z-index: 500;
+                transform: translateY(calc(100% - 60px));
+                transition: transform 0.3s ease;
+                box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+            }
+            
+            .trading-panel-pro.expanded {
+                transform: translateY(0);
+            }
+            
+            .trade-header {
+                padding: 15px 20px;
+                background: var(--medium-bg);
+                border-radius: 15px 15px 0 0;
+                text-align: center;
+                cursor: pointer;
+                position: relative;
+            }
+            
+            .trade-header::after {
+                content: '▲';
+                position: absolute;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                transition: transform 0.3s ease;
+            }
+            
+            .trading-panel-pro.expanded .trade-header::after {
+                transform: translateY(-50%) rotate(180deg);
+            }
+            
+            .trading-form-pro {
+                padding: 20px;
+                max-height: calc(60vh - 60px);
+                overflow-y: auto;
+            }
+            
+            /* Mobile Price Buttons */
+            .price-buttons {
+                flex-direction: row;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .btn-price {
+                flex: 1;
+                padding: 15px 10px;
+                font-size: 0.9rem;
+                min-height: 70px;
+                border-radius: 10px;
+            }
+            
+            .btn-price strong {
+                font-size: 1.1rem;
+                display: block;
+                margin-top: 5px;
+            }
+            
+            /* Mobile Form Elements */
+            .form-control {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 12px 15px;
+                border-radius: 8px;
+                min-height: 48px; /* Touch-friendly */
+            }
+            
+            .btn {
+                min-height: 48px;
+                font-size: 16px;
+                padding: 12px 20px;
+                border-radius: 8px;
+            }
+            
+            /* Mobile Tables */
+            .trades-section {
+                margin-top: 20px;
+                background: var(--medium-bg);
+                border-radius: 12px;
+                overflow: hidden;
+            }
+            
+            .webtrader-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .webtrader-tab-link {
+                white-space: nowrap;
+                min-width: auto;
+                padding: 10px 15px !important;
+                font-size: 0.85rem !important;
+            }
+            
+            .trades-table {
+                font-size: 0.8rem;
+            }
+            
+            .trades-table th,
+            .trades-table td {
+                padding: 8px 5px;
+                white-space: nowrap;
+            }
+            
+            /* Hide some columns on mobile */
+            .trades-table th:nth-child(5),
+            .trades-table td:nth-child(5) {
+                display: none; /* Hide Date column */
+            }
+            
+            .trades-table th:nth-child(6),
+            .trades-table td:nth-child(6) {
+                display: none; /* Hide Current Price column */
+            }
+            
+            /* Mobile Table Scroll */
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Mobile Advanced Options */
+            #more-options-content {
+                padding-top: 15px;
+            }
+            
+            .advanced-options {
+                margin-top: 15px;
+            }
+            
+            /* Mobile Trade Info */
+            .trade-info {
+                background: var(--light-bg);
+                border-radius: 8px;
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .info-item {
+                padding: 8px 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .info-item:last-child {
+                border-bottom: none;
+            }
+            
+            /* Mobile Badges */
+            .badge {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
+            
+            /* Mobile Modal Improvements */
+            .modal-dialog {
+                margin: 10px;
+                max-width: calc(100% - 20px);
+            }
+            
+            /* Mobile Close Trade Confirmation */
+            .close-trade-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            /* Safe area for devices with notches */
+            .trading-panel-pro {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            
+            /* Mobile body padding to account for fixed trading panel */
+            body {
+                padding-bottom: 80px;
+            }
+        }
+        
+        /* Tablet Responsive (768px - 1024px) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+            
+            .chart-area {
+                width: calc(100% - 250px);
+            }
+            
+            .trading-panel-pro {
+                width: 300px;
+                right: 20px;
+                position: fixed;
+            }
+            
+            .chart-container {
+                height: 400px !important;
+            }
+        }
+        
+        /* Small Mobile (max-width: 480px) */
+        @media (max-width: 480px) {
+            .price-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .btn-price {
+                width: 100%;
+                padding: 20px 15px;
+                min-height: 80px;
+            }
+            
+            .webtrader-tab-link {
+                padding: 8px 10px !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .webtrader-tabs .badge {
+                display: none; /* Hide badges on very small screens */
+            }
+            
+            .chart-container {
+                height: 250px !important;
+            }
+            
+            .trading-form-pro {
+                padding: 15px;
+            }
+        }
+        
+        /* Utility Classes */
+        .mobile-sidebar-toggle {
+            display: none;
+        }
+        
+        .mobile-only {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-only {
+                display: block;
+            }
+            
+            .desktop-only {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1232,7 +1577,12 @@
         <!-- Header -->
         <div class="header">
             <div class="logo">
-                <img src="{{ url_for('static', filename='imgs/bootstrap-solid.svg') }}" alt="Logo" class="logo-img">
+                <!-- Mobile Sidebar Toggle -->
+                <button class="mobile-sidebar-toggle" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i> Instruments
+                </button>
+                
+                <img src="{{ url_for('static', filename='imgs/bootstrap-solid.svg') }}" alt="Logo" class="logo-img desktop-only">
                 <span class="logo-text">WebTrader</span>
             </div>
             
@@ -1242,27 +1592,27 @@
                         <span class="balance-label">BALANCE:</span>
                         <span class="balance-value" id="user-balance">${{ "%.2f"|format(current_user.current_balance) }}</span>
                     </div>
-                    <div class="balance-item">
+                    <div class="balance-item desktop-only">
                         <span class="balance-label">EQUITY:</span>
                         <span class="balance-value" id="user-equity">${{ "%.2f"|format(current_user.equity) }}</span>
                     </div>
-                    <div class="balance-item">
+                    <div class="balance-item desktop-only">
                         <span class="balance-label">CREDIT:</span>
                         <span class="balance-value">${{ "%.2f"|format(current_user.credit_balance) }}</span>
                     </div>
-                    <div class="balance-item">
+                    <div class="balance-item desktop-only">
                         <span class="balance-label">BONUS:</span>
                         <span class="balance-value">${{ "%.2f"|format(current_user.bonus_balance) }}</span>
                     </div>
-                    <div class="balance-item">
+                    <div class="balance-item desktop-only">
                         <span class="balance-label">MARGIN:</span>
                         <span class="balance-value" id="user-margin">$0.00</span>
                     </div>
-                    <div class="balance-item">
+                    <div class="balance-item desktop-only">
                         <span class="balance-label">FREE MARGIN:</span>
                         <span class="balance-value" id="user-free-margin">$0.00</span>
                     </div>
-                    <div class="balance-item">
+                    <div class="balance-item desktop-only">
                         <span class="balance-label">MARGIN LEVEL:</span>
                         <span class="balance-value" id="user-margin-level">∞%</span>
                     </div>
@@ -1290,13 +1640,13 @@
                 
                 <div class="header-buttons">
                     {% if 'admin_user_id' in session %}
-                    <a href="{{ url_for('leads.return_to_admin') }}" class="btn btn-warning return-admin-btn">
-                        <i class="fas fa-sign-out-alt"></i> Return to Admin
+                    <a href="{{ url_for('leads.return_to_admin') }}" class="btn btn-warning return-admin-btn desktop-only">
+                        <i class="fas fa-sign-out-alt"></i> <span class="desktop-only">Return to Admin</span>
                     </a>
                     {% endif %}
                     
                     <a href="{{ url_for('users.logout') }}" class="btn btn-danger logout-btn">
-                        <i class="fas fa-power-off"></i> Logout
+                        <i class="fas fa-power-off"></i> <span class="desktop-only">Logout</span>
                     </a>
                 </div>
             </div>
@@ -1320,32 +1670,39 @@
         
         <!-- Content Area -->
         <div class="content-wrapper">
+            <!-- Mobile Sidebar Overlay -->
+            <div class="mobile-sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+            
             <!-- Trading Instruments List -->
-            <div class="instruments-list">
+            <div class="instruments-list" id="instrumentsSidebar">
                 <div class="instruments-header">
                     <h5>Trading Instruments</h5>
                     <div>
-                        <button class="btn btn-sm btn-outline-secondary">
+                        <button class="btn btn-sm btn-outline-secondary desktop-only">
                             <i class="fas fa-filter"></i>
+                        </button>
+                        <!-- Mobile Close Button -->
+                        <button class="btn btn-sm btn-outline-secondary mobile-only" onclick="toggleMobileSidebar()">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
                 
                 <div class="market-filter-buttons">
                     <button class="market-filter-btn active" onclick="filterInstruments('all')">
-                        <i class="fas fa-globe"></i> All
+                        <i class="fas fa-globe"></i> <span class="desktop-only">All</span>
                     </button>
                     <button class="market-filter-btn" onclick="filterInstruments('crypto')">
-                        <i class="fab fa-bitcoin"></i> Crypto
+                        <i class="fab fa-bitcoin"></i> <span class="desktop-only">Crypto</span>
                     </button>
                     <button class="market-filter-btn" onclick="filterInstruments('stock')">
-                        <i class="fas fa-chart-line"></i> Stocks
+                        <i class="fas fa-chart-line"></i> <span class="desktop-only">Stocks</span>
                     </button>
                     <button class="market-filter-btn" onclick="filterInstruments('forex')">
-                        <i class="fas fa-dollar-sign"></i> Forex
+                        <i class="fas fa-dollar-sign"></i> <span class="desktop-only">Forex</span>
                     </button>
                     <button class="market-filter-btn" onclick="filterInstruments('commodities')">
-                        <i class="fas fa-oil-can"></i> Commod.
+                        <i class="fas fa-oil-can"></i> <span class="desktop-only">Commod.</span>
                     </button>
                 </div>
                 
@@ -4167,6 +4524,153 @@
             });
         });
 
+    </script>
+
+    <!-- Mobile JavaScript Functions -->
+    <script>
+        // Mobile Sidebar Toggle
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('instrumentsSidebar');
+            const overlay = document.querySelector('.mobile-sidebar-overlay');
+            
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+            }
+        }
+        
+        // Mobile Trading Panel Expand/Collapse
+        function initMobileTradingPanel() {
+            const tradingPanel = document.querySelector('.trading-panel-pro');
+            const tradeHeader = document.querySelector('.trade-header');
+            
+            if (window.innerWidth <= 768 && tradingPanel && tradeHeader) {
+                tradeHeader.addEventListener('click', function() {
+                    tradingPanel.classList.toggle('expanded');
+                });
+            }
+        }
+        
+        // Mobile Optimizations
+        function initMobileOptimizations() {
+            // Initialize mobile trading panel
+            initMobileTradingPanel();
+            
+            // Close mobile sidebar when selecting an instrument
+            const originalSelectInstrument = window.selectInstrument;
+            window.selectInstrument = function(instrumentId) {
+                // Close mobile sidebar on instrument selection
+                if (window.innerWidth <= 768) {
+                    const sidebar = document.getElementById('instrumentsSidebar');
+                    const overlay = document.querySelector('.mobile-sidebar-overlay');
+                    if (sidebar && overlay) {
+                        sidebar.classList.remove('mobile-open');
+                        overlay.classList.remove('active');
+                    }
+                }
+                // Call original function
+                return originalSelectInstrument.call(this, instrumentId);
+            };
+            
+            // Prevent zoom on iOS inputs
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                const viewport = document.querySelector('meta[name=viewport]');
+                if (viewport) {
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                }
+            }
+            
+            // Handle orientation change
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    // Recalculate chart size
+                    if (window.tvWidget && typeof window.tvWidget.resize === 'function') {
+                        window.tvWidget.resize();
+                    }
+                }, 500);
+            });
+            
+            // Touch-friendly trade confirmations
+            const mobileConfirmTrade = function(button, tradeData) {
+                // Create mobile-friendly confirmation
+                const confirmed = confirm(`Confirm ${tradeData.type.toUpperCase()} ${tradeData.amount} ${tradeData.symbol}?`);
+                return confirmed;
+            };
+            
+            // Add swipe gestures for mobile navigation
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipeGesture();
+            });
+            
+            function handleSwipeGesture() {
+                if (window.innerWidth <= 768) {
+                    const swipeThreshold = 50;
+                    const swipeDistance = touchEndX - touchStartX;
+                    
+                    // Swipe right to open sidebar
+                    if (swipeDistance > swipeThreshold && touchStartX < 50) {
+                        const sidebar = document.getElementById('instrumentsSidebar');
+                        const overlay = document.querySelector('.mobile-sidebar-overlay');
+                        if (sidebar && !sidebar.classList.contains('mobile-open')) {
+                            sidebar.classList.add('mobile-open');
+                            overlay.classList.add('active');
+                        }
+                    }
+                    
+                    // Swipe left to close sidebar
+                    if (swipeDistance < -swipeThreshold) {
+                        const sidebar = document.getElementById('instrumentsSidebar');
+                        const overlay = document.querySelector('.mobile-sidebar-overlay');
+                        if (sidebar && sidebar.classList.contains('mobile-open')) {
+                            sidebar.classList.remove('mobile-open');
+                            overlay.classList.remove('active');
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Initialize mobile features when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initMobileOptimizations();
+            
+            // Auto-expand trading panel on mobile if no trades
+            if (window.innerWidth <= 768) {
+                setTimeout(function() {
+                    const openTrades = document.querySelectorAll('.open-trade-row');
+                    const tradingPanel = document.querySelector('.trading-panel-pro');
+                    
+                    if (openTrades.length === 0 && tradingPanel) {
+                        tradingPanel.classList.add('expanded');
+                    }
+                }, 1000);
+            }
+        });
+        
+        // Handle window resize for responsive behavior
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                // Desktop mode - reset mobile states
+                const sidebar = document.getElementById('instrumentsSidebar');
+                const overlay = document.querySelector('.mobile-sidebar-overlay');
+                const tradingPanel = document.querySelector('.trading-panel-pro');
+                
+                if (sidebar) sidebar.classList.remove('mobile-open');
+                if (overlay) overlay.classList.remove('active');
+                if (tradingPanel) tradingPanel.classList.remove('expanded');
+            } else {
+                // Mobile mode - reinitialize
+                initMobileOptimizations();
+            }
+        });
     </script>
 </body>
 </html>
