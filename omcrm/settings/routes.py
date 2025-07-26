@@ -293,24 +293,69 @@ def settings_roles_new():
             flash('Failed to create new role!', 'danger')
     elif request.method == 'GET':
         resources = [
-            ResourceForm(name='staff', can_view=False,
-                         can_create=False, can_edit=False, can_delete=False),
-            ResourceForm(name='leads', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True),
-            ResourceForm(name='deals', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True),
-            ResourceForm(name='clients', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True),
-            ResourceForm(name='activities', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True),
-            ResourceForm(name='tasks', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True),
-            ResourceForm(name='reports', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True),
-            ResourceForm(name='transactions', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True),
-            ResourceForm(name='instruments', can_view=True,
-                         can_create=True, can_edit=True, can_delete=True)
+            ResourceForm(name='staff', can_view=False, can_create=False, can_edit=False, can_delete=False,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True),
+            ResourceForm(name='leads', can_view=True, can_create=True, can_edit=True, can_delete=True,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True),
+            ResourceForm(name='deals', can_view=True, can_create=True, can_edit=True, can_delete=True,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True),
+            ResourceForm(name='clients', can_view=True, can_create=True, can_edit=True, can_delete=True,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True),
+            ResourceForm(name='activities', can_view=True, can_create=True, can_edit=True, can_delete=True,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True),
+            ResourceForm(name='tasks', can_view=True, can_create=True, can_edit=True, can_delete=True,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True),
+            ResourceForm(name='reports', can_view=True, can_create=True, can_edit=True, can_delete=True,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True),
+            ResourceForm(name='transactions', can_view=True, can_create=True, can_edit=True, can_delete=True,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True),
+            ResourceForm(name='instruments', can_view=True, can_create=True, can_edit=True, can_delete=True,
+                        # Sidebar permissions - default values
+                        can_view_dashboard=True, can_view_leads=True, can_view_pipeline=True,
+                        can_view_activities=True, can_view_tasks=True, can_view_lead_sources=False,
+                        can_view_client_statuses=False, can_view_trading_instruments=False,
+                        can_view_clients_page=True, can_view_reports=True, can_view_pipeline_stages=False,
+                        can_view_transactions=False, can_view_settings=True)
         ]
 
         for resource in resources:
@@ -352,6 +397,43 @@ def settings_roles_update(role_id):
             resource_form.can_create = resource.can_create
             resource_form.can_edit = resource.can_edit
             resource_form.can_delete = resource.can_delete
+            
+            # 🔧 Load manager permissions
+            if hasattr(resource, 'can_impersonate'):
+                resource_form.can_impersonate = resource.can_impersonate
+            if hasattr(resource, 'can_view_all_clients'):
+                resource_form.can_view_all_clients = resource.can_view_all_clients
+            if hasattr(resource, 'can_view_all_leads'):
+                resource_form.can_view_all_leads = resource.can_view_all_leads
+                
+            # 🔧 Load sidebar navigation permissions
+            if hasattr(resource, 'can_view_dashboard'):
+                resource_form.can_view_dashboard = resource.can_view_dashboard
+            if hasattr(resource, 'can_view_leads'):
+                resource_form.can_view_leads = resource.can_view_leads
+            if hasattr(resource, 'can_view_pipeline'):
+                resource_form.can_view_pipeline = resource.can_view_pipeline
+            if hasattr(resource, 'can_view_activities'):
+                resource_form.can_view_activities = resource.can_view_activities
+            if hasattr(resource, 'can_view_tasks'):
+                resource_form.can_view_tasks = resource.can_view_tasks
+            if hasattr(resource, 'can_view_lead_sources'):
+                resource_form.can_view_lead_sources = resource.can_view_lead_sources
+            if hasattr(resource, 'can_view_client_statuses'):
+                resource_form.can_view_client_statuses = resource.can_view_client_statuses
+            if hasattr(resource, 'can_view_trading_instruments'):
+                resource_form.can_view_trading_instruments = resource.can_view_trading_instruments
+            if hasattr(resource, 'can_view_clients_page'):
+                resource_form.can_view_clients_page = resource.can_view_clients_page
+            if hasattr(resource, 'can_view_reports'):
+                resource_form.can_view_reports = resource.can_view_reports
+            if hasattr(resource, 'can_view_pipeline_stages'):
+                resource_form.can_view_pipeline_stages = resource.can_view_pipeline_stages
+            if hasattr(resource, 'can_view_transactions'):
+                resource_form.can_view_transactions = resource.can_view_transactions
+            if hasattr(resource, 'can_view_settings'):
+                resource_form.can_view_settings = resource.can_view_settings
+                
             form.permissions.append_entry(resource_form)
 
     return render_template("settings/role_update.html", title="Update Role", form=form)
