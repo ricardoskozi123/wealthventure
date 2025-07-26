@@ -2754,32 +2754,32 @@
                 <div class="balance-info">
                     <div class="balance-item">
                         <div class="balance-label">Balance</div>
-                        <div class="balance-value">${{ "{:.2f}".format(current_user.balance) }}</div>
+                        <div class="balance-value">${{ "%.2f"|format(current_user.current_balance) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
                         <div class="balance-label">Equity</div>
-                        <div class="balance-value">${{ "{:.2f}".format(current_user.equity or 0) }}</div>
+                        <div class="balance-value">${{ "%.2f"|format(current_user.equity) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
                         <div class="balance-label">Credit</div>
-                        <div class="balance-value">${{ "{:.2f}".format(current_user.credit or 0) }}</div>
+                        <div class="balance-value">${{ "%.2f"|format(current_user.credit_balance) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
                         <div class="balance-label">Bonus</div>
-                        <div class="balance-value">${{ "{:.2f}".format(current_user.bonus or 0) }}</div>
+                        <div class="balance-value">${{ "%.2f"|format(current_user.bonus_balance) }}</div>
                     </div>
                     <div class="balance-item desktop-only">
                         <div class="balance-label">Margin</div>
-                        <div class="balance-value">${{ "{:.2f}".format(current_user.margin or 0) }}</div>
+                        <div class="balance-value" id="user-margin">$0.00</div>
                     </div>
                     <div class="balance-item desktop-only">
                         <div class="balance-label">Free Margin</div>
-                        <div class="balance-value">${{ "{:.2f}".format(current_user.free_margin or 0) }}</div>
+                        <div class="balance-value" id="user-free-margin">$0.00</div>
                     </div>
                 </div>
                 <div class="dropdown">
                     <a class="dropdown-toggle desktop-only" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Margin Level: <span class="text-warning">{{ "{:.2f}".format(current_user.margin_level or 0) }}%</span>
+                        Margin Level: <span class="text-warning" id="user-margin-level">∞%</span>
                     </a>
                     <ul class="dropdown-menu">
                         <li><span class="dropdown-item-text">Margin Call at 50%</span></li>
