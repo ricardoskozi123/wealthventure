@@ -2730,6 +2730,624 @@
                 padding-bottom: max(env(safe-area-inset-bottom), 15px);
             }
         }
+
+        /* SUPER DUPER AMAZING MOBILE REDESIGN */
+        @media (max-width: 768px) {
+            body {
+                margin: 0;
+                padding: 0;
+                overflow-x: hidden;
+                background: var(--dark-bg);
+                height: 100vh;
+            }
+            
+            .trading-platform {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                width: 100vw;
+                overflow: hidden;
+            }
+            
+            /* AMAZING Header with Moving Ticker */
+            .header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background: linear-gradient(135deg, #1a1d29, #252a41);
+                border-bottom: 1px solid #00d4ff;
+                padding: 6px 12px;
+                height: 45px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 2px 20px rgba(0, 212, 255, 0.3);
+            }
+            
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            
+            .mobile-sidebar-toggle {
+                display: flex !important;
+                align-items: center;
+                gap: 5px;
+                background: linear-gradient(135deg, #00d4ff, #0099cc);
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 15px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
+            }
+            
+            .logo-text {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: #00d4ff;
+                text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            }
+            
+            /* AMAZING Balance Display */
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            
+            .balance-info {
+                background: linear-gradient(135deg, #00ff88, #00cc66);
+                padding: 3px 8px;
+                border-radius: 12px;
+                display: flex !important;
+                align-items: center;
+                gap: 3px;
+                box-shadow: 0 2px 10px rgba(0, 255, 136, 0.3);
+            }
+            
+            .balance-item.desktop-only {
+                display: none !important;
+            }
+            
+            .balance-item:not(.desktop-only) {
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .balance-label {
+                font-size: 0.5rem;
+                color: white;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin: 0;
+                line-height: 1;
+            }
+            
+            .balance-value {
+                font-size: 0.75rem;
+                font-weight: 800;
+                color: white;
+                margin: 0;
+                line-height: 1.1;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            }
+            
+            .logout-btn {
+                padding: 3px 6px;
+                font-size: 0.6rem;
+                background: linear-gradient(135deg, #ff4757, #ff3838);
+                border: none;
+                color: white;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+            }
+            
+            /* AMAZING Moving Price Ticker */
+            .market-data {
+                position: fixed;
+                top: 45px;
+                left: 0;
+                right: 0;
+                z-index: 900;
+                background: linear-gradient(90deg, #0d1421, #1a1d29);
+                height: 35px;
+                overflow: hidden;
+                border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+                display: flex;
+                align-items: center;
+            }
+            
+            .market-data-wrapper {
+                display: flex;
+                align-items: center;
+                animation: scroll-ticker 30s linear infinite;
+                white-space: nowrap;
+            }
+            
+            @keyframes scroll-ticker {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+            }
+            
+            .ticker-item {
+                display: inline-flex;
+                align-items: center;
+                margin-right: 30px;
+                font-size: 0.7rem;
+                color: #00d4ff;
+                font-weight: 600;
+            }
+            
+            .ticker-price {
+                color: #00ff88;
+                margin-left: 5px;
+            }
+            
+            .ticker-change {
+                margin-left: 5px;
+                font-size: 0.6rem;
+            }
+            
+            .ticker-change.positive {
+                color: #00ff88;
+            }
+            
+            .ticker-change.negative {
+                color: #ff4757;
+            }
+            
+            /* Content Area - Now Scrollable */
+            .content-wrapper {
+                margin-top: 80px; /* Header + Ticker */
+                height: calc(100vh - 80px);
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: var(--dark-bg);
+            }
+            
+            /* AMAZING Instruments Sidebar */
+            .instruments-list {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 85vw;
+                max-width: 320px;
+                height: 100vh;
+                background: linear-gradient(180deg, #1a1d29, #0d1421);
+                z-index: 1100;
+                transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                overflow-y: auto;
+                box-shadow: 5px 0 40px rgba(0, 212, 255, 0.2);
+                border-right: 2px solid #00d4ff;
+            }
+            
+            .instruments-list.mobile-open {
+                left: 0;
+            }
+            
+            .mobile-sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 1050;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.4s ease;
+                backdrop-filter: blur(5px);
+            }
+            
+            .mobile-sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .instruments-header {
+                padding: 15px;
+                background: linear-gradient(135deg, #00d4ff, #0099cc);
+                color: white;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .instruments-header h5 {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 700;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            }
+            
+            .instruments-header button {
+                background: rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                color: white;
+                padding: 5px 8px;
+                border-radius: 8px;
+                font-size: 0.8rem;
+                transition: all 0.2s ease;
+            }
+            
+            .instruments-header button:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.05);
+            }
+            
+            /* Market Filter Buttons */
+            .market-filter-buttons {
+                display: flex;
+                padding: 12px;
+                gap: 8px;
+                overflow-x: auto;
+                background: rgba(0, 212, 255, 0.1);
+                border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            }
+            
+            .market-filter-btn {
+                flex: 0 0 auto;
+                padding: 8px 16px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(0, 212, 255, 0.3);
+                border-radius: 20px;
+                color: #00d4ff;
+                font-size: 0.8rem;
+                font-weight: 600;
+                white-space: nowrap;
+                transition: all 0.3s ease;
+            }
+            
+            .market-filter-btn.active,
+            .market-filter-btn:hover {
+                background: linear-gradient(135deg, #00d4ff, #0099cc);
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+            }
+            
+            /* Instruments Table */
+            .instruments-table {
+                width: 100%;
+                font-size: 0.8rem;
+                margin: 0;
+                background: transparent;
+            }
+            
+            .instruments-table th {
+                background: rgba(0, 212, 255, 0.1);
+                color: #00d4ff;
+                font-weight: 700;
+                padding: 12px 10px;
+                border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+                text-transform: uppercase;
+                font-size: 0.7rem;
+                letter-spacing: 0.5px;
+            }
+            
+            .instruments-table td {
+                padding: 12px 10px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                color: var(--text-color);
+            }
+            
+            .instruments-table tr:hover {
+                background: rgba(0, 212, 255, 0.1);
+                cursor: pointer;
+                transform: scale(1.02);
+                transition: all 0.2s ease;
+            }
+            
+            .instruments-table tr:active {
+                background: rgba(0, 212, 255, 0.2);
+                transform: scale(0.98);
+            }
+            
+            /* Chart Area - Now Below */
+            .chart-area {
+                background: var(--darker-bg);
+                margin: 15px;
+                border-radius: 15px;
+                border: 1px solid rgba(0, 212, 255, 0.3);
+                box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+            
+            .chart-container {
+                height: 300px;
+                background: var(--darker-bg);
+                position: relative;
+            }
+            
+            /* Trades Section - Below Chart */
+            .trades-section {
+                margin: 0 15px 15px 15px;
+                background: var(--darker-bg);
+                border-radius: 15px;
+                border: 1px solid rgba(0, 212, 255, 0.3);
+                box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+                overflow: hidden;
+                flex: 1;
+            }
+            
+            /* AMAZING Tabs */
+            .webtrader-tabs {
+                background: linear-gradient(135deg, #1a1d29, #252a41);
+                border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+                margin: 0;
+                padding: 0;
+                display: flex;
+                overflow-x: auto;
+            }
+            
+            .webtrader-tab-link {
+                flex: 1;
+                padding: 12px 16px !important;
+                font-size: 0.8rem !important;
+                white-space: nowrap;
+                color: rgba(255, 255, 255, 0.7) !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 6px !important;
+                transition: all 0.3s ease !important;
+                font-weight: 600 !important;
+            }
+            
+            .webtrader-tab-link:hover {
+                color: #00d4ff !important;
+                background: rgba(0, 212, 255, 0.1) !important;
+            }
+            
+            .webtrader-tab-link.active {
+                color: white !important;
+                background: linear-gradient(135deg, #00d4ff, #0099cc) !important;
+                box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3) !important;
+            }
+            
+            .webtrader-tabs .badge {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                font-size: 0.6rem;
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-weight: 700;
+            }
+            
+            .webtrader-tab-link.active .badge {
+                background: rgba(255, 255, 255, 0.3);
+            }
+            
+            /* Tab Content */
+            #tradeTabContent {
+                background: var(--dark-bg);
+                padding: 0;
+                max-height: 400px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* AMAZING Trading Panel - WORKING! */
+            .trading-panel-pro {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                background: linear-gradient(180deg, #1a1d29, #0d1421);
+                border-top: 2px solid #00d4ff;
+                border-radius: 20px 20px 0 0;
+                z-index: 1200;
+                transform: translateY(calc(100% - 55px));
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                max-height: 80vh;
+                box-shadow: 0 -5px 40px rgba(0, 212, 255, 0.3);
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .trading-panel-pro.expanded {
+                transform: translateY(0);
+            }
+            
+            .trade-header {
+                padding: 12px 20px;
+                background: linear-gradient(135deg, #00d4ff, #0099cc);
+                border-radius: 20px 20px 0 0;
+                text-align: center;
+                cursor: pointer;
+                position: relative;
+                flex-shrink: 0;
+                user-select: none;
+            }
+            
+            .trade-header::before {
+                content: '';
+                position: absolute;
+                top: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 40px;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.8);
+                border-radius: 2px;
+            }
+            
+            .trade-header::after {
+                content: '▲';
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: white;
+                font-size: 1.2rem;
+                transition: transform 0.4s ease;
+                font-weight: bold;
+            }
+            
+            .trading-panel-pro.expanded .trade-header::after {
+                transform: translateY(-50%) rotate(180deg);
+            }
+            
+            #trade-panel-symbol {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: white;
+                margin: 0;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            }
+            
+            .trading-form-pro {
+                flex: 1;
+                padding: 20px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* AMAZING Buy/Sell Buttons */
+            .price-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            
+            .btn-price {
+                padding: 20px 15px;
+                border-radius: 15px;
+                border: none;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 80px;
+                transition: all 0.3s ease;
+                font-weight: 700;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .btn-price::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.6s ease;
+            }
+            
+            .btn-price:active::before {
+                left: 100%;
+            }
+            
+            .btn-price:active {
+                transform: scale(0.95);
+            }
+            
+            .btn-price span {
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+                opacity: 0.9;
+            }
+            
+            .btn-price strong {
+                font-size: 1.2rem;
+                font-weight: 800;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            }
+            
+            .btn-sell-price {
+                background: linear-gradient(135deg, #ff4757, #ff3838);
+                color: white;
+                box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            }
+            
+            .btn-sell-price:hover {
+                box-shadow: 0 6px 25px rgba(255, 71, 87, 0.5);
+                transform: translateY(-2px);
+            }
+            
+            .btn-buy-price {
+                background: linear-gradient(135deg, #00ff88, #00cc66);
+                color: white;
+                box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+            }
+            
+            .btn-buy-price:hover {
+                box-shadow: 0 6px 25px rgba(0, 255, 136, 0.5);
+                transform: translateY(-2px);
+            }
+            
+            /* Amount Input */
+            .form-control {
+                font-size: 16px;
+                padding: 15px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(0, 212, 255, 0.3);
+                color: white;
+                min-height: 50px;
+                backdrop-filter: blur(10px);
+            }
+            
+            .form-control:focus {
+                border-color: #00d4ff;
+                box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+                background: rgba(255, 255, 255, 0.15);
+            }
+            
+            .form-control::placeholder {
+                color: rgba(255, 255, 255, 0.6);
+            }
+            
+            /* Mobile Safe Areas */
+            .trading-panel-pro {
+                padding-bottom: max(env(safe-area-inset-bottom), 20px);
+            }
+            
+            /* Scroll Enhancements */
+            ::-webkit-scrollbar {
+                width: 3px;
+            }
+            
+            ::-webkit-scrollbar-track {
+                background: rgba(0, 0, 0, 0.1);
+            }
+            
+            ::-webkit-scrollbar-thumb {
+                background: rgba(0, 212, 255, 0.5);
+                border-radius: 10px;
+            }
+            
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 212, 255, 0.8);
+            }
+        }
     </style>
 </head>
 <body>
@@ -5835,6 +6453,500 @@
             }
         });
     </script>
+
+    <!-- AMAZING Moving Price Ticker -->
+    <div class="market-data">
+        <div class="market-data-wrapper">
+            <div class="ticker-item">
+                <span>BTC/USD</span>
+                <span class="ticker-price">$118,081</span>
+                <span class="ticker-change negative">▼ 0.1%</span>
+            </div>
+            <div class="ticker-item">
+                <span>ETH/USD</span>
+                <span class="ticker-price">$3,725</span>
+                <span class="ticker-change positive">▲ 0.2%</span>
+            </div>
+            <div class="ticker-item">
+                <span>AAPL</span>
+                <span class="ticker-price">$213.08</span>
+                <span class="ticker-change positive">▲ 1.2%</span>
+            </div>
+            <div class="ticker-item">
+                <span>MSFT</span>
+                <span class="ticker-price">$432.17</span>
+                <span class="ticker-change negative">▼ 0.5%</span>
+            </div>
+            <div class="ticker-item">
+                <span>TSLA</span>
+                <span class="ticker-price">$267.84</span>
+                <span class="ticker-change positive">▲ 2.1%</span>
+            </div>
+            <div class="ticker-item">
+                <span>GOLD</span>
+                <span class="ticker-price">$2,658</span>
+                <span class="ticker-change positive">▲ 0.8%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPER AMAZING Mobile JavaScript Functions -->
+    <script>
+        // 🚀 Initializing SUPER mobile optimizations...
+        console.log('�� Initializing SUPER mobile optimizations...');
+        
+        // Enhanced Mobile Trading Panel
+        initSuperTradingPanel();
+        
+        // Enhanced Mobile Sidebar
+        initSuperMobileSidebar();
+        
+        // Auto-hide mobile address bar
+        setTimeout(() => {
+            window.scrollTo(0, 1);
+        }, 100);
+        
+        // Prevent iOS zoom on input focus
+        const meta = document.querySelector('meta[name="viewport"]');
+        if (meta) {
+            meta.setAttribute('content', 
+                'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+            );
+        }
+        
+        // Enhanced orientation change handling
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (window.tvWidget) {
+                    try {
+                        window.tvWidget.resize();
+                    } catch (e) {
+                        console.log('Chart resize on orientation change:', e);
+                    }
+                }
+                // Reset mobile states
+                resetMobileStates();
+            }, 500);
+        });
+        
+        // Enhanced swipe gestures
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            
+            // Horizontal swipe (more horizontal than vertical)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0 && touchStartX < 50) {
+                    // Swipe right from left edge - open sidebar
+                    openMobileSidebar();
+                } else if (diffX < 0 && touchStartX > window.innerWidth - 50) {
+                    // Swipe left from right edge - close sidebar if open
+                    closeMobileSidebar();
+                }
+            }
+        }, { passive: true });
+        
+        console.log('✅ SUPER mobile optimizations initialized!');
+    }
+    
+    function initSuperTradingPanel() {
+        const tradingPanel = document.querySelector('.trading-panel-pro');
+        const tradeHeader = document.querySelector('.trade-header');
+        
+        if (!tradingPanel || !tradeHeader) {
+            console.log('Trading panel elements not found');
+            return;
+        }
+        
+        console.log('🎯 Setting up SUPER trading panel...');
+        
+        // Enhanced click handler with better feedback
+        tradeHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('🎯 Trading panel header clicked!');
+            
+            // Add visual feedback
+            tradeHeader.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                tradeHeader.style.transform = 'scale(1)';
+            }, 100);
+            
+            // Toggle panel
+            const isExpanded = tradingPanel.classList.contains('expanded');
+            
+            if (isExpanded) {
+                tradingPanel.classList.remove('expanded');
+                console.log('📉 Trading panel collapsed');
+            } else {
+                tradingPanel.classList.add('expanded');
+                console.log('📈 Trading panel expanded');
+            }
+        });
+        
+        // Touch handlers for better mobile experience
+        let panelTouchStart = 0;
+        
+        tradeHeader.addEventListener('touchstart', (e) => {
+            panelTouchStart = e.touches[0].clientY;
+            tradeHeader.style.transition = 'none';
+            tradeHeader.style.transform = 'scale(0.98)';
+        }, { passive: true });
+        
+        tradeHeader.addEventListener('touchend', (e) => {
+            tradeHeader.style.transition = 'transform 0.2s ease';
+            tradeHeader.style.transform = 'scale(1)';
+            
+            const touchEnd = e.changedTouches[0].clientY;
+            const diff = panelTouchStart - touchEnd;
+            
+            // Swipe up to expand, down to collapse
+            if (Math.abs(diff) > 20) {
+                if (diff > 0) {
+                    // Swiped up - expand
+                    tradingPanel.classList.add('expanded');
+                } else {
+                    // Swiped down - collapse
+                    tradingPanel.classList.remove('expanded');
+                }
+            }
+        }, { passive: true });
+        
+        // Auto-expand on mobile if no open trades
+        if (window.innerWidth <= 768) {
+            const openTradesCount = document.querySelectorAll('.open-trade').length;
+            if (openTradesCount === 0) {
+                setTimeout(() => {
+                    tradingPanel.classList.add('expanded');
+                }, 1000);
+            }
+        }
+    }
+    
+    function initSuperMobileSidebar() {
+        // Enhanced sidebar functionality
+        const originalSelectInstrument = window.selectInstrument;
+        
+        window.selectInstrument = function(instrumentData) {
+            console.log('🎯 Instrument selected:', instrumentData.symbol);
+            
+            // Close mobile sidebar first
+            closeMobileSidebar();
+            
+            // Add visual feedback
+            const activeRows = document.querySelectorAll('.instruments-table tr.active');
+            activeRows.forEach(row => row.classList.remove('active'));
+            
+            // Call original function
+            if (originalSelectInstrument) {
+                originalSelectInstrument(instrumentData);
+            }
+            
+            // Update trading panel symbol
+            const symbolElement = document.getElementById('trade-panel-symbol');
+            if (symbolElement) {
+                symbolElement.textContent = instrumentData.symbol;
+            }
+        };
+    }
+    
+    function toggleSuperMobileSidebar() {
+        const sidebar = document.getElementById('instrumentsSidebar');
+        const overlay = document.querySelector('.mobile-sidebar-overlay');
+        
+        if (!sidebar || !overlay) return;
+        
+        const isOpen = sidebar.classList.contains('mobile-open');
+        
+        if (isOpen) {
+            closeMobileSidebar();
+        } else {
+            openMobileSidebar();
+        }
+    }
+    
+    function openMobileSidebar() {
+        const sidebar = document.getElementById('instrumentsSidebar');
+        const overlay = document.querySelector('.mobile-sidebar-overlay');
+        
+        if (sidebar && overlay) {
+            sidebar.classList.add('mobile-open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            console.log('📱 Mobile sidebar opened');
+        }
+    }
+    
+    function closeMobileSidebar() {
+        const sidebar = document.getElementById('instrumentsSidebar');
+        const overlay = document.querySelector('.mobile-sidebar-overlay');
+        
+        if (sidebar && overlay) {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            console.log('📱 Mobile sidebar closed');
+        }
+    }
+    
+    function resetMobileStates() {
+        if (window.innerWidth > 768) {
+            // Desktop - reset mobile states
+            closeMobileSidebar();
+            const tradingPanel = document.querySelector('.trading-panel-pro');
+            if (tradingPanel) {
+                tradingPanel.classList.remove('expanded');
+            }
+            document.body.style.overflow = '';
+        } else {
+            // Mobile - reinitialize optimizations
+            initSuperMobileOptimizations();
+        }
+    }
+    
+    // Override the original mobile sidebar toggle
+    window.toggleMobileSidebar = toggleSuperMobileSidebar;
+</script>
+
+    <!-- Initialize SUPER Mobile Experience on page load -->
+    <script>
+        // 🚀 Initializing SUPER mobile optimizations...
+        console.log('�� Initializing SUPER mobile optimizations...');
+        
+        // Enhanced Mobile Trading Panel
+        initSuperTradingPanel();
+        
+        // Enhanced Mobile Sidebar
+        initSuperMobileSidebar();
+        
+        // Auto-hide mobile address bar
+        setTimeout(() => {
+            window.scrollTo(0, 1);
+        }, 100);
+        
+        // Prevent iOS zoom on input focus
+        const meta = document.querySelector('meta[name="viewport"]');
+        if (meta) {
+            meta.setAttribute('content', 
+                'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+            );
+        }
+        
+        // Enhanced orientation change handling
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (window.tvWidget) {
+                    try {
+                        window.tvWidget.resize();
+                    } catch (e) {
+                        console.log('Chart resize on orientation change:', e);
+                    }
+                }
+                // Reset mobile states
+                resetMobileStates();
+            }, 500);
+        });
+        
+        // Enhanced swipe gestures
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            
+            // Horizontal swipe (more horizontal than vertical)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0 && touchStartX < 50) {
+                    // Swipe right from left edge - open sidebar
+                    openMobileSidebar();
+                } else if (diffX < 0 && touchStartX > window.innerWidth - 50) {
+                    // Swipe left from right edge - close sidebar if open
+                    closeMobileSidebar();
+                }
+            }
+        }, { passive: true });
+        
+        console.log('✅ SUPER mobile optimizations initialized!');
+    }
+    
+    function initSuperTradingPanel() {
+        const tradingPanel = document.querySelector('.trading-panel-pro');
+        const tradeHeader = document.querySelector('.trade-header');
+        
+        if (!tradingPanel || !tradeHeader) {
+            console.log('Trading panel elements not found');
+            return;
+        }
+        
+        console.log('🎯 Setting up SUPER trading panel...');
+        
+        // Enhanced click handler with better feedback
+        tradeHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('🎯 Trading panel header clicked!');
+            
+            // Add visual feedback
+            tradeHeader.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                tradeHeader.style.transform = 'scale(1)';
+            }, 100);
+            
+            // Toggle panel
+            const isExpanded = tradingPanel.classList.contains('expanded');
+            
+            if (isExpanded) {
+                tradingPanel.classList.remove('expanded');
+                console.log('📉 Trading panel collapsed');
+            } else {
+                tradingPanel.classList.add('expanded');
+                console.log('📈 Trading panel expanded');
+            }
+        });
+        
+        // Touch handlers for better mobile experience
+        let panelTouchStart = 0;
+        
+        tradeHeader.addEventListener('touchstart', (e) => {
+            panelTouchStart = e.touches[0].clientY;
+            tradeHeader.style.transition = 'none';
+            tradeHeader.style.transform = 'scale(0.98)';
+        }, { passive: true });
+        
+        tradeHeader.addEventListener('touchend', (e) => {
+            tradeHeader.style.transition = 'transform 0.2s ease';
+            tradeHeader.style.transform = 'scale(1)';
+            
+            const touchEnd = e.changedTouches[0].clientY;
+            const diff = panelTouchStart - touchEnd;
+            
+            // Swipe up to expand, down to collapse
+            if (Math.abs(diff) > 20) {
+                if (diff > 0) {
+                    // Swiped up - expand
+                    tradingPanel.classList.add('expanded');
+                } else {
+                    // Swiped down - collapse
+                    tradingPanel.classList.remove('expanded');
+                }
+            }
+        }, { passive: true });
+        
+        // Auto-expand on mobile if no open trades
+        if (window.innerWidth <= 768) {
+            const openTradesCount = document.querySelectorAll('.open-trade').length;
+            if (openTradesCount === 0) {
+                setTimeout(() => {
+                    tradingPanel.classList.add('expanded');
+                }, 1000);
+            }
+        }
+    }
+    
+    function initSuperMobileSidebar() {
+        // Enhanced sidebar functionality
+        const originalSelectInstrument = window.selectInstrument;
+        
+        window.selectInstrument = function(instrumentData) {
+            console.log('🎯 Instrument selected:', instrumentData.symbol);
+            
+            // Close mobile sidebar first
+            closeMobileSidebar();
+            
+            // Add visual feedback
+            const activeRows = document.querySelectorAll('.instruments-table tr.active');
+            activeRows.forEach(row => row.classList.remove('active'));
+            
+            // Call original function
+            if (originalSelectInstrument) {
+                originalSelectInstrument(instrumentData);
+            }
+            
+            // Update trading panel symbol
+            const symbolElement = document.getElementById('trade-panel-symbol');
+            if (symbolElement) {
+                symbolElement.textContent = instrumentData.symbol;
+            }
+        };
+    }
+    
+    function toggleSuperMobileSidebar() {
+        const sidebar = document.getElementById('instrumentsSidebar');
+        const overlay = document.querySelector('.mobile-sidebar-overlay');
+        
+        if (!sidebar || !overlay) return;
+        
+        const isOpen = sidebar.classList.contains('mobile-open');
+        
+        if (isOpen) {
+            closeMobileSidebar();
+        } else {
+            openMobileSidebar();
+        }
+    }
+    
+    function openMobileSidebar() {
+        const sidebar = document.getElementById('instrumentsSidebar');
+        const overlay = document.querySelector('.mobile-sidebar-overlay');
+        
+        if (sidebar && overlay) {
+            sidebar.classList.add('mobile-open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            console.log('📱 Mobile sidebar opened');
+        }
+    }
+    
+    function closeMobileSidebar() {
+        const sidebar = document.getElementById('instrumentsSidebar');
+        const overlay = document.querySelector('.mobile-sidebar-overlay');
+        
+        if (sidebar && overlay) {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            console.log('📱 Mobile sidebar closed');
+        }
+    }
+    
+    function resetMobileStates() {
+        if (window.innerWidth > 768) {
+            // Desktop - reset mobile states
+            closeMobileSidebar();
+            const tradingPanel = document.querySelector('.trading-panel-pro');
+            if (tradingPanel) {
+                tradingPanel.classList.remove('expanded');
+            }
+            document.body.style.overflow = '';
+        } else {
+            // Mobile - reinitialize optimizations
+            initSuperMobileOptimizations();
+        }
+    }
+    
+    // Override the original mobile sidebar toggle
+    window.toggleMobileSidebar = toggleSuperMobileSidebar;
+</script>
 </body>
 </html>
 
