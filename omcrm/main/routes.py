@@ -271,6 +271,37 @@ def home():
                            source_colors=source_colors)
 
 
+# 📋 LEGAL PAGES - Professional Trading Platform
+
+@main.route("/legal/kyc")
+def kyc():
+    """Know Your Customer (KYC) policy page"""
+    return render_template("legal/kyc.html", 
+                          title="Know Your Customer (KYC) Policy",
+                          platform_name="OMCRM")
+
+@main.route("/legal/regulation")
+def regulation():
+    """Regulation and compliance information page"""
+    return render_template("legal/regulation.html", 
+                          title="Regulation & Compliance",
+                          platform_name="OMCRM")
+
+@main.route("/legal/disclaimer")
+def disclaimer():
+    """Risk disclaimer and legal notices page"""
+    return render_template("legal/disclaimer.html", 
+                          title="Risk Disclaimer",
+                          platform_name="OMCRM")
+
+@main.route("/legal/privacy")
+def privacy():
+    """Privacy policy page"""
+    return render_template("legal/privacy.html", 
+                          title="Privacy Policy",
+                          platform_name="OMCRM")
+
+
 @main.route("/dashboard")
 @login_required
 def dashboard():
