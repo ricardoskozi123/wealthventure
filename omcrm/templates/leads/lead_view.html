@@ -108,7 +108,31 @@
                             <table class="table table-borderless">
                                 <tbody>
                                     <tr>
-                                        <th style="width: 140px;">
+                                        <th style="width: 160px;">
+                                            <i data-feather="user" class="text-primary me-1"></i> First Name:
+                                        </th>
+                                        <td>
+                                            {% if lead.first_name %}
+                                                {{ lead.first_name }}
+                                            {% else %}
+                                                <span class="text-muted">Not provided</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="user" class="text-primary me-1"></i> Last Name:
+                                        </th>
+                                        <td>
+                                            {% if lead.last_name %}
+                                                {{ lead.last_name }}
+                                            {% else %}
+                                                <span class="text-muted">Not provided</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
                                             <i data-feather="mail" class="text-primary me-1"></i> Email:
                                         </th>
                                         <td>
@@ -128,6 +152,85 @@
                                                 <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>
                                             {% else %}
                                                 <span class="text-muted">Not provided</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% if lead.is_client %}
+                                    <tr>
+                                        <th>
+                                            <i data-feather="credit-card" class="text-success me-1"></i> FTD Date:
+                                        </th>
+                                        <td>
+                                            {% if lead.conversion_date %}
+                                                <span class="badge bg-success">{{ lead.conversion_date.strftime('%Y-%m-%d %H:%M') }}</span>
+                                                <small class="text-muted d-block">First Time Deposit / Client Conversion</small>
+                                            {% else %}
+                                                <span class="text-muted">No FTD recorded</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <th>
+                                            <i data-feather="calendar" class="text-primary me-1"></i> Registration Date:
+                                        </th>
+                                        <td>
+                                            {% if lead.date_created %}
+                                                <span class="badge bg-info">{{ lead.date_created.strftime('%Y-%m-%d %H:%M') }}</span>
+                                                <small class="text-muted d-block">When lead entered CRM</small>
+                                            {% else %}
+                                                <span class="text-muted">Not available</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="user-check" class="text-primary me-1"></i> Owner:
+                                        </th>
+                                        <td>
+                                            {% if lead.owner %}
+                                                <span class="badge bg-primary">{{ lead.owner.first_name }} {{ lead.owner.last_name }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Not assigned</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="filter" class="text-primary me-1"></i> Funnel:
+                                        </th>
+                                        <td>
+                                            {% if lead.funnel_name %}
+                                                <span class="badge bg-warning text-dark">{{ lead.funnel_name }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Not specified</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="users" class="text-primary me-1"></i> Affiliate Name:
+                                        </th>
+                                        <td>
+                                            {% if lead.affiliate_id %}
+                                                <span class="badge bg-success">{{ lead.affiliate_id }}</span>
+                                            {% elif lead.source and lead.source.affiliate_id %}
+                                                <span class="badge bg-secondary">{{ lead.source.affiliate_id }}</span>
+                                                <small class="text-muted">(from source)</small>
+                                            {% else %}
+                                                <span class="text-muted">No affiliate</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <i data-feather="activity" class="text-primary me-1"></i> Status:
+                                        </th>
+                                        <td>
+                                            {% if lead.status %}
+                                                <span class="badge bg-info">{{ lead.status.status_name }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No Status</span>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -155,45 +258,6 @@
                                                 <img src="https://flagcdn.com/24x18/{{ country_code }}.png" alt="{{ lead.country }}" class="country-flag"> {{ lead.country }}
                                             {% else %}
                                                 <span class="text-muted">Not provided</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <i data-feather="user" class="text-primary me-1"></i> Owner:
-                                        </th>
-                                        <td>
-                                            {% if lead.owner %}
-                                                {{ lead.owner.first_name }} {{ lead.owner.last_name }}
-                                            {% else %}
-                                                <span class="text-muted">Not assigned</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <i data-feather="users" class="text-primary me-1"></i> Affiliate:
-                                        </th>
-                                        <td>
-                                            {% if lead.affiliate_id %}
-                                                <span class="badge bg-success">{{ lead.affiliate_id }}</span>
-                                            {% elif lead.source and lead.source.affiliate_id %}
-                                                <span class="badge bg-secondary">{{ lead.source.affiliate_id }}</span>
-                                                <small class="text-muted">(from source)</small>
-                                            {% else %}
-                                                <span class="text-muted">No affiliate</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <i data-feather="filter" class="text-primary me-1"></i> Funnel:
-                                        </th>
-                                        <td>
-                                            {% if lead.funnel_name %}
-                                                <span class="badge bg-primary">{{ lead.funnel_name }}</span>
-                                            {% else %}
-                                                <span class="text-muted">Not specified</span>
                                             {% endif %}
                                         </td>
                                     </tr>
