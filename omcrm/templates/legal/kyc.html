@@ -1,382 +1,294 @@
-{% extends "layout.html" %}
+{% extends "legal_base.html" %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Header Section -->
-            <div class="legal-header bg-gradient-primary text-white py-5 mb-4 rounded-lg">
-                <div class="container">
-                    <div class="row align-items-center">
-                        <div class="col-lg-8">
-                            <h1 class="display-4 fw-bold mb-3">
-                                <i class="fas fa-shield-alt me-3"></i>
-                                Know Your Customer (KYC)
-                            </h1>
-                            <p class="lead mb-0">
-                                Commitment to compliance with Anti-Money Laundering (AML) and Counter-Terrorism Financing (CFT) regulations
+<!-- Legal Hero Section -->
+<section class="legal-hero">
+    <div class="container">
+        <div class="legal-hero-content text-center" data-aos="fade-up">
+            <h1 class="legal-title">
+                <i class="fas fa-shield-alt me-3" style="color: var(--trading-green);"></i>
+                Know Your Customer (KYC)
+            </h1>
+            <p class="legal-subtitle mx-auto">
+                Our commitment to compliance with Anti-Money Laundering (AML) and Counter-Terrorism Financing (CFT) regulations
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Legal Content -->
+<section class="legal-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                
+                <!-- Introduction -->
+                <div class="legal-section" data-aos="fade-up">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-info-circle me-2" style="color: var(--neon-blue);"></i>
+                            Our KYC Commitment
+                        </h2>
+                        <p class="lead mb-4">
+                            {{ platform_name }} is committed to comply with all relevant AML and funding of terrorism regulations. 
+                            This policy has been derived from general principles, laws, regulations and directives for combating money laundering.
+                        </p>
+                        
+                        <div class="highlight-box">
+                            <h5 class="mb-3">
+                                <i class="fas fa-check-circle me-2" style="color: var(--trading-green);"></i>
+                                Why KYC Matters
+                            </h5>
+                            <p class="mb-0">
+                                We believe that compliance with AML and CFT regulations is essential for the integrity of financial systems 
+                                and prevention of our company from being used, intentionally or unintentionally, by criminal elements.
                             </p>
                         </div>
-                        <div class="col-lg-4 text-end">
-                            <div class="legal-icon-circle">
-                                <i class="fas fa-user-check fa-3x"></i>
+                    </div>
+                </div>
+
+                <!-- Money Laundering -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="100">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-exclamation-triangle me-2" style="color: var(--trading-red);"></i>
+                            What is Money Laundering?
+                        </h2>
+                        <p class="mb-4">
+                            Money laundering includes all forms of handling or possessing criminal property, including possessing 
+                            the proceeds of one's own crime, and facilitating any handling or transfer of criminal property for 
+                            another person; including proceeds derived from fraud, bribery or corruption.
+                        </p>
+
+                        <div class="warning-box">
+                            <h5 class="mb-3">
+                                <i class="fas fa-steps me-2" style="color: var(--trading-red);"></i>
+                                Three Stages of Money Laundering
+                            </h5>
+                            <div class="feature-grid">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <span style="font-weight: bold;">1</span>
+                                    </div>
+                                    <h6 class="mb-2">Placement</h6>
+                                    <p class="small text-secondary mb-0">Physical cash placement (e.g. in a bank account)</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <span style="font-weight: bold;">2</span>
+                                    </div>
+                                    <h6 class="mb-2">Layering</h6>
+                                    <p class="small text-secondary mb-0">Multiple transactions that confuse the audit trail</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <span style="font-weight: bold;">3</span>
+                                    </div>
+                                    <h6 class="mb-2">Integration</h6>
+                                    <p class="small text-secondary mb-0">Laundered proceeds appear as legitimate business funds</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Main Content -->
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-8 mx-auto">
+                <!-- Customer Identification -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="200">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-id-card me-2" style="color: var(--neon-blue);"></i>
+                            Customer Identification Requirements
+                        </h2>
                         
-                        <!-- Introduction -->
-                        <div class="legal-section mb-5">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <p class="lead">
-                                        {{ platform_name }} is committed to comply with all relevant AML and funding of terrorism regulations. 
-                                        The following policy has been derived from the general principles, laws, regulations and directives for combating money laundering.
-                                    </p>
-                                    
-                                    <p>
-                                        We believe that compliance with AML and CFT regulations is essential for the integrity of financial systems 
-                                        and prevention of our company from being used, intentionally or unintentionally, by criminal elements.
-                                    </p>
-                                    
-                                    <p>
-                                        We have put in place Know-Your-Customer (KYC) programs as an essential element for service, risk management 
-                                        and control procedures. We are obliged not only to establish the identity of its clients, but also to monitor 
-                                        account activity to determine those transactions that do not conform with the normal or expected transactions 
-                                        for that client or type of account.
-                                    </p>
-                                </div>
+                        <div class="row mb-4">
+                            <div class="col-lg-6">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-user me-2" style="color: var(--trading-green);"></i>
+                                    Individual Clients
+                                </h5>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2" style="color: var(--trading-green);"></i>
+                                        True full name and/or names used
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2" style="color: var(--trading-green);"></i>
+                                        Current permanent address, including postal code
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2" style="color: var(--trading-green);"></i>
+                                        Date of birth
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2" style="color: var(--trading-green);"></i>
+                                        Profession or occupation
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-6">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-building me-2" style="color: var(--crypto-gold);"></i>
+                                    Corporate Clients
+                                </h5>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2" style="color: var(--trading-green);"></i>
+                                        Certificate of incorporation
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2" style="color: var(--trading-green);"></i>
+                                        Articles of association
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2" style="color: var(--trading-green);"></i>
+                                        Board authorization resolution
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check me-2" style="color: var(--trading-green);"></i>
+                                        Directors and shareholders registers
+                                    </li>
+                                </ul>
                             </div>
                         </div>
 
-                        <!-- Money Laundering Section -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                What is Money Laundering?
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <p>
-                                        Money laundering includes all forms of handling or possessing criminal property, including possessing 
-                                        the proceeds of one's own crime, and facilitating any handling or transfer of criminal property for 
-                                        another person; including the proceeds derived from any act of fraud, bribery or corruption.
-                                    </p>
-                                    
-                                    <p>
-                                        Where criminal property includes money or money's worth, securities, tangible and intangible property; 
-                                        including the receipt, handling and transfer of funds derived from criminality.
-                                    </p>
-
-                                    <div class="alert alert-info border-0">
-                                        <h5 class="alert-heading">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            Three Stages of Money Laundering
-                                        </h5>
-                                        <div class="row">
-                                            <div class="col-md-4 mb-3">
-                                                <div class="stage-item">
-                                                    <div class="stage-number">1</div>
-                                                    <h6>Placement</h6>
-                                                    <p class="small">Physical cash placement (e.g. in a bank account)</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <div class="stage-item">
-                                                    <div class="stage-number">2</div>
-                                                    <h6>Layering</h6>
-                                                    <p class="small">Multiple transactions that confuse the audit trail</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4 mb-3">
-                                                <div class="stage-item">
-                                                    <div class="stage-number">3</div>
-                                                    <h6>Integration</h6>
-                                                    <p class="small">Laundered proceeds appear as legitimate business funds</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <div class="info-box">
+                            <h5 class="mb-3">
+                                <i class="fas fa-file-alt me-2" style="color: var(--neon-blue);"></i>
+                                Verification Documents Required
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="mb-2">Identity Verification:</h6>
+                                    <ul class="small">
+                                        <li>Current valid passport</li>
+                                        <li>Government issued photo ID</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-2">Address Verification:</h6>
+                                    <ul class="small">
+                                        <li>Recent utility bill</li>
+                                        <li>Bank statement</li>
+                                        <li>Tax authority bill</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Customer Identification -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-id-card text-primary me-2"></i>
-                                Customer Identification
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <p>
-                                        We obtain all information necessary to establish to our full satisfaction the identity of each new customer 
-                                        and the purpose and intended nature of the business relationship.
-                                    </p>
+                <!-- Ongoing Monitoring -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="300">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-chart-line me-2" style="color: var(--trading-green);"></i>
+                            Ongoing Monitoring & Suspicious Activity
+                        </h2>
+                        <p class="mb-4">
+                            Ongoing monitoring is an essential aspect of effective KYC procedures. We maintain systems to detect 
+                            unusual or suspicious patterns of activity.
+                        </p>
 
-                                    <h5 class="mt-4 mb-3">Required Information for Individual Clients:</h5>
-                                    <ul class="list-group list-group-flush mb-4">
-                                        <li class="list-group-item border-0 ps-0">
-                                            <i class="fas fa-check text-success me-2"></i>
-                                            True full name and/or names used
+                        <div class="warning-box">
+                            <h5 class="mb-3">
+                                <i class="fas fa-eye me-2" style="color: var(--trading-red);"></i>
+                                Examples of Suspicious Activity
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-arrow-right me-2" style="color: var(--trading-red);"></i>
+                                            Out-of-ordinary account activity
                                         </li>
-                                        <li class="list-group-item border-0 ps-0">
-                                            <i class="fas fa-check text-success me-2"></i>
-                                            Current permanent address, including postal code
-                                        </li>
-                                        <li class="list-group-item border-0 ps-0">
-                                            <i class="fas fa-check text-success me-2"></i>
-                                            Date of birth
-                                        </li>
-                                        <li class="list-group-item border-0 ps-0">
-                                            <i class="fas fa-check text-success me-2"></i>
-                                            Profession or occupation
+                                        <li class="mb-2">
+                                            <i class="fas fa-arrow-right me-2" style="color: var(--trading-red);"></i>
+                                            Transactions exceeding expected volumes
                                         </li>
                                     </ul>
-
-                                    <h5 class="mt-4 mb-3">Required Verification Documents:</h5>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="verification-card">
-                                                <h6><i class="fas fa-passport me-2"></i>Identity Verification</h6>
-                                                <ul class="small mb-0">
-                                                    <li>Current valid full passport</li>
-                                                    <li>Government issued photo ID</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="verification-card">
-                                                <h6><i class="fas fa-home me-2"></i>Address Verification</h6>
-                                                <ul class="small mb-0">
-                                                    <li>Recent utility bill</li>
-                                                    <li>Bank statement</li>
-                                                    <li>Local tax authority bill</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-arrow-right me-2" style="color: var(--trading-red);"></i>
+                                            False information about fund sources
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-arrow-right me-2" style="color: var(--trading-red);"></i>
+                                            Refusal to identify fund sources
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Corporate Clients -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-building text-primary me-2"></i>
-                                Corporate Client Requirements
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>Required Documents:</h6>
-                                            <ul class="list-unstyled">
-                                                <li><i class="fas fa-file-alt text-info me-2"></i>Certificate of incorporation</li>
-                                                <li><i class="fas fa-file-alt text-info me-2"></i>Memorandum and articles of association</li>
-                                                <li><i class="fas fa-file-alt text-info me-2"></i>Board resolution for trading authorization</li>
-                                                <li><i class="fas fa-file-alt text-info me-2"></i>Directors and shareholders registers</li>
-                                            </ul>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>Identity Verification Includes:</h6>
-                                            <ul class="list-unstyled">
-                                                <li><i class="fas fa-check-circle text-success me-2"></i>Company verification</li>
-                                                <li><i class="fas fa-check-circle text-success me-2"></i>Directors identification</li>
-                                                <li><i class="fas fa-check-circle text-success me-2"></i>Ownership structure</li>
-                                                <li><i class="fas fa-check-circle text-success me-2"></i>Beneficial owners</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ongoing Monitoring -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-chart-line text-warning me-2"></i>
-                                Ongoing Monitoring & Suspicious Activity
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <p>
-                                        On-going monitoring is an essential aspect of effective KYC procedures. We maintain systems to detect 
-                                        unusual or suspicious patterns of activity.
-                                    </p>
-
-                                    <div class="alert alert-warning border-0">
-                                        <h6 class="alert-heading">
-                                            <i class="fas fa-eye me-2"></i>
-                                            Examples of Suspicious Activity
-                                        </h6>
-                                        <ul class="mb-0">
-                                            <li>Out-of-the-ordinary account activity or transactions lacking business sense</li>
-                                            <li>Transactions exceeding expected volumes or financial thresholds</li>
-                                            <li>False, misleading, or incorrect information about fund sources</li>
-                                            <li>Refusal to identify legitimate source of funds</li>
-                                            <li>Questionable background or subject of regulatory violations</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Record Keeping -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-archive text-secondary me-2"></i>
-                                Record Keeping & Data Protection
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>Retention Period</h6>
-                                            <p class="text-muted">Information is retained for a period of <strong>five years</strong> following transaction completion or end of business relationship.</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>Security Measures</h6>
-                                            <p class="text-muted">Customer information is protected using the latest technology and treated confidentially in accordance with applicable law.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Training & Audits -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-graduation-cap text-info me-2"></i>
-                                Training & Regular Audits
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>Employee Training</h6>
-                                            <p>We conduct extensive due diligence on employees and provide regular training on KYC procedures and detection of suspicious activity patterns.</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>Regular Audits</h6>
-                                            <p>Regular audits are carried out by reputable audit firms to ensure policies and procedures are being complied with and reflect current regulations.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Contact Section -->
-                        <div class="legal-section mb-5">
-                            <div class="card bg-light border-0">
-                                <div class="card-body p-4 text-center">
-                                    <h5 class="card-title">
-                                        <i class="fas fa-question-circle text-primary me-2"></i>
-                                        Questions About Our KYC Policy?
-                                    </h5>
-                                    <p class="card-text">
-                                        Should you have any questions or queries regarding the contents of this policy, please do not hesitate to contact us.
-                                    </p>
-                                    <a href="#contact" class="btn btn-primary">
-                                        <i class="fas fa-envelope me-2"></i>
-                                        Contact Support
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
+
+                <!-- Data Protection & Training -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="400">
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <div class="legal-card h-100">
+                                <h3 class="mb-3">
+                                    <i class="fas fa-shield-alt me-2" style="color: var(--trading-green);"></i>
+                                    Data Protection
+                                </h3>
+                                <p class="mb-3">
+                                    Customer information is retained for <strong>five years</strong> following transaction completion 
+                                    or end of business relationship.
+                                </p>
+                                <div class="highlight-box">
+                                    <p class="mb-0 small">
+                                        Information is protected using latest technology and treated confidentially 
+                                        in accordance with applicable law.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="legal-card h-100">
+                                <h3 class="mb-3">
+                                    <i class="fas fa-graduation-cap me-2" style="color: var(--neon-blue);"></i>
+                                    Training & Audits
+                                </h3>
+                                <p class="mb-3">
+                                    We conduct extensive due diligence on employees and provide regular training 
+                                    on KYC procedures.
+                                </p>
+                                <div class="info-box">
+                                    <p class="mb-0 small">
+                                        Regular audits are carried out by reputable firms to ensure 
+                                        compliance with current regulations.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact CTA -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="500">
+                    <div class="legal-card text-center">
+                        <h3 class="mb-3">
+                            <i class="fas fa-question-circle me-2" style="color: var(--trading-green);"></i>
+                            Questions About Our KYC Policy?
+                        </h3>
+                        <p class="mb-4">
+                            Should you have any questions or queries regarding this policy, please contact us.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center">
+                            <a href="{{ url_for('main.home') }}#footer" class="cta-button">
+                                <i class="fas fa-envelope me-2"></i>Contact Support
+                            </a>
+                            <a href="{{ url_for('main.regulation') }}" class="btn btn-outline-light">
+                                <i class="fas fa-balance-scale me-2"></i>View Regulation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-</div>
-
-<style>
-/* KYC Page Specific Styles */
-.legal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-.legal-icon-circle {
-    width: 100px;
-    height: 100px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto;
-    backdrop-filter: blur(10px);
-}
-
-.section-title {
-    color: #2c3e50;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e9ecef;
-}
-
-.legal-section .card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.legal-section .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-}
-
-.stage-item {
-    text-align: center;
-    padding: 1rem;
-}
-
-.stage-number {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin: 0 auto 0.5rem;
-}
-
-.verification-card {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border-left: 4px solid #007bff;
-}
-
-.list-group-item {
-    background: transparent !important;
-}
-
-@media (max-width: 768px) {
-    .legal-header {
-        text-align: center;
-    }
-    
-    .legal-header .col-lg-4 {
-        margin-top: 2rem;
-    }
-    
-    .legal-icon-circle {
-        margin: 0 auto;
-    }
-}
-</style>
+</section>
 {% endblock %} 

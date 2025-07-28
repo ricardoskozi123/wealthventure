@@ -1,410 +1,306 @@
-{% extends "layout.html" %}
+{% extends "legal_base.html" %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <!-- Header Section -->
-            <div class="legal-header bg-gradient-info text-white py-5 mb-4 rounded-lg">
-                <div class="container">
-                    <div class="row align-items-center">
-                        <div class="col-lg-8">
-                            <h1 class="display-4 fw-bold mb-3">
-                                <i class="fas fa-balance-scale me-3"></i>
-                                Regulation & Compliance
-                            </h1>
-                            <p class="lead mb-0">
-                                Authorized and regulated financial services provider committed to the highest standards of compliance
+<!-- Legal Hero Section -->
+<section class="legal-hero">
+    <div class="container">
+        <div class="legal-hero-content text-center" data-aos="fade-up">
+            <h1 class="legal-title">
+                <i class="fas fa-balance-scale me-3" style="color: var(--neon-blue);"></i>
+                Regulation & Compliance
+            </h1>
+            <p class="legal-subtitle mx-auto">
+                Authorized and regulated financial services provider committed to the highest standards of compliance
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Legal Content -->
+<section class="legal-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                
+                <!-- Introduction -->
+                <div class="legal-section" data-aos="fade-up">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-certificate me-2" style="color: var(--trading-green);"></i>
+                            Professional Trading Platform
+                        </h2>
+                        <p class="lead mb-4">
+                            {{ platform_name }} is a multi-asset broker platform that empowers users to grow their knowledge and wealth 
+                            through advanced trading capabilities. As a trusted financial services provider serving clients worldwide, 
+                            we operate under strict regulatory oversight to ensure the highest standards of client protection and market integrity.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Regulatory Authorization -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="100">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-award me-2" style="color: var(--crypto-gold);"></i>
+                            Regulatory Authorization
+                        </h2>
+                        
+                        <div class="row align-items-center mb-4">
+                            <div class="col-lg-8">
+                                <h4 class="mb-3" style="color: var(--neon-blue);">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    Financial Conduct Authority (FCA)
+                                </h4>
+                                <p class="mb-3">
+                                    {{ platform_name }} is authorized and regulated by the Financial Conduct Authority ("FCA"), 
+                                    one of the world's most respected financial regulators.
+                                </p>
+                                
+                                <div class="highlight-box">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="mb-2">
+                                                <i class="fas fa-id-badge me-2" style="color: var(--trading-green);"></i>
+                                                Firm Reference Number
+                                            </h6>
+                                            <p class="mb-0 font-monospace">735711</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="mb-2">
+                                                <i class="fas fa-building me-2" style="color: var(--neon-blue);"></i>
+                                                Company Registration
+                                            </h6>
+                                            <p class="mb-0 font-monospace">03909628</p>
+                                        </div>
+                                    </div>
+                                    <hr style="border-color: var(--glass-border); margin: 1rem 0;">
+                                    <h6 class="mb-2">
+                                        <i class="fas fa-map-marker-alt me-2" style="color: var(--crypto-gold);"></i>
+                                        Registered Office
+                                    </h6>
+                                    <p class="mb-0">1 Tony Wilson Place, Manchester, Lancashire, M15 4FN, United Kingdom</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 text-center">
+                                <div class="feature-item">
+                                    <div class="feature-icon" style="width: 100px; height: 100px; font-size: 2.5rem;">
+                                        <i class="fas fa-certificate"></i>
+                                    </div>
+                                    <h5 class="mb-2">FCA Regulated</h5>
+                                    <p class="small text-secondary mb-0">Firm: 735711</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Authorized Services -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="200">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-cogs me-2" style="color: var(--trading-green);"></i>
+                            Authorized Services
+                        </h2>
+                        
+                        <div class="feature-grid">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fab fa-bitcoin"></i>
+                                </div>
+                                <h5 class="mb-3">Cryptocurrency Services</h5>
+                                <p class="small text-secondary">
+                                    Registered with the Financial Conduct Authority to offer cryptocurrency services under the 
+                                    Money Laundering, Terrorist Financing and Transfer of Funds (Information on the Payer) Regulations 2017.
+                                </p>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <h5 class="mb-3">Electronic Money & Payment Services</h5>
+                                <p class="small text-secondary">
+                                    Authorized and regulated by the Financial Conduct Authority for the provision of electronic money 
+                                    and payment services, ensuring secure and compliant financial transactions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compliance Framework -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="300">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-list-check me-2" style="color: var(--neon-blue);"></i>
+                            Compliance Framework
+                        </h2>
+                        
+                        <div class="feature-grid">
+                            <div class="feature-item">
+                                <div class="feature-icon" style="background: linear-gradient(135deg, var(--trading-red), var(--crypto-gold));">
+                                    <i class="fas fa-shield-virus"></i>
+                                </div>
+                                <h6 class="mb-2">Anti-Money Laundering (AML)</h6>
+                                <p class="small text-secondary mb-0">
+                                    Comprehensive AML procedures to prevent money laundering and terrorist financing, 
+                                    including customer due diligence and transaction monitoring.
+                                </p>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon" style="background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <h6 class="mb-2">Know Your Customer (KYC)</h6>
+                                <p class="small text-secondary mb-0">
+                                    Robust identity verification and customer onboarding processes to ensure 
+                                    regulatory compliance and customer protection.
+                                </p>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon" style="background: linear-gradient(135deg, var(--trading-green), var(--crypto-gold));">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <h6 class="mb-2">Data Protection</h6>
+                                <p class="small text-secondary mb-0">
+                                    Full compliance with GDPR and UK data protection regulations, ensuring 
+                                    customer data privacy and security.
+                                </p>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon" style="background: linear-gradient(135deg, var(--neon-purple), var(--trading-green));">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <h6 class="mb-2">Regulatory Reporting</h6>
+                                <p class="small text-secondary mb-0">
+                                    Regular reporting to regulatory authorities and maintaining detailed 
+                                    records as required by financial regulations.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Protection -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="400">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-umbrella me-2" style="color: var(--trading-green);"></i>
+                            Client Protection Measures
+                        </h2>
+                        
+                        <div class="feature-grid">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <h6 class="mb-2">Segregated Funds</h6>
+                                <p class="small text-secondary mb-0">
+                                    Client funds are segregated from company funds in accordance with FCA regulations.
+                                </p>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h6 class="mb-2">Fair Trading</h6>
+                                <p class="small text-secondary mb-0">
+                                    Transparent pricing and execution policies ensuring fair treatment of all clients.
+                                </p>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                <h6 class="mb-2">Dispute Resolution</h6>
+                                <p class="small text-secondary mb-0">
+                                    Access to the Financial Ombudsman Service for complaint resolution.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Management -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="500">
+                    <div class="legal-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-chart-bar me-2" style="color: var(--crypto-gold);"></i>
+                            Risk Management & Capital Requirements
+                        </h2>
+                        
+                        <div class="info-box">
+                            <h5 class="mb-3">
+                                <i class="fas fa-chart-pie me-2" style="color: var(--neon-blue);"></i>
+                                Prudential Requirements
+                            </h5>
+                            <p class="mb-0">
+                                We maintain adequate capital reserves and risk management systems as required by FCA regulations 
+                                to ensure business continuity and client protection. Our risk management framework includes 
+                                regular stress testing, liquidity management, and operational risk controls.
                             </p>
                         </div>
-                        <div class="col-lg-4 text-end">
-                            <div class="legal-icon-circle">
-                                <i class="fas fa-certificate fa-3x"></i>
+                    </div>
+                </div>
+
+                <!-- Service Restrictions -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="600">
+                    <div class="legal-card">
+                        <div class="warning-box">
+                            <h3 class="mb-3">
+                                <i class="fas fa-ban me-2" style="color: var(--trading-red);"></i>
+                                Important Notice: Service Restrictions
+                            </h3>
+                            <div class="row align-items-center">
+                                <div class="col-lg-8">
+                                    <h5 class="mb-2" style="color: var(--trading-red);">We do not accept US Citizens or residents.</h5>
+                                    <p class="mb-0">
+                                        In compliance with applicable regulations and our regulatory permissions, 
+                                        we are unable to provide services to US citizens or residents. This restriction 
+                                        is in place to ensure full compliance with relevant jurisdictional requirements.
+                                    </p>
+                                </div>
+                                <div class="col-lg-4 text-center">
+                                    <div class="feature-icon" style="background: linear-gradient(135deg, var(--trading-red), var(--crypto-gold));">
+                                        <i class="fas fa-globe-americas"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Main Content -->
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-8 mx-auto">
-                        
-                        <!-- Introduction -->
-                        <div class="legal-section mb-5">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <p class="lead">
-                                        {{ platform_name }} is a multi-asset broker platform that empowers users to grow their knowledge and wealth 
-                                        through advanced trading capabilities. As a trusted financial services provider serving clients worldwide, 
-                                        we operate under strict regulatory oversight to ensure the highest standards of client protection and market integrity.
-                                    </p>
-                                </div>
-                            </div>
+                <!-- Contact CTA -->
+                <div class="legal-section" data-aos="fade-up" data-aos-delay="700">
+                    <div class="legal-card text-center">
+                        <h3 class="mb-3">
+                            <i class="fas fa-gavel me-2" style="color: var(--neon-blue);"></i>
+                            Regulatory Compliance Questions?
+                        </h3>
+                        <p class="mb-4">
+                            For questions about our regulatory status or compliance procedures, please contact our compliance team.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center">
+                            <a href="{{ url_for('main.home') }}#footer" class="cta-button">
+                                <i class="fas fa-envelope me-2"></i>Contact Compliance
+                            </a>
+                            <a href="{{ url_for('main.disclaimer') }}" class="btn btn-outline-light">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Risk Disclaimer
+                            </a>
+                            <a href="{{ url_for('main.kyc') }}" class="btn btn-outline-light">
+                                <i class="fas fa-shield-alt me-2"></i>KYC Policy
+                            </a>
                         </div>
-
-                        <!-- Regulatory Authorization -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-award text-primary me-2"></i>
-                                Regulatory Authorization
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-8">
-                                            <h5 class="text-primary">Financial Conduct Authority (FCA)</h5>
-                                            <p class="mb-2">
-                                                {{ platform_name }} is authorized and regulated by the Financial Conduct Authority ("FCA"), 
-                                                one of the world's most respected financial regulators.
-                                            </p>
-                                            <ul class="list-unstyled">
-                                                <li><strong>Firm Reference Number:</strong> 735711</li>
-                                                <li><strong>Company Registration:</strong> 03909628</li>
-                                                <li><strong>Registered Office:</strong> 1 Tony Wilson Place, Manchester, Lancashire, M15 4FN, United Kingdom</li>
-                                            </ul>
-                                        </div>
-                                        <div class="col-md-4 text-center">
-                                            <div class="regulation-badge">
-                                                <i class="fas fa-shield-alt fa-3x text-primary mb-2"></i>
-                                                <h6 class="text-primary">FCA Regulated</h6>
-                                                <small class="text-muted">Firm: 735711</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Services Authorization -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-cogs text-success me-2"></i>
-                                Authorized Services
-                            </h2>
-                            <div class="row">
-                                <div class="col-md-6 mb-4">
-                                    <div class="service-card">
-                                        <div class="service-icon">
-                                            <i class="fab fa-bitcoin"></i>
-                                        </div>
-                                        <h5>Cryptocurrency Services</h5>
-                                        <p class="small">
-                                            Registered with the Financial Conduct Authority to offer cryptocurrency services under the 
-                                            Money Laundering, Terrorist Financing and Transfer of Funds (Information on the Payer) Regulations 2017.
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-4">
-                                    <div class="service-card">
-                                        <div class="service-icon">
-                                            <i class="fas fa-credit-card"></i>
-                                        </div>
-                                        <h5>Electronic Money & Payment Services</h5>
-                                        <p class="small">
-                                            Authorized and regulated by the Financial Conduct Authority for the provision of electronic money 
-                                            and payment services, ensuring secure and compliant financial transactions.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Compliance Framework -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-list-check text-warning me-2"></i>
-                                Compliance Framework
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6><i class="fas fa-shield-virus text-danger me-2"></i>Anti-Money Laundering (AML)</h6>
-                                            <p class="small text-muted mb-3">
-                                                Comprehensive AML procedures to prevent money laundering and terrorist financing, 
-                                                including customer due diligence and transaction monitoring.
-                                            </p>
-                                            
-                                            <h6><i class="fas fa-user-shield text-primary me-2"></i>Know Your Customer (KYC)</h6>
-                                            <p class="small text-muted mb-3">
-                                                Robust identity verification and customer onboarding processes to ensure 
-                                                regulatory compliance and customer protection.
-                                            </p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6><i class="fas fa-database text-info me-2"></i>Data Protection</h6>
-                                            <p class="small text-muted mb-3">
-                                                Full compliance with GDPR and UK data protection regulations, ensuring 
-                                                customer data privacy and security.
-                                            </p>
-                                            
-                                            <h6><i class="fas fa-file-contract text-success me-2"></i>Regulatory Reporting</h6>
-                                            <p class="small text-muted mb-3">
-                                                Regular reporting to regulatory authorities and maintaining detailed 
-                                                records as required by financial regulations.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Client Protection -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-umbrella text-info me-2"></i>
-                                Client Protection Measures
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="row">
-                                        <div class="col-md-4 mb-4">
-                                            <div class="protection-item">
-                                                <div class="protection-icon">
-                                                    <i class="fas fa-lock"></i>
-                                                </div>
-                                                <h6>Segregated Funds</h6>
-                                                <p class="small">Client funds are segregated from company funds in accordance with FCA regulations.</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-4">
-                                            <div class="protection-item">
-                                                <div class="protection-icon">
-                                                    <i class="fas fa-chart-line"></i>
-                                                </div>
-                                                <h6>Fair Trading</h6>
-                                                <p class="small">Transparent pricing and execution policies ensuring fair treatment of all clients.</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-4">
-                                            <div class="protection-item">
-                                                <div class="protection-icon">
-                                                    <i class="fas fa-headset"></i>
-                                                </div>
-                                                <h6>Dispute Resolution</h6>
-                                                <p class="small">Access to the Financial Ombudsman Service for complaint resolution.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Risk Management -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-                                Risk Management & Capital Requirements
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="alert alert-info border-0">
-                                        <h6 class="alert-heading">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            Prudential Requirements
-                                        </h6>
-                                        <p class="mb-0">
-                                            We maintain adequate capital reserves and risk management systems as required by FCA regulations 
-                                            to ensure business continuity and client protection. Our risk management framework includes 
-                                            regular stress testing, liquidity management, and operational risk controls.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Regulatory Updates -->
-                        <div class="legal-section mb-5">
-                            <h2 class="section-title">
-                                <i class="fas fa-sync-alt text-secondary me-2"></i>
-                                Continuous Compliance
-                            </h2>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>Regular Audits</h6>
-                                            <p class="text-muted">
-                                                We undergo regular internal and external audits to ensure ongoing compliance 
-                                                with all applicable regulations and industry standards.
-                                            </p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>Regulatory Updates</h6>
-                                            <p class="text-muted">
-                                                Our compliance framework is continuously updated to reflect changes in 
-                                                regulatory requirements and industry best practices.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Restrictions Notice -->
-                        <div class="legal-section mb-5">
-                            <div class="card border-danger">
-                                <div class="card-header bg-danger text-white">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-ban me-2"></i>
-                                        Important Notice: Service Restrictions
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="alert alert-warning border-0">
-                                        <p class="mb-2"><strong>We do not accept US Citizens or residents.</strong></p>
-                                        <p class="mb-0 small">
-                                            In compliance with applicable regulations and our regulatory permissions, 
-                                            we are unable to provide services to US citizens or residents. This restriction 
-                                            is in place to ensure full compliance with relevant jurisdictional requirements.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Contact Section -->
-                        <div class="legal-section mb-5">
-                            <div class="card bg-light border-0">
-                                <div class="card-body p-4 text-center">
-                                    <h5 class="card-title">
-                                        <i class="fas fa-gavel text-primary me-2"></i>
-                                        Regulatory Compliance Questions?
-                                    </h5>
-                                    <p class="card-text">
-                                        For questions about our regulatory status or compliance procedures, please contact our compliance team.
-                                    </p>
-                                    <div class="row justify-content-center">
-                                        <div class="col-md-6">
-                                            <a href="#contact" class="btn btn-primary me-2">
-                                                <i class="fas fa-envelope me-2"></i>
-                                                Contact Compliance
-                                            </a>
-                                            <a href="{{ url_for('main.disclaimer') }}" class="btn btn-outline-secondary">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                                Risk Disclaimer
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
-</div>
-
-<style>
-/* Regulation Page Specific Styles */
-.legal-header {
-    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-.legal-icon-circle {
-    width: 100px;
-    height: 100px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto;
-    backdrop-filter: blur(10px);
-}
-
-.section-title {
-    color: #2c3e50;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e9ecef;
-}
-
-.regulation-badge {
-    padding: 1.5rem;
-    background: #f8f9fa;
-    border-radius: 15px;
-    border: 2px solid #e9ecef;
-}
-
-.service-card {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 15px;
-    padding: 2rem;
-    text-align: center;
-    height: 100%;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-left: 4px solid #007bff;
-}
-
-.service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-.service-icon {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    color: white;
-    font-size: 1.5rem;
-}
-
-.protection-item {
-    text-align: center;
-    padding: 1rem;
-}
-
-.protection-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #17a2b8, #138496);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    color: white;
-    font-size: 1.2rem;
-}
-
-.legal-section .card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.legal-section .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-}
-
-@media (max-width: 768px) {
-    .legal-header {
-        text-align: center;
-    }
-    
-    .legal-header .col-lg-4 {
-        margin-top: 2rem;
-    }
-    
-    .legal-icon-circle {
-        margin: 0 auto;
-    }
-    
-    .service-card {
-        margin-bottom: 1rem;
-    }
-}
-</style>
+</section>
 {% endblock %} 

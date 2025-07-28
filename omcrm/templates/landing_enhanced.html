@@ -826,6 +826,33 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#testimonials">Traders</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="legalDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Legal
+                        </a>
+                        <ul class="dropdown-menu" style="background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.kyc') }}" style="color: var(--text-secondary);">
+                                    <i class="fas fa-shield-alt me-2 text-primary"></i>KYC Policy
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.regulation') }}" style="color: var(--text-secondary);">
+                                    <i class="fas fa-balance-scale me-2 text-info"></i>Regulation
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.disclaimer') }}" style="color: var(--text-secondary);">
+                                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Risk Disclaimer
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('main.privacy') }}" style="color: var(--text-secondary);">
+                                    <i class="fas fa-user-shield me-2 text-success"></i>Privacy Policy
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#footer">Contact</a>
                     </li>
