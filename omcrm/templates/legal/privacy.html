@@ -1,0 +1,525 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="legal-header bg-gradient-success text-white py-5 mb-4 rounded-lg">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h1 class="display-4 fw-bold mb-3">
+                                <i class="fas fa-shield-check me-3"></i>
+                                Privacy Policy
+                            </h1>
+                            <p class="lead mb-0">
+                                How we collect, use, and protect your personal information
+                            </p>
+                        </div>
+                        <div class="col-lg-4 text-end">
+                            <div class="legal-icon-circle">
+                                <i class="fas fa-user-shield fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        
+                        <!-- Introduction -->
+                        <div class="legal-section mb-5">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <p class="lead">
+                                        At {{ platform_name }}, we are committed to protecting your privacy and ensuring the security of your personal information. 
+                                        This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our trading platform and services.
+                                    </p>
+                                    
+                                    <div class="alert alert-info border-0 mt-4">
+                                        <h6 class="alert-heading">
+                                            <i class="fas fa-calendar-alt me-2"></i>
+                                            Last Updated
+                                        </h6>
+                                        <p class="mb-0">This Privacy Policy was last updated on <strong>January 2024</strong>. We may update this policy from time to time, and we will notify you of any significant changes.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Information We Collect -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-database text-primary me-2"></i>
+                                Information We Collect
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6><i class="fas fa-id-card text-info me-2"></i>Personal Information</h6>
+                                            <ul class="list-unstyled mb-4">
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Name and contact details</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Date of birth and nationality</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Government-issued identification</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Address verification documents</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Financial information and income</li>
+                                            </ul>
+                                            
+                                            <h6><i class="fas fa-chart-bar text-warning me-2"></i>Trading Information</h6>
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Trading history and preferences</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Account balances and transactions</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Risk tolerance and investment experience</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6><i class="fas fa-mouse-pointer text-primary me-2"></i>Technical Information</h6>
+                                            <ul class="list-unstyled mb-4">
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>IP address and device information</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Browser type and version</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Operating system and language</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Login times and platform usage</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Cookies and tracking technologies</li>
+                                            </ul>
+                                            
+                                            <h6><i class="fas fa-comments text-secondary me-2"></i>Communication Data</h6>
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Support tickets and correspondence</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Phone call recordings (with consent)</li>
+                                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Chat messages and communications</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- How We Use Information -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-cogs text-success me-2"></i>
+                                How We Use Your Information
+                            </h2>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="usage-card">
+                                        <div class="usage-icon">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <h6>Account Management</h6>
+                                        <p class="small">
+                                            Creating and managing your trading account, verifying your identity, 
+                                            and ensuring compliance with regulatory requirements.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="usage-card">
+                                        <div class="usage-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <h6>Trading Services</h6>
+                                        <p class="small">
+                                            Executing trades, processing transactions, managing positions, 
+                                            and providing market data and analytics.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="usage-card">
+                                        <div class="usage-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <h6>Security & Compliance</h6>
+                                        <p class="small">
+                                            Detecting fraud, preventing money laundering, ensuring platform security, 
+                                            and meeting regulatory compliance obligations.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="usage-card">
+                                        <div class="usage-icon">
+                                            <i class="fas fa-headset"></i>
+                                        </div>
+                                        <h6>Customer Support</h6>
+                                        <p class="small">
+                                            Providing customer service, responding to inquiries, 
+                                            and resolving technical or account-related issues.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Legal Basis for Processing -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-balance-scale text-info me-2"></i>
+                                Legal Basis for Processing
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="legal-basis-item">
+                                                <h6><i class="fas fa-handshake text-primary me-2"></i>Contractual Necessity</h6>
+                                                <p class="small">Processing necessary to perform our contract with you and provide trading services.</p>
+                                            </div>
+                                            
+                                            <div class="legal-basis-item">
+                                                <h6><i class="fas fa-gavel text-warning me-2"></i>Legal Obligation</h6>
+                                                <p class="small">Compliance with regulatory requirements, AML/KYC procedures, and reporting obligations.</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="legal-basis-item">
+                                                <h6><i class="fas fa-thumbs-up text-success me-2"></i>Legitimate Interest</h6>
+                                                <p class="small">Improving our services, preventing fraud, and ensuring platform security and functionality.</p>
+                                            </div>
+                                            
+                                            <div class="legal-basis-item">
+                                                <h6><i class="fas fa-check-circle text-info me-2"></i>Consent</h6>
+                                                <p class="small">Marketing communications and optional services, where you have provided explicit consent.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Information Sharing -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-share-alt text-warning me-2"></i>
+                                Information Sharing & Disclosure
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="alert alert-warning border-0">
+                                        <h6 class="alert-heading">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Important Notice
+                                        </h6>
+                                        <p class="mb-0">We do not sell, trade, or otherwise transfer your personal information to third parties for marketing purposes. We only share information as described below.</p>
+                                    </div>
+                                    
+                                    <div class="row mt-4">
+                                        <div class="col-md-6">
+                                            <h6>Authorized Sharing</h6>
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2"><i class="fas fa-building text-primary me-2"></i>Regulatory authorities and government agencies</li>
+                                                <li class="mb-2"><i class="fas fa-university text-info me-2"></i>Banks and payment processors</li>
+                                                <li class="mb-2"><i class="fas fa-cogs text-secondary me-2"></i>Technology service providers</li>
+                                                <li class="mb-2"><i class="fas fa-search text-warning me-2"></i>Compliance and audit firms</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Legal Requirements</h6>
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2"><i class="fas fa-gavel text-danger me-2"></i>Court orders and legal proceedings</li>
+                                                <li class="mb-2"><i class="fas fa-shield-alt text-success me-2"></i>Fraud prevention and security</li>
+                                                <li class="mb-2"><i class="fas fa-flag text-warning me-2"></i>Regulatory compliance requirements</li>
+                                                <li class="mb-2"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Emergency situations</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Security -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-lock text-success me-2"></i>
+                                Data Security & Protection
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-4">
+                                            <div class="security-item">
+                                                <div class="security-icon">
+                                                    <i class="fas fa-key"></i>
+                                                </div>
+                                                <h6>Encryption</h6>
+                                                <p class="small">Data encrypted in transit and at rest using industry-standard protocols.</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <div class="security-item">
+                                                <div class="security-icon">
+                                                    <i class="fas fa-server"></i>
+                                                </div>
+                                                <h6>Secure Servers</h6>
+                                                <p class="small">Data stored on secure servers with restricted access and monitoring.</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <div class="security-item">
+                                                <div class="security-icon">
+                                                    <i class="fas fa-users-cog"></i>
+                                                </div>
+                                                <h6>Access Controls</h6>
+                                                <p class="small">Strict access controls and regular security audits and assessments.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Your Rights -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-user-friends text-primary me-2"></i>
+                                Your Privacy Rights
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <p class="text-muted mb-4">Under applicable data protection laws, you have the following rights regarding your personal information:</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="rights-item">
+                                                <h6><i class="fas fa-eye text-info me-2"></i>Right to Access</h6>
+                                                <p class="small">Request copies of your personal data we hold.</p>
+                                            </div>
+                                            
+                                            <div class="rights-item">
+                                                <h6><i class="fas fa-edit text-primary me-2"></i>Right to Rectification</h6>
+                                                <p class="small">Request correction of inaccurate or incomplete data.</p>
+                                            </div>
+                                            
+                                            <div class="rights-item">
+                                                <h6><i class="fas fa-trash text-danger me-2"></i>Right to Erasure</h6>
+                                                <p class="small">Request deletion of your data in certain circumstances.</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="rights-item">
+                                                <h6><i class="fas fa-pause text-warning me-2"></i>Right to Restrict Processing</h6>
+                                                <p class="small">Request limitation of how we process your data.</p>
+                                            </div>
+                                            
+                                            <div class="rights-item">
+                                                <h6><i class="fas fa-download text-success me-2"></i>Right to Data Portability</h6>
+                                                <p class="small">Request transfer of your data to another service provider.</p>
+                                            </div>
+                                            
+                                            <div class="rights-item">
+                                                <h6><i class="fas fa-ban text-secondary me-2"></i>Right to Object</h6>
+                                                <p class="small">Object to processing based on legitimate interests.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Retention -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-calendar-times text-secondary me-2"></i>
+                                Data Retention
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Account Data</h6>
+                                            <p class="text-muted">Retained for 5 years after account closure or last transaction, as required by financial regulations.</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Technical Data</h6>
+                                            <p class="text-muted">Log files and technical data typically retained for 12-24 months for security and system optimization.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- International Transfers -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-globe text-info me-2"></i>
+                                International Data Transfers
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <p>
+                                        Your personal data may be transferred to and processed in countries outside your jurisdiction. 
+                                        We ensure appropriate safeguards are in place, including:
+                                    </p>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>European Commission adequacy decisions</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Standard Contractual Clauses (SCCs)</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Binding Corporate Rules where applicable</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Section -->
+                        <div class="legal-section mb-5">
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-4 text-center">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-envelope text-primary me-2"></i>
+                                        Privacy Questions or Requests?
+                                    </h5>
+                                    <p class="card-text">
+                                        If you have questions about this Privacy Policy or wish to exercise your rights, please contact our Data Protection Officer.
+                                    </p>
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-8">
+                                            <a href="#contact" class="btn btn-primary me-2">
+                                                <i class="fas fa-envelope me-2"></i>
+                                                Contact Privacy Team
+                                            </a>
+                                            <a href="{{ url_for('main.kyc') }}" class="btn btn-outline-secondary me-2">
+                                                <i class="fas fa-user-shield me-2"></i>
+                                                KYC Policy
+                                            </a>
+                                            <a href="{{ url_for('main.regulation') }}" class="btn btn-outline-info">
+                                                <i class="fas fa-balance-scale me-2"></i>
+                                                Regulation
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Privacy Policy Page Specific Styles */
+.legal-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.legal-icon-circle {
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    backdrop-filter: blur(10px);
+}
+
+.section-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.usage-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    height: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 4px solid #28a745;
+}
+
+.usage-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.usage-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.legal-basis-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.legal-basis-item:last-child {
+    border-bottom: none;
+}
+
+.security-item {
+    text-align: center;
+    padding: 1rem;
+}
+
+.security-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.rights-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.rights-item:last-child {
+    border-bottom: none;
+}
+
+.legal-section .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.legal-section .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+@media (max-width: 768px) {
+    .legal-header {
+        text-align: center;
+    }
+    
+    .legal-header .col-lg-4 {
+        margin-top: 2rem;
+    }
+    
+    .legal-icon-circle {
+        margin: 0 auto;
+    }
+    
+    .usage-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %} 

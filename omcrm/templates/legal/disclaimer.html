@@ -1,0 +1,400 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Section -->
+            <div class="legal-header bg-gradient-danger text-white py-5 mb-4 rounded-lg">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h1 class="display-4 fw-bold mb-3">
+                                <i class="fas fa-exclamation-triangle me-3"></i>
+                                Risk Disclaimer
+                            </h1>
+                            <p class="lead mb-0">
+                                Important information about trading risks and financial market exposure
+                            </p>
+                        </div>
+                        <div class="col-lg-4 text-end">
+                            <div class="legal-icon-circle">
+                                <i class="fas fa-shield-alt fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        
+                        <!-- Important Warning -->
+                        <div class="legal-section mb-5">
+                            <div class="alert alert-danger border-0 shadow">
+                                <h4 class="alert-heading">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    Important Risk Warning
+                                </h4>
+                                <p class="mb-0">
+                                    <strong>Trading financial instruments involves significant risk of loss and may not be suitable for all investors.</strong>
+                                    The high degree of leverage can work against you as well as for you. Before deciding to trade financial instruments, 
+                                    you should carefully consider your investment objectives, level of experience, and risk appetite.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- General Risks -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-chart-line text-danger me-2"></i>
+                                General Trading Risks
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="risk-item mb-4">
+                                                <h6><i class="fas fa-arrows-alt-v text-warning me-2"></i>Market Volatility</h6>
+                                                <p class="small text-muted">
+                                                    Financial markets are subject to high volatility and can move rapidly against your positions, 
+                                                    potentially resulting in significant losses.
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="risk-item mb-4">
+                                                <h6><i class="fas fa-expand-arrows-alt text-danger me-2"></i>Leverage Risk</h6>
+                                                <p class="small text-muted">
+                                                    Leveraged products can amplify both gains and losses. A small market movement can have 
+                                                    a proportionally larger impact on your invested funds.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="risk-item mb-4">
+                                                <h6><i class="fas fa-tint text-info me-2"></i>Liquidity Risk</h6>
+                                                <p class="small text-muted">
+                                                    Market conditions may prevent you from closing positions at favorable prices, 
+                                                    especially during volatile market periods.
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="risk-item mb-4">
+                                                <h6><i class="fas fa-clock text-secondary me-2"></i>Market Hours Risk</h6>
+                                                <p class="small text-muted">
+                                                    Price gaps can occur when markets reopen after periods of closure, 
+                                                    potentially causing significant losses.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Specific Instrument Risks -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-coins text-warning me-2"></i>
+                                Specific Instrument Risks
+                            </h2>
+                            
+                            <!-- Cryptocurrency Risks -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">
+                                        <i class="fab fa-bitcoin me-2"></i>
+                                        Cryptocurrency Trading Risks
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-warning me-2"></i><strong>Extreme Volatility:</strong> Cryptocurrencies can experience rapid and substantial price movements</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-warning me-2"></i><strong>Regulatory Risk:</strong> Changing regulations may affect cryptocurrency values and availability</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-warning me-2"></i><strong>Technology Risk:</strong> Technical issues, security breaches, or network failures may impact trading</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-warning me-2"></i><strong>Market Manipulation:</strong> Cryptocurrency markets may be subject to manipulation due to lower liquidity</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Forex Risks -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-dollar-sign me-2"></i>
+                                        Foreign Exchange (Forex) Risks
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-info me-2"></i><strong>Currency Risk:</strong> Exchange rate fluctuations can result in significant gains or losses</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-info me-2"></i><strong>Political Risk:</strong> Political events and economic policies can greatly impact currency values</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-info me-2"></i><strong>Interest Rate Risk:</strong> Changes in interest rates can affect currency pair values</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-info me-2"></i><strong>24/7 Market:</strong> Continuous trading means positions are exposed to risk at all times</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- CFDs and Derivatives -->
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-chart-area me-2"></i>
+                                        CFDs and Derivative Instruments
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-danger me-2"></i><strong>Unlimited Loss Potential:</strong> Losses can exceed your initial investment</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-danger me-2"></i><strong>Margin Requirements:</strong> Additional funds may be required to maintain positions</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-danger me-2"></i><strong>No Ownership Rights:</strong> CFDs do not confer ownership of underlying assets</li>
+                                        <li class="mb-2"><i class="fas fa-arrow-right text-danger me-2"></i><strong>Counterparty Risk:</strong> Exposure to the financial stability of the provider</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Risks -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-cogs text-secondary me-2"></i>
+                                Technical & Operational Risks
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>System Failures</h6>
+                                            <p class="small text-muted mb-3">
+                                                Technical failures, including internet connectivity issues, platform malfunctions, 
+                                                or system downtime may prevent you from accessing your account or executing trades.
+                                            </p>
+                                            
+                                            <h6>Order Execution</h6>
+                                            <p class="small text-muted mb-3">
+                                                Orders may not be executed at the requested price due to market conditions, 
+                                                slippage, or technical issues.
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Data Accuracy</h6>
+                                            <p class="small text-muted mb-3">
+                                                Price feeds and market data may be delayed, inaccurate, or incomplete, 
+                                                which could affect trading decisions.
+                                            </p>
+                                            
+                                            <h6>Security Risks</h6>
+                                            <p class="small text-muted mb-3">
+                                                Cybersecurity threats, including hacking attempts and data breaches, 
+                                                may affect platform security and user accounts.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Past Performance -->
+                        <div class="legal-section mb-5">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-history me-2"></i>
+                                        Past Performance Disclaimer
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-0">
+                                        <strong>Past performance is not indicative of future results.</strong> Any trading history 
+                                        presented is for informational purposes only and should not be relied upon as a guarantee 
+                                        of future performance. Market conditions can change rapidly, and historical performance 
+                                        may not be repeated.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Client Responsibilities -->
+                        <div class="legal-section mb-5">
+                            <h2 class="section-title">
+                                <i class="fas fa-user-check text-primary me-2"></i>
+                                Client Responsibilities
+                            </h2>
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="responsibility-item">
+                                                <h6><i class="fas fa-graduation-cap text-success me-2"></i>Education & Understanding</h6>
+                                                <p class="small">Ensure you understand the risks and mechanics of trading before investing.</p>
+                                            </div>
+                                            
+                                            <div class="responsibility-item">
+                                                <h6><i class="fas fa-calculator text-info me-2"></i>Risk Assessment</h6>
+                                                <p class="small">Only invest money you can afford to lose and assess your risk tolerance.</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="responsibility-item">
+                                                <h6><i class="fas fa-eye text-warning me-2"></i>Account Monitoring</h6>
+                                                <p class="small">Regularly monitor your positions and account balance.</p>
+                                            </div>
+                                            
+                                            <div class="responsibility-item">
+                                                <h6><i class="fas fa-comments text-primary me-2"></i>Seek Advice</h6>
+                                                <p class="small">Consider seeking independent financial advice if uncertain about any investment.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No Investment Advice -->
+                        <div class="legal-section mb-5">
+                            <div class="alert alert-info border-0">
+                                <h5 class="alert-heading">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No Investment Advice
+                                </h5>
+                                <p class="mb-0">
+                                    {{ platform_name }} does not provide investment advice, recommendations, or opinions regarding 
+                                    the suitability of any particular investment. All trading decisions are made solely by the client 
+                                    based on their own analysis and risk assessment. Any information provided is for educational 
+                                    purposes only and should not be construed as investment advice.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Contact Section -->
+                        <div class="legal-section mb-5">
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-4 text-center">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-question-circle text-primary me-2"></i>
+                                        Questions About Trading Risks?
+                                    </h5>
+                                    <p class="card-text">
+                                        If you have questions about the risks associated with trading or need clarification on any aspect of this disclaimer, 
+                                        please contact our support team.
+                                    </p>
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-8">
+                                            <a href="#contact" class="btn btn-primary me-2">
+                                                <i class="fas fa-envelope me-2"></i>
+                                                Contact Support
+                                            </a>
+                                            <a href="{{ url_for('main.regulation') }}" class="btn btn-outline-secondary me-2">
+                                                <i class="fas fa-balance-scale me-2"></i>
+                                                Regulation
+                                            </a>
+                                            <a href="{{ url_for('main.kyc') }}" class="btn btn-outline-info">
+                                                <i class="fas fa-user-shield me-2"></i>
+                                                KYC Policy
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Disclaimer Page Specific Styles */
+.legal-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.legal-icon-circle {
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    backdrop-filter: blur(10px);
+}
+
+.section-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.risk-item {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #ffc107;
+}
+
+.responsibility-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.responsibility-item:last-child {
+    border-bottom: none;
+}
+
+.legal-section .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.legal-section .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border: 1px solid #f5c6cb;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffeaa7;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border: 1px solid #bee5eb;
+}
+
+@media (max-width: 768px) {
+    .legal-header {
+        text-align: center;
+    }
+    
+    .legal-header .col-lg-4 {
+        margin-top: 2rem;
+    }
+    
+    .legal-icon-circle {
+        margin: 0 auto;
+    }
+    
+    .risk-item {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %} 
