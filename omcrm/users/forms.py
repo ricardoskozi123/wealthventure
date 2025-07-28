@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, FieldList, FormField, HiddenField, TextAreaField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Regexp
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 
 from .models import User, Role, Resource, Team
@@ -163,3 +163,85 @@ class UpdateTeamForm(FlaskForm):
                                 get_label=User.get_label, 
                                 allow_blank=True)
     submit = SubmitField('Update Team')
+
+
+class PasswordResetRequestForm(FlaskForm):
+    """Form for requesting a password reset"""
+    email = StringField('Email Address',
+                        validators=[
+                            DataRequired(message="Email address is required."),
+                            Email(message="Please enter a valid email address."),
+                            Length(max=120, message="Email address must be less than 120 characters.")
+                        ],
+                        render_kw={
+                            "placeholder": "Enter your email address",
+                            "class": "form-control",
+                            "autocomplete": "email"
+                        })
+    submit = SubmitField('Send Reset Link', render_kw={"class": "btn btn-primary"})
+
+
+class PasswordResetForm(FlaskForm):
+    """Form for resetting password with a valid token"""
+    password = PasswordField('New Password',
+                            validators=[
+                                DataRequired(message="Password is required."),
+                                Length(min=8, max=128, message="Password must be between 8 and 128 characters."),
+                                Regexp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)',
+                                      message="Password must contain at least one lowercase letter, one uppercase letter, and one number.")
+                            ],
+                            render_kw={
+                                "placeholder": "Enter your new password",
+                                "class": "form-control",
+                                "autocomplete": "new-password"
+                            })
+    
+    confirm_password = PasswordField('Confirm New Password',
+                                   validators=[
+                                       DataRequired(message="Please confirm your password."),
+                                       EqualTo('password', message="Passwords must match.")
+                                   ],
+                                   render_kw={
+                                       "placeholder": "Confirm your new password",
+                                       "class": "form-control",
+                                       "autocomplete": "new-password"
+                                   })
+    
+    submit = SubmitField('Reset Password', render_kw={"class": "btn btn-success"})
+
+
+class ChangePasswordForm(FlaskForm):
+    """Form for changing password when logged in"""
+    current_password = PasswordField('Current Password',
+                                   validators=[DataRequired(message="Current password is required.")],
+                                   render_kw={
+                                       "placeholder": "Enter your current password",
+                                       "class": "form-control",
+                                       "autocomplete": "current-password"
+                                   })
+    
+    new_password = PasswordField('New Password',
+                               validators=[
+                                   DataRequired(message="New password is required."),
+                                   Length(min=8, max=128, message="Password must be between 8 and 128 characters."),
+                                   Regexp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)',
+                                         message="Password must contain at least one lowercase letter, one uppercase letter, and one number.")
+                               ],
+                               render_kw={
+                                   "placeholder": "Enter your new password",
+                                   "class": "form-control",
+                                   "autocomplete": "new-password"
+                               })
+    
+    confirm_new_password = PasswordField('Confirm New Password',
+                                       validators=[
+                                           DataRequired(message="Please confirm your new password."),
+                                           EqualTo('new_password', message="Passwords must match.")
+                                       ],
+                                       render_kw={
+                                           "placeholder": "Confirm your new password",
+                                           "class": "form-control",
+                                           "autocomplete": "new-password"
+                                       })
+    
+    submit = SubmitField('Change Password', render_kw={"class": "btn btn-primary"})

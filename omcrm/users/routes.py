@@ -187,6 +187,196 @@ def logout():
 #     db.session.commit()
 #     return jsonify({'status': 'success'})
 
+# 🔐 PASSWORD RESET ROUTES
+
+@users.route("/forgot-password", methods=['GET', 'POST'])
+def forgot_password():
+    """Password reset request for both admin users and clients"""
+    from .forms import PasswordResetRequestForm
+    from omcrm.utils.password_reset import PasswordResetManager
+    from omcrm.utils.email_service import EmailService, EmailTemplates
+    from flask import current_app, request
+    
+    if current_user.is_authenticated:
+        flash('You are already logged in.', 'info')
+        return redirect(url_for('main.home'))
+    
+    form = PasswordResetRequestForm()
+    
+    if form.validate_on_submit():
+        email = form.email.data.lower().strip()
+        
+        # Check rate limiting
+        if PasswordResetManager.is_rate_limited(email, max_attempts=5, hours=1):
+            flash('Too many password reset attempts. Please try again later.', 'warning')
+            return render_template('users/forgot_password.html', form=form, title='Forgot Password')
+        
+        # Create reset token
+        brand_name = current_app.config.get('PLATFORM_NAME', 'OMCRM Trading')
+        ip_address = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+        
+        result = PasswordResetManager.create_reset_token(
+            email=email,
+            expiry_minutes=30,
+            ip_address=ip_address,
+            brand_name=brand_name
+        )
+        
+        if result['success']:
+            # Generate reset link
+            reset_link = url_for('users.reset_password', 
+                               token=result['token'].token, 
+                               _external=True)
+            
+            # Generate email template
+            email_template = EmailTemplates.password_reset_template(
+                user_name=result['user_name'],
+                reset_link=reset_link,
+                platform_name=brand_name,
+                expiry_minutes=30
+            )
+            
+            # Send email
+            email_result = EmailService.send_email(
+                to_email=email,
+                subject=email_template['subject'],
+                html_content=email_template['html'],
+                text_content=email_template['text'],
+                brand_name=brand_name
+            )
+            
+            if email_result['success']:
+                flash('A password reset link has been sent to your email address.', 'success')
+            else:
+                flash(f'Failed to send reset email: {email_result["message"]}', 'danger')
+                # For debugging - remove in production
+                print(f"Email send failed: {email_result}")
+        else:
+            if result['user_found']:
+                flash(result['message'], 'warning')
+            else:
+                # Don't reveal if email exists or not for security
+                flash('If an account with this email exists, a password reset link has been sent.', 'info')
+        
+        # Always redirect to prevent form resubmission
+        return redirect(url_for('users.forgot_password'))
+    
+    return render_template('users/forgot_password.html', 
+                         form=form, 
+                         title='Forgot Password')
+
+
+@users.route("/reset-password/<token>", methods=['GET', 'POST'])
+def reset_password(token):
+    """Reset password using a valid token"""
+    from .forms import PasswordResetForm
+    from omcrm.utils.password_reset import PasswordResetManager
+    from flask import current_app
+    
+    if current_user.is_authenticated:
+        flash('You are already logged in.', 'info')
+        return redirect(url_for('main.home'))
+    
+    # Validate token first
+    validation_result = PasswordResetManager.validate_reset_token(token)
+    
+    if not validation_result['success']:
+        flash(validation_result['message'], 'danger')
+        return redirect(url_for('users.forgot_password'))
+    
+    user = validation_result['user']
+    reset_token = validation_result['token']
+    
+    form = PasswordResetForm()
+    
+    if form.validate_on_submit():
+        # Reset the password
+        reset_result = PasswordResetManager.reset_password(
+            token_string=token,
+            new_password=form.password.data
+        )
+        
+        if reset_result['success']:
+            flash('Your password has been reset successfully. You can now log in with your new password.', 'success')
+            
+            # Redirect to appropriate login page based on user type
+            if hasattr(user, 'is_client') and user.is_client:
+                return redirect(url_for('users.client_login'))
+            else:
+                return redirect(url_for('users.login'))
+        else:
+            flash(f'Failed to reset password: {reset_result["message"]}', 'danger')
+    
+    # Prepare user info for template
+    user_name = f"{user.first_name} {user.last_name}".strip()
+    platform_name = current_app.config.get('PLATFORM_NAME', 'OMCRM Trading')
+    
+    return render_template('users/reset_password.html', 
+                         form=form, 
+                         user_name=user_name,
+                         platform_name=platform_name,
+                         title='Reset Password')
+
+
+@users.route("/change-password", methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """Change password for logged-in users"""
+    from .forms import ChangePasswordForm
+    from omcrm import bcrypt
+    
+    form = ChangePasswordForm()
+    
+    if form.validate_on_submit():
+        # Verify current password
+        if not bcrypt.check_password_hash(current_user.password, form.current_password.data):
+            flash('Current password is incorrect.', 'danger')
+            return render_template('users/change_password.html', form=form, title='Change Password')
+        
+        # Update password
+        try:
+            hashed_password = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
+            current_user.password = hashed_password
+            db.session.commit()
+            
+            flash('Your password has been changed successfully.', 'success')
+            return redirect(url_for('main.home'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to change password: {str(e)}', 'danger')
+    
+    return render_template('users/change_password.html', 
+                         form=form, 
+                         title='Change Password')
+
+
+@users.route("/admin/test-email")
+@login_required
+def test_email_config():
+    """Test email configuration (admin only)"""
+    from omcrm.utils.email_service import EmailService
+    from flask import current_app, jsonify
+    
+    # Check if user is admin
+    if not current_user.is_admin:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('main.home'))
+    
+    brand_name = current_app.config.get('PLATFORM_NAME', 'OMCRM Trading')
+    result = EmailService.test_smtp_connection(brand_name)
+    
+    if request.args.get('json'):
+        return jsonify(result)
+    
+    if result['success']:
+        flash(f'✅ Email configuration test successful: {result["message"]}', 'success')
+    else:
+        flash(f'❌ Email configuration test failed: {result["message"]}', 'danger')
+    
+    return redirect(url_for('settings.appconfig_index'))
+
+
 @users.route("/admin_login", methods=['GET', 'POST'])
 def admin_login():
     """Special admin login route for local development"""

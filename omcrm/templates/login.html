@@ -312,7 +312,11 @@
                     {{ form.submit(class="btn btn-primary btn-block", value="Sign In") }}
                 </div>
                 
-                <a href="#" class="forgot-password">Forgot password?</a>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('users.forgot_password') }}" class="forgot-password">
+                        <i class="fas fa-key me-1"></i>Forgot password?
+                    </a>
+                </div>
             </form>
         </div>
     </div>
