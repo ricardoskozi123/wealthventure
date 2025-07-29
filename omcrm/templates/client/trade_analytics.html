@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function createRealCharts() {
     console.log('🔄 Creating real charts...');
     
-    // Create all four charts with real data
+    // Create all four charts with FORCED DIMENSIONS
     if (window.analyticsData) {
         
         // 1. Cumulative P/L Chart
@@ -238,8 +238,12 @@ function createRealCharts() {
             try {
                 var data = window.analyticsData.cumulative;
                 if (data.data && data.layout) {
-                    Plotly.newPlot('cumulativePLChart', data.data, data.layout, {responsive: true, displayModeBar: false});
-                    console.log('✅ Real cumulative chart created');
+                    // FORCE DIMENSIONS
+                    data.layout.width = 400;
+                    data.layout.height = 250;
+                    
+                    Plotly.newPlot('cumulativePLChart', data.data, data.layout, {responsive: false, displayModeBar: false});
+                    console.log('✅ Real cumulative chart created with forced dimensions');
                 }
             } catch (error) {
                 console.error('❌ Cumulative chart error:', error);
@@ -251,8 +255,12 @@ function createRealCharts() {
             try {
                 var data = window.analyticsData.monthly;
                 if (data.data && data.layout) {
-                    Plotly.newPlot('monthlyPerformanceChart', data.data, data.layout, {responsive: true, displayModeBar: false});
-                    console.log('✅ Real monthly chart created');
+                    // FORCE DIMENSIONS
+                    data.layout.width = 400;
+                    data.layout.height = 250;
+                    
+                    Plotly.newPlot('monthlyPerformanceChart', data.data, data.layout, {responsive: false, displayModeBar: false});
+                    console.log('✅ Real monthly chart created with forced dimensions');
                 }
             } catch (error) {
                 console.error('❌ Monthly chart error:', error);
@@ -264,8 +272,12 @@ function createRealCharts() {
             try {
                 var data = window.analyticsData.instrument;
                 if (data.data && data.layout) {
-                    Plotly.newPlot('instrumentPerformanceChart', data.data, data.layout, {responsive: true, displayModeBar: false});
-                    console.log('✅ Real instrument chart created');
+                    // FORCE DIMENSIONS
+                    data.layout.width = 400;
+                    data.layout.height = 250;
+                    
+                    Plotly.newPlot('instrumentPerformanceChart', data.data, data.layout, {responsive: false, displayModeBar: false});
+                    console.log('✅ Real instrument chart created with forced dimensions');
                 }
             } catch (error) {
                 console.error('❌ Instrument chart error:', error);
@@ -277,8 +289,12 @@ function createRealCharts() {
             try {
                 var data = window.analyticsData.winLoss;
                 if (data.data && data.layout) {
-                    Plotly.newPlot('winLossDistributionChart', data.data, data.layout, {responsive: true, displayModeBar: false});
-                    console.log('✅ Real win/loss chart created');
+                    // FORCE DIMENSIONS
+                    data.layout.width = 400;
+                    data.layout.height = 250;
+                    
+                    Plotly.newPlot('winLossDistributionChart', data.data, data.layout, {responsive: false, displayModeBar: false});
+                    console.log('✅ Real win/loss chart created with forced dimensions');
                 }
             } catch (error) {
                 console.error('❌ Win/loss chart error:', error);
