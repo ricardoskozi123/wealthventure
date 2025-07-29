@@ -65,31 +65,47 @@
         </div>
     </div>
 
-    <!-- Charts Section - PROFESSIONAL STYLING -->
-    <div style="margin: 20px 0;">
+    <!-- Charts Section - MODERN & WORKING -->
+    <div class="row g-4 mb-4">
         
         <!-- Chart 1: Cumulative P/L -->
-        <div style="width: 48%; background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin: 10px; padding: 20px; display: inline-block; vertical-align: top; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h5 style="color: #333; text-align: center; margin-bottom: 15px; font-weight: 600;">Cumulative P/L</h5>
-            <div id="cumulativePLChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0" style="background: white;">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted mb-3">Cumulative P/L</h5>
+                    <div id="cumulativePLChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
+                </div>
+            </div>
         </div>
         
         <!-- Chart 2: Monthly Performance -->
-        <div style="width: 48%; background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin: 10px; padding: 20px; display: inline-block; vertical-align: top; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h5 style="color: #333; text-align: center; margin-bottom: 15px; font-weight: 600;">Monthly Performance</h5>
-            <div id="monthlyPerformanceChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0" style="background: white;">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted mb-3">Monthly Performance</h5>
+                    <div id="monthlyPerformanceChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
+                </div>
+            </div>
         </div>
         
         <!-- Chart 3: Performance by Instrument -->
-        <div style="width: 48%; background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin: 10px; padding: 20px; display: inline-block; vertical-align: top; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h5 style="color: #333; text-align: center; margin-bottom: 15px; font-weight: 600;">Performance by Instrument</h5>
-            <div id="instrumentPerformanceChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0" style="background: white;">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted mb-3">Performance by Instrument</h5>
+                    <div id="instrumentPerformanceChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
+                </div>
+            </div>
         </div>
         
         <!-- Chart 4: Win/Loss Distribution -->
-        <div style="width: 48%; background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin: 10px; padding: 20px; display: inline-block; vertical-align: top; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h5 style="color: #333; text-align: center; margin-bottom: 15px; font-weight: 600;">Win/Loss Distribution</h5>
-            <div id="winLossDistributionChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0" style="background: white;">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted mb-3">Win/Loss Distribution</h5>
+                    <div id="winLossDistributionChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
+                </div>
+            </div>
         </div>
         
     </div>
@@ -190,31 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ Plotly loaded');
             console.log('📊 Chart data available:', typeof window.analyticsData);
             
-            // 🔥 SIMPLE TEST FIRST
-            try {
-                var testData = [{
-                    x: ['A', 'B', 'C'],
-                    y: [1, 2, 3],
-                    type: 'scatter',
-                    mode: 'lines+markers'
-                }];
-                var testLayout = {
-                    title: 'SIMPLE TEST CHART',
-                    width: 400,
-                    height: 250
-                };
-                
-                Plotly.newPlot('isolatedTestChart', testData, testLayout);
-                console.log('✅ Simple test chart created');
-                
-                // Now try real charts
-                setTimeout(function() {
-                    createRealCharts();
-                }, 2000);
-                
-            } catch (error) {
-                console.error('❌ Simple test failed:', error);
-            }
+            // Create real charts immediately
+            createRealCharts();
+            
         } else {
             console.error('❌ Plotly not loaded');
         }
