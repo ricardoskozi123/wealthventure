@@ -628,20 +628,50 @@ def generate_cumulative_pl_chart(trades):
             'x': dates,
             'y': cumulative_pl,
             'type': 'scatter',
-            'mode': 'lines',
+            'mode': 'lines+markers',
             'name': 'Cumulative P/L',
-            'line': {'color': '#3366CC', 'width': 2}
+            'line': {
+                'color': '#00d4aa',  # Modern teal color
+                'width': 3,
+                'shape': 'spline'  # Smooth curves
+            },
+            'marker': {
+                'color': '#00d4aa',
+                'size': 8,
+                'line': {'color': '#ffffff', 'width': 2}
+            },
+            'fill': 'tozeroy',  # Fill to zero line
+            'fillcolor': 'rgba(0, 212, 170, 0.1)'  # Light teal fill
         }
     ]
     
     # Create layout
     layout = {
-        'title': 'Cumulative Profit/Loss Over Time',
-        'xaxis': {'title': 'Date', 'showgrid': True},
-        'yaxis': {'title': 'P/L ($)', 'showgrid': True},
-        'hovermode': 'closest',
-        'margin': {'l': 50, 'r': 40, 'b': 50, 't': 50},
-        'plot_bgcolor': 'rgba(240, 240, 240, 0.8)'
+        'title': {
+            'text': 'Cumulative Profit/Loss Over Time',
+            'font': {'size': 16, 'color': '#2c3e50'},
+            'x': 0.5
+        },
+        'xaxis': {
+            'title': {'text': 'Date', 'font': {'color': '#7f8c8d'}},
+            'showgrid': True,
+            'gridcolor': 'rgba(0,0,0,0.1)',
+            'linecolor': '#ecf0f1'
+        },
+        'yaxis': {
+            'title': {'text': 'P/L ($)', 'font': {'color': '#7f8c8d'}},
+            'showgrid': True,
+            'gridcolor': 'rgba(0,0,0,0.1)',
+            'linecolor': '#ecf0f1',
+            'zeroline': True,
+            'zerolinecolor': '#e74c3c',
+            'zerolinewidth': 2
+        },
+        'hovermode': 'x unified',
+        'margin': {'l': 50, 'r': 40, 'b': 50, 't': 60},
+        'plot_bgcolor': 'rgba(255, 255, 255, 0)',
+        'paper_bgcolor': 'rgba(255, 255, 255, 0)',
+        'font': {'family': 'Inter, -apple-system, sans-serif', 'color': '#2c3e50'}
     }
     
     return {'data': data, 'layout': layout}
@@ -764,6 +794,24 @@ def generate_instrument_performance_chart(trades):
     for trade in closed_trades:
         if trade.instrument:
             instrument_pl[trade.instrument.symbol] += trade.profit_loss
+    
+    # Only show instruments with trades
+    if not instrument_pl:
+        return {
+            'data': [{
+                'labels': ['No Data'],
+                'values': [1],
+                'type': 'pie',
+                'hole': 0.4,
+                'marker': {'colors': ['#CCCCCC']},
+                'textinfo': 'label'
+            }],
+            'layout': {
+                'title': 'No Instrument Data',
+                'margin': {'l': 40, 'r': 40, 'b': 40, 't': 50},
+                'showlegend': False
+            }
+        }
     
     # Prepare data for pie chart
     labels = list(instrument_pl.keys())
