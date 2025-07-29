@@ -756,6 +756,8 @@ def generate_instrument_performance_chart(trades):
     # Filter for closed trades with valid P/L
     closed_trades = [t for t in trades if t.status == 'closed' and t.profit_loss is not None]
     
+    print(f"DEBUG: Found {len(closed_trades)} closed trades for instrument chart")
+    
     if not closed_trades:
         # Sample data for instrument performance
         sample_instruments = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'XRP/USD', 'DOGE/USD']
@@ -792,8 +794,14 @@ def generate_instrument_performance_chart(trades):
     # Group P/L by instrument
     instrument_pl = defaultdict(float)
     for trade in closed_trades:
-        if trade.instrument:
-            instrument_pl[trade.instrument.symbol] += trade.profit_loss
+        if trade.instrument and trade.instrument.symbol:
+            symbol = trade.instrument.symbol
+            instrument_pl[symbol] += trade.profit_loss
+            print(f"DEBUG: Trade {trade.id} - {symbol}: {trade.profit_loss} (total now: {instrument_pl[symbol]})")
+        else:
+            print(f"DEBUG: Trade {trade.id} has no instrument or symbol")
+    
+    print(f"DEBUG: Final instrument P/L: {dict(instrument_pl)}")
     
     # Only show instruments with trades
     if not instrument_pl:
@@ -817,26 +825,46 @@ def generate_instrument_performance_chart(trades):
     labels = list(instrument_pl.keys())
     values = list(instrument_pl.values())
     
-    # Create chart data
+    print(f"DEBUG: Chart labels: {labels}")
+    print(f"DEBUG: Chart values: {values}")
+    
+    # Create chart data - use actual values, not absolute, so we can see profit vs loss
     data = [
         {
             'labels': labels,
-            'values': values,
+            'values': [abs(v) for v in values],  # Use absolute values for pie sizing
+            'text': [f"{label}<br>${v:.2f}" for label, v in zip(labels, values)],  # Show actual P/L values
             'type': 'pie',
             'hole': 0.4,
             'marker': {
-                'colors': ['#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#0099C6', '#DD4477']
+                'colors': ['#00d4aa' if v >= 0 else '#e74c3c' for v in values]  # Green for profit, red for loss
             },
-            'textinfo': 'label+percent',
-            'insidetextorientation': 'radial'
+            'textinfo': 'text+percent',
+            'textposition': 'auto',
+            'insidetextorientation': 'radial',
+            'automargin': True,
+            'sort': False  # Keep original order
         }
     ]
     
     # Create layout
     layout = {
-        'title': 'P/L by Instrument',
-        'margin': {'l': 40, 'r': 40, 'b': 40, 't': 50},
-        'showlegend': False
+        'title': {
+            'text': 'P/L by Instrument',
+            'font': {'size': 16, 'color': '#2c3e50'},
+            'x': 0.5
+        },
+        'margin': {'l': 20, 'r': 20, 'b': 20, 't': 60},
+        'showlegend': True,
+        'legend': {
+            'orientation': 'v',
+            'x': 1.02,
+            'y': 0.5,
+            'font': {'size': 12}
+        },
+        'font': {'family': 'Inter, -apple-system, sans-serif'},
+        'paper_bgcolor': 'rgba(255, 255, 255, 0)',
+        'plot_bgcolor': 'rgba(255, 255, 255, 0)'
     }
     
     return {'data': data, 'layout': layout}
