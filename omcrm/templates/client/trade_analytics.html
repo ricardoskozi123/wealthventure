@@ -230,199 +230,83 @@
 {{ super() }}
 <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
 
+<!-- Embed chart data as separate script tags to avoid syntax errors -->
+<script id="chartDataScript">
+window.analyticsData = {
+    cumulative: {{ cumulative_pl_data | tojson | safe }},
+    monthly: {{ monthly_performance_data | tojson | safe }},
+    instrument: {{ instrument_performance_data | tojson | safe }},
+    winLoss: {{ win_loss_distribution_data | tojson | safe }}
+};
+</script>
+
 <script>
-// Simple, direct chart creation - no complex parsing
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📊 Starting simple chart creation...');
+    console.log('🚀 Starting FIXED chart creation...');
     
-    // Wait for Plotly to load
     setTimeout(function() {
         if (typeof Plotly !== 'undefined') {
             console.log('✅ Plotly loaded');
+            console.log('📊 Chart data available:', typeof window.analyticsData);
             
-            // 🔥 HARDCODED TEST CHARTS FIRST
-            console.log('🧪 Creating hardcoded test charts...');
-            
-            // 🎯 FIRST TEST: Isolated container (no Bootstrap/CSS conflicts)
-            console.log('🔥 Testing isolated container first...');
+            // 🔥 SIMPLE TEST FIRST
             try {
-                var isolatedData = [{
+                var testData = [{
                     x: ['A', 'B', 'C'],
                     y: [1, 2, 3],
-                    type: 'scatter'
+                    type: 'scatter',
+                    mode: 'lines+markers'
                 }];
-                var isolatedLayout = {
-                    title: 'ISOLATED TEST - Should be visible!',
+                var testLayout = {
+                    title: 'SIMPLE TEST CHART',
                     width: 400,
                     height: 250
                 };
                 
-                Plotly.newPlot('isolatedTestChart', isolatedData, isolatedLayout);
-                console.log('✅ ISOLATED chart created - should be visible!');
+                Plotly.newPlot('isolatedTestChart', testData, testLayout);
+                console.log('✅ Simple test chart created');
+                
+                // Now try real charts
+                setTimeout(function() {
+                    createRealCharts();
+                }, 2000);
+                
             } catch (error) {
-                console.error('❌ ISOLATED chart failed:', error);
+                console.error('❌ Simple test failed:', error);
             }
-            
-            // Wait 2 seconds, then try the original containers
-            
-            // 🐛 DEBUG: Check container elements first
-            var containers = ['cumulativePLChart', 'monthlyPerformanceChart', 'instrumentPerformanceChart', 'winLossDistributionChart'];
-            containers.forEach(function(id) {
-                var element = document.getElementById(id);
-                if (element) {
-                    console.log(`📦 Container ${id}:`, {
-                        exists: true,
-                        width: element.offsetWidth,
-                        height: element.offsetHeight,
-                        visible: window.getComputedStyle(element).display,
-                        position: window.getComputedStyle(element).position
-                    });
-                    
-                    // 🔧 FORCE PROPER STYLES
-                    element.style.width = '100%';
-                    element.style.height = '280px';
-                    element.style.display = 'block';
-                    element.style.visibility = 'visible';
-                    element.style.opacity = '1';
-                    element.style.position = 'relative';
-                    element.style.backgroundColor = '#f0f0f0'; // Temporary background to see container
-                    
-                    console.log(`🔧 Fixed styles for ${id}, new dimensions:`, element.offsetWidth, 'x', element.offsetHeight);
-                } else {
-                    console.error(`❌ Container ${id} not found!`);
-                }
-            });
-            
-            // Wait a moment for styles to apply
-            setTimeout(function() {
-            
-            // Test 1: Simple line chart
-            var testData1 = [{
-                x: ['2024-01-01', '2024-02-01', '2024-03-01'],
-                y: [0, 100, 237],
-                type: 'scatter',
-                mode: 'lines',
-                name: 'Test P/L'
-            }];
-            var testLayout1 = {
-                title: 'HARDCODED TEST - Cumulative P/L',
-                xaxis: { title: 'Date' },
-                yaxis: { title: 'P/L ($)' },
-                width: 500,
-                height: 280
-            };
-            
-            console.log('🎯 Attempting to create chart in cumulativePLChart...');
-            try {
-                Plotly.newPlot('cumulativePLChart', testData1, testLayout1, {responsive: true, displayModeBar: false});
-                console.log('✅ Hardcoded cumulative chart created');
-            } catch (error) {
-                console.error('❌ Error creating chart:', error);
-            }
-            
-            // Test 2: Simple bar chart
-            var testData2 = [{
-                x: ['Jan 2024', 'Feb 2024', 'Mar 2024'],
-                y: [150, -80, 237],
-                type: 'bar',
-                marker: { color: ['#4CAF50', '#F44336', '#4CAF50'] }
-            }];
-            var testLayout2 = {
-                title: 'HARDCODED TEST - Monthly Performance',
-                xaxis: { title: 'Month' },
-                yaxis: { title: 'P/L ($)' }
-            };
-            
-            Plotly.newPlot('monthlyPerformanceChart', testData2, testLayout2, {responsive: true, displayModeBar: false});
-            console.log('✅ Hardcoded monthly chart created');
-            
-            // Test 3: Simple pie chart
-            var testData3 = [{
-                labels: ['BTC/USD', 'ETH/USD', 'SOL/USD'],
-                values: [450, 250, 150],
-                type: 'pie'
-            }];
-            var testLayout3 = {
-                title: 'HARDCODED TEST - Instruments'
-            };
-            
-            Plotly.newPlot('instrumentPerformanceChart', testData3, testLayout3, {responsive: true, displayModeBar: false});
-            console.log('✅ Hardcoded instrument chart created');
-            
-            // Test 4: Simple win/loss pie
-            var testData4 = [{
-                labels: ['Winning Trades', 'Losing Trades'],
-                values: [3, 4],
-                type: 'pie',
-                marker: { colors: ['#4CAF50', '#F44336'] }
-            }];
-            var testLayout4 = {
-                title: 'HARDCODED TEST - Win/Loss'
-            };
-            
-            Plotly.newPlot('winLossDistributionChart', testData4, testLayout4, {responsive: true, displayModeBar: false});
-            console.log('✅ Hardcoded win/loss chart created');
-            
-            // NOW TEST THE REAL DATA
-            console.log('🔍 Now testing real data...');
-            
-            // Get chart data directly from server
-            var cumulativeData = {{ cumulative_pl_data | tojson | safe }};
-            var monthlyData = {{ monthly_performance_data | tojson | safe }};
-            var instrumentData = {{ instrument_performance_data | tojson | safe }};
-            var winLossData = {{ win_loss_distribution_data | tojson | safe }};
-            
-            console.log('📊 Chart data:');
-            console.log('  Cumulative:', cumulativeData);
-            console.log('  Monthly:', monthlyData);
-            console.log('  Instrument:', instrumentData);
-            console.log('  WinLoss:', winLossData);
-            
-            // Try creating with real data after 3 seconds (so we can see hardcoded first)
-            setTimeout(function() {
-                console.log('🔄 Replacing with real data...');
-                
-                if (cumulativeData && cumulativeData.data && cumulativeData.layout) {
-                    Plotly.newPlot('cumulativePLChart', cumulativeData.data, cumulativeData.layout, {responsive: true, displayModeBar: false});
-                    console.log('✅ Real cumulative chart created');
-                }
-                
-                if (monthlyData && monthlyData.data && monthlyData.layout) {
-                    Plotly.newPlot('monthlyPerformanceChart', monthlyData.data, monthlyData.layout, {responsive: true, displayModeBar: false});
-                    console.log('✅ Real monthly chart created');
-                }
-                
-                if (instrumentData && instrumentData.data && instrumentData.layout) {
-                    Plotly.newPlot('instrumentPerformanceChart', instrumentData.data, instrumentData.layout, {responsive: true, displayModeBar: false});
-                    console.log('✅ Real instrument chart created');
-                }
-                
-                if (winLossData && winLossData.data && winLossData.layout) {
-                    Plotly.newPlot('winLossDistributionChart', winLossData.data, winLossData.layout, {responsive: true, displayModeBar: false});
-                    console.log('✅ Real win/loss chart created');
-                }
-            }, 3000);
-            
         } else {
             console.error('❌ Plotly not loaded');
         }
     }, 1000);
-    
-    // Filter for showing closed trades only
-    var filterCheckbox = document.getElementById('showClosedTradesOnly');
-    if (filterCheckbox) {
-        filterCheckbox.addEventListener('change', function() {
-            var openTrades = document.querySelectorAll('.open-trade');
-            for (var i = 0; i < openTrades.length; i++) {
-                openTrades[i].style.display = this.checked ? 'none' : '';
-            }
-        });
-    }
-    
-    // Initialize Feather icons
-    if (typeof feather !== 'undefined') {
-        feather.replace();
-    }
 });
+
+function createRealCharts() {
+    console.log('🔄 Creating real charts...');
+    
+    if (window.analyticsData && window.analyticsData.cumulative) {
+        try {
+            var data = window.analyticsData.cumulative;
+            if (data.data && data.layout) {
+                Plotly.newPlot('cumulativePLChart', data.data, data.layout, {responsive: true});
+                console.log('✅ Real cumulative chart created');
+            }
+        } catch (error) {
+            console.error('❌ Real chart error:', error);
+        }
+    }
+    
+    // Try other charts...
+    if (window.analyticsData && window.analyticsData.monthly) {
+        try {
+            var data = window.analyticsData.monthly;
+            if (data.data && data.layout) {
+                Plotly.newPlot('monthlyPerformanceChart', data.data, data.layout, {responsive: true});
+                console.log('✅ Real monthly chart created');
+            }
+        } catch (error) {
+            console.error('❌ Monthly chart error:', error);
+        }
+    }
+}
 </script>
 {% endblock scripts %} 
