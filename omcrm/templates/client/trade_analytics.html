@@ -227,6 +227,72 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof Plotly !== 'undefined') {
             console.log('✅ Plotly loaded');
             
+            // 🔥 HARDCODED TEST CHARTS FIRST
+            console.log('🧪 Creating hardcoded test charts...');
+            
+            // Test 1: Simple line chart
+            var testData1 = [{
+                x: ['2024-01-01', '2024-02-01', '2024-03-01'],
+                y: [0, 100, 237],
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Test P/L'
+            }];
+            var testLayout1 = {
+                title: 'HARDCODED TEST - Cumulative P/L',
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'P/L ($)' }
+            };
+            
+            Plotly.newPlot('cumulativePLChart', testData1, testLayout1, {responsive: true, displayModeBar: false});
+            console.log('✅ Hardcoded cumulative chart created');
+            
+            // Test 2: Simple bar chart
+            var testData2 = [{
+                x: ['Jan 2024', 'Feb 2024', 'Mar 2024'],
+                y: [150, -80, 237],
+                type: 'bar',
+                marker: { color: ['#4CAF50', '#F44336', '#4CAF50'] }
+            }];
+            var testLayout2 = {
+                title: 'HARDCODED TEST - Monthly Performance',
+                xaxis: { title: 'Month' },
+                yaxis: { title: 'P/L ($)' }
+            };
+            
+            Plotly.newPlot('monthlyPerformanceChart', testData2, testLayout2, {responsive: true, displayModeBar: false});
+            console.log('✅ Hardcoded monthly chart created');
+            
+            // Test 3: Simple pie chart
+            var testData3 = [{
+                labels: ['BTC/USD', 'ETH/USD', 'SOL/USD'],
+                values: [450, 250, 150],
+                type: 'pie'
+            }];
+            var testLayout3 = {
+                title: 'HARDCODED TEST - Instruments'
+            };
+            
+            Plotly.newPlot('instrumentPerformanceChart', testData3, testLayout3, {responsive: true, displayModeBar: false});
+            console.log('✅ Hardcoded instrument chart created');
+            
+            // Test 4: Simple win/loss pie
+            var testData4 = [{
+                labels: ['Winning Trades', 'Losing Trades'],
+                values: [3, 4],
+                type: 'pie',
+                marker: { colors: ['#4CAF50', '#F44336'] }
+            }];
+            var testLayout4 = {
+                title: 'HARDCODED TEST - Win/Loss'
+            };
+            
+            Plotly.newPlot('winLossDistributionChart', testData4, testLayout4, {responsive: true, displayModeBar: false});
+            console.log('✅ Hardcoded win/loss chart created');
+            
+            // NOW TEST THE REAL DATA
+            console.log('🔍 Now testing real data...');
+            
             // Get chart data directly from server
             var cumulativeData = {{ cumulative_pl_data | tojson | safe }};
             var monthlyData = {{ monthly_performance_data | tojson | safe }};
@@ -239,26 +305,30 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('  Instrument:', instrumentData);
             console.log('  WinLoss:', winLossData);
             
-            // Create charts directly
-            if (cumulativeData && cumulativeData.data && cumulativeData.layout) {
-                Plotly.newPlot('cumulativePLChart', cumulativeData.data, cumulativeData.layout, {responsive: true, displayModeBar: false});
-                console.log('✅ Cumulative chart created');
-            }
-            
-            if (monthlyData && monthlyData.data && monthlyData.layout) {
-                Plotly.newPlot('monthlyPerformanceChart', monthlyData.data, monthlyData.layout, {responsive: true, displayModeBar: false});
-                console.log('✅ Monthly chart created');
-            }
-            
-            if (instrumentData && instrumentData.data && instrumentData.layout) {
-                Plotly.newPlot('instrumentPerformanceChart', instrumentData.data, instrumentData.layout, {responsive: true, displayModeBar: false});
-                console.log('✅ Instrument chart created');
-            }
-            
-            if (winLossData && winLossData.data && winLossData.layout) {
-                Plotly.newPlot('winLossDistributionChart', winLossData.data, winLossData.layout, {responsive: true, displayModeBar: false});
-                console.log('✅ Win/Loss chart created');
-            }
+            // Try creating with real data after 3 seconds (so we can see hardcoded first)
+            setTimeout(function() {
+                console.log('🔄 Replacing with real data...');
+                
+                if (cumulativeData && cumulativeData.data && cumulativeData.layout) {
+                    Plotly.newPlot('cumulativePLChart', cumulativeData.data, cumulativeData.layout, {responsive: true, displayModeBar: false});
+                    console.log('✅ Real cumulative chart created');
+                }
+                
+                if (monthlyData && monthlyData.data && monthlyData.layout) {
+                    Plotly.newPlot('monthlyPerformanceChart', monthlyData.data, monthlyData.layout, {responsive: true, displayModeBar: false});
+                    console.log('✅ Real monthly chart created');
+                }
+                
+                if (instrumentData && instrumentData.data && instrumentData.layout) {
+                    Plotly.newPlot('instrumentPerformanceChart', instrumentData.data, instrumentData.layout, {responsive: true, displayModeBar: false});
+                    console.log('✅ Real instrument chart created');
+                }
+                
+                if (winLossData && winLossData.data && winLossData.layout) {
+                    Plotly.newPlot('winLossDistributionChart', winLossData.data, winLossData.layout, {responsive: true, displayModeBar: false});
+                    console.log('✅ Real win/loss chart created');
+                }
+            }, 3000);
             
         } else {
             console.error('❌ Plotly not loaded');
