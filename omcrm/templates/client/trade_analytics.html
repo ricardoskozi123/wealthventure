@@ -107,13 +107,7 @@
             <div class="card border-0 h-100 shadow-sm">
                 <div class="card-body">
                     <h6 class="card-title text-muted">Cumulative P/L</h6>
-                    <div id="cumulativePLChart" style="height:280px; width:100%;" class="chart-container">
-                        <div class="d-flex align-items-center justify-content-center h-100">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading chart...</span>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="cumulativePLChart" style="height:280px; width:100%;"></div>
                 </div>
             </div>
         </div>
@@ -121,13 +115,7 @@
             <div class="card border-0 h-100 shadow-sm">
                 <div class="card-body">
                     <h6 class="card-title text-muted">Monthly Performance</h6>
-                    <div id="monthlyPerformanceChart" style="height:280px; width:100%;" class="chart-container">
-                        <div class="d-flex align-items-center justify-content-center h-100">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading chart...</span>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="monthlyPerformanceChart" style="height:280px; width:100%;"></div>
                 </div>
             </div>
         </div>
@@ -138,13 +126,7 @@
             <div class="card border-0 h-100 shadow-sm">
                 <div class="card-body">
                     <h6 class="card-title text-muted">Performance by Instrument</h6>
-                    <div id="instrumentPerformanceChart" style="height:280px; width:100%;" class="chart-container">
-                        <div class="d-flex align-items-center justify-content-center h-100">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading chart...</span>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="instrumentPerformanceChart" style="height:280px; width:100%;"></div>
                 </div>
             </div>
         </div>
@@ -152,13 +134,7 @@
             <div class="card border-0 h-100 shadow-sm">
                 <div class="card-body">
                     <h6 class="card-title text-muted">Win/Loss Distribution</h6>
-                    <div id="winLossDistributionChart" style="height:280px; width:100%;" class="chart-container">
-                        <div class="d-flex align-items-center justify-content-center h-100">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading chart...</span>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="winLossDistributionChart" style="height:280px; width:100%;"></div>
                 </div>
             </div>
         </div>
@@ -239,47 +215,55 @@
 
 {% block scripts %}
 {{ super() }}
-<!-- Load Plotly.js from CDN with fallback -->
 <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
 
 <script>
-console.log('🚀 Analytics page JavaScript starting...');
-
-// Chart data from server - embedded as JSON
-window.chartData = {
-    cumulative: {{ cumulative_pl_data | tojson | safe }},
-    monthly: {{ monthly_performance_data | tojson | safe }},
-    instrument: {{ instrument_performance_data | tojson | safe }},
-    winLoss: {{ win_loss_distribution_data | tojson | safe }}
-};
-
-console.log('📊 Chart data loaded:', window.chartData);
-
+// Simple, direct chart creation - no complex parsing
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM loaded, initializing charts...');
+    console.log('📊 Starting simple chart creation...');
     
-    // Wait a bit for Plotly to load
+    // Wait for Plotly to load
     setTimeout(function() {
         if (typeof Plotly !== 'undefined') {
-            console.log('✅ Plotly loaded, creating charts');
+            console.log('✅ Plotly loaded');
             
-            // Force clear all chart containers first
-            var chartIds = ['cumulativePLChart', 'monthlyPerformanceChart', 'instrumentPerformanceChart', 'winLossDistributionChart'];
-            chartIds.forEach(function(id) {
-                var element = document.getElementById(id);
-                if (element) {
-                    element.innerHTML = '';
-                    element.style.height = '280px';
-                    element.style.width = '100%';
-                }
-            });
+            // Get chart data directly from server
+            var cumulativeData = {{ cumulative_pl_data | tojson | safe }};
+            var monthlyData = {{ monthly_performance_data | tojson | safe }};
+            var instrumentData = {{ instrument_performance_data | tojson | safe }};
+            var winLossData = {{ win_loss_distribution_data | tojson | safe }};
             
-            createCharts();
+            console.log('📊 Chart data:');
+            console.log('  Cumulative:', cumulativeData);
+            console.log('  Monthly:', monthlyData);
+            console.log('  Instrument:', instrumentData);
+            console.log('  WinLoss:', winLossData);
+            
+            // Create charts directly
+            if (cumulativeData && cumulativeData.data && cumulativeData.layout) {
+                Plotly.newPlot('cumulativePLChart', cumulativeData.data, cumulativeData.layout, {responsive: true, displayModeBar: false});
+                console.log('✅ Cumulative chart created');
+            }
+            
+            if (monthlyData && monthlyData.data && monthlyData.layout) {
+                Plotly.newPlot('monthlyPerformanceChart', monthlyData.data, monthlyData.layout, {responsive: true, displayModeBar: false});
+                console.log('✅ Monthly chart created');
+            }
+            
+            if (instrumentData && instrumentData.data && instrumentData.layout) {
+                Plotly.newPlot('instrumentPerformanceChart', instrumentData.data, instrumentData.layout, {responsive: true, displayModeBar: false});
+                console.log('✅ Instrument chart created');
+            }
+            
+            if (winLossData && winLossData.data && winLossData.layout) {
+                Plotly.newPlot('winLossDistributionChart', winLossData.data, winLossData.layout, {responsive: true, displayModeBar: false});
+                console.log('✅ Win/Loss chart created');
+            }
+            
         } else {
             console.error('❌ Plotly not loaded');
-            showChartError('Plotly.js failed to load');
         }
-    }, 1500);
+    }, 1000);
     
     // Filter for showing closed trades only
     var filterCheckbox = document.getElementById('showClosedTradesOnly');
@@ -297,221 +281,5 @@ document.addEventListener('DOMContentLoaded', function() {
         feather.replace();
     }
 });
-
-function createCharts() {
-    console.log('📊 Creating charts...');
-    
-    var config = {
-        responsive: true,
-        displayModeBar: false,
-        displaylogo: false,
-        staticPlot: false
-    };
-    
-    try {
-        createCumulativeChart(config);
-        setTimeout(function() { createMonthlyChart(config); }, 100);
-        setTimeout(function() { createInstrumentChart(config); }, 200);
-        setTimeout(function() { createWinLossChart(config); }, 300);
-        console.log('✅ All charts queued for creation');
-    } catch (error) {
-        console.error('❌ Error creating charts:', error);
-        showChartError('Chart creation failed: ' + error.message);
-    }
-}
-
-function createCumulativeChart(config) {
-    console.log('📈 Creating cumulative chart...');
-    try {
-        var element = document.getElementById('cumulativePLChart');
-        if (!element) {
-            console.error('❌ Chart element not found');
-            return;
-        }
-        
-        // Clear loading spinner
-        element.innerHTML = '';
-        
-        var chartData = [{ 
-            x: ['2024-01-01', '2024-02-01', '2024-03-01'], 
-            y: [0, 100, 237], 
-            type: 'scatter', 
-            mode: 'lines', 
-            name: 'P/L',
-            line: { color: '#3366CC' }
-        }];
-        var chartLayout = { 
-            title: 'Cumulative P/L',
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: {l: 50, r: 20, b: 50, t: 30, pad: 4}
-        };
-        
-        // Use real data if available
-        if (window.chartData && window.chartData.cumulative && window.chartData.cumulative.data) {
-            console.log('✅ Using real cumulative data');
-            chartData = window.chartData.cumulative.data;
-            chartLayout = Object.assign(chartLayout, window.chartData.cumulative.layout || {});
-        }
-        
-        Plotly.newPlot(element, chartData, chartLayout, config);
-        console.log('✅ Cumulative chart created');
-    } catch (error) {
-        console.error('❌ Error creating cumulative chart:', error);
-        document.getElementById('cumulativePLChart').innerHTML = '<div class="text-center p-4 text-danger">Chart Error</div>';
-    }
-}
-
-function createMonthlyChart(config) {
-    console.log('📊 Creating monthly chart...');
-    try {
-        var element = document.getElementById('monthlyPerformanceChart');
-        if (!element) return;
-        
-        // Clear loading spinner
-        element.innerHTML = '';
-        
-        var chartData = [{ 
-            x: ['Jan 2024', 'Feb 2024', 'Mar 2024'], 
-            y: [150, -80, 237], 
-            type: 'bar', 
-            name: 'Monthly P/L',
-            marker: { color: ['#4CAF50', '#F44336', '#4CAF50'] }
-        }];
-        var chartLayout = { 
-            title: 'Monthly Performance',
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            margin: {l: 50, r: 20, b: 50, t: 30, pad: 4}
-        };
-        
-        if (window.chartData && window.chartData.monthly && window.chartData.monthly.data) {
-            chartData = window.chartData.monthly.data;
-            chartLayout = Object.assign(chartLayout, window.chartData.monthly.layout || {});
-        }
-        
-        Plotly.newPlot(element, chartData, chartLayout, config);
-        console.log('✅ Monthly chart created');
-    } catch (error) {
-        console.error('❌ Error creating monthly chart:', error);
-        document.getElementById('monthlyPerformanceChart').innerHTML = '<div class="text-center p-4 text-danger">Chart Error</div>';
-    }
-}
-
-function createInstrumentChart(config) {
-    console.log('🔧 Creating instrument chart...');
-    try {
-        var element = document.getElementById('instrumentPerformanceChart');
-        if (!element) return;
-        
-        // Clear loading spinner
-        element.innerHTML = '';
-        
-        var chartData = [{ 
-            labels: ['BTC/USD', 'ETH/USD', 'SOL/USD'], 
-            values: [150, 80, 7], 
-            type: 'pie',
-            hole: 0.4
-        }];
-        var chartLayout = { 
-            title: 'Instrument Performance',
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            margin: {l: 20, r: 20, b: 20, t: 30, pad: 4}
-        };
-        
-        if (window.chartData && window.chartData.instrument && window.chartData.instrument.data) {
-            chartData = window.chartData.instrument.data;
-            chartLayout = Object.assign(chartLayout, window.chartData.instrument.layout || {});
-        }
-        
-        Plotly.newPlot(element, chartData, chartLayout, config);
-        console.log('✅ Instrument chart created');
-    } catch (error) {
-        console.error('❌ Error creating instrument chart:', error);
-        document.getElementById('instrumentPerformanceChart').innerHTML = '<div class="text-center p-4 text-danger">Chart Error</div>';
-    }
-}
-
-function createWinLossChart(config) {
-    console.log('🎯 Creating win/loss chart...');
-    try {
-        var element = document.getElementById('winLossDistributionChart');
-        if (!element) return;
-        
-        // Clear loading spinner
-        element.innerHTML = '';
-        
-        var chartData = [{ 
-            labels: ['Winning Trades', 'Losing Trades'], 
-            values: [1, 1], 
-            type: 'pie',
-            hole: 0.4,
-            marker: { colors: ['#4CAF50', '#F44336'] }
-        }];
-        var chartLayout = { 
-            title: 'Win/Loss Distribution',
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            margin: {l: 20, r: 20, b: 20, t: 30, pad: 4}
-        };
-        
-        if (window.chartData && window.chartData.winLoss && window.chartData.winLoss.data) {
-            chartData = window.chartData.winLoss.data;
-            chartLayout = Object.assign(chartLayout, window.chartData.winLoss.layout || {});
-        }
-        
-        Plotly.newPlot(element, chartData, chartLayout, config);
-        console.log('✅ Win/loss chart created');
-    } catch (error) {
-        console.error('❌ Error creating win/loss chart:', error);
-        document.getElementById('winLossDistributionChart').innerHTML = '<div class="text-center p-4 text-danger">Chart Error</div>';
-    }
-}
-
-function showChartError(message) {
-    console.log('🔄 Showing fallback charts due to:', message);
-    
-    // Create simple fallback charts using CSS and HTML
-    createFallbackChart('cumulativePLChart', 'Cumulative P/L: $237.34', '#4CAF50');
-    createFallbackChart('monthlyPerformanceChart', 'Monthly Performance', '#2196F3');
-    createFallbackChart('instrumentPerformanceChart', 'ETH/USD: $237.34 P/L', '#FF9800');
-    createFallbackChart('winLossDistributionChart', 'Win Rate: 50% (1W/1L)', '#9C27B0');
-    
-    // Show debug panel
-    var debugPanel = document.getElementById('chartDebugPanel');
-    if (debugPanel) {
-        debugPanel.style.display = 'block';
-    }
-}
-
-function createFallbackChart(elementId, text, color) {
-    var element = document.getElementById(elementId);
-    if (!element) return;
-    
-    element.innerHTML = `
-        <div style="
-            height: 280px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background: linear-gradient(135deg, ${color}20, ${color}10);
-            border: 2px dashed ${color}50;
-            border-radius: 8px;
-            color: ${color};
-            font-weight: bold;
-            text-align: center;
-            font-size: 18px;
-        ">
-            <div>
-                <div style="font-size: 24px; margin-bottom: 10px;">📊</div>
-                <div>${text}</div>
-                <div style="font-size: 12px; margin-top: 10px; opacity: 0.7;">
-                    Chart data available - Display issue detected
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-console.log('📊 Analytics JavaScript loaded successfully');
 </script>
 {% endblock scripts %} 
