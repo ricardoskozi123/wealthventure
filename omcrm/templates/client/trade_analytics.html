@@ -65,6 +65,12 @@
         </div>
     </div>
 
+    <!-- 🧪 ISOLATED TEST CHART (bypass all CSS) -->
+    <div style="width: 100%; height: 400px; background: yellow; border: 5px solid red; margin: 20px 0; position: relative; z-index: 9999;">
+        <h3 style="color: black; text-align: center;">ISOLATED TEST CHART CONTAINER</h3>
+        <div id="isolatedTestChart" style="width: 90%; height: 300px; background: white; margin: 10px auto; border: 2px solid blue;"></div>
+    </div>
+
     <!-- Charts Section -->
     <div class="row g-3 mb-4">
         <!-- 🧪 SIMPLE TEST DIV -->
@@ -236,6 +242,28 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 🔥 HARDCODED TEST CHARTS FIRST
             console.log('🧪 Creating hardcoded test charts...');
+            
+            // 🎯 FIRST TEST: Isolated container (no Bootstrap/CSS conflicts)
+            console.log('🔥 Testing isolated container first...');
+            try {
+                var isolatedData = [{
+                    x: ['A', 'B', 'C'],
+                    y: [1, 2, 3],
+                    type: 'scatter'
+                }];
+                var isolatedLayout = {
+                    title: 'ISOLATED TEST - Should be visible!',
+                    width: 400,
+                    height: 250
+                };
+                
+                Plotly.newPlot('isolatedTestChart', isolatedData, isolatedLayout);
+                console.log('✅ ISOLATED chart created - should be visible!');
+            } catch (error) {
+                console.error('❌ ISOLATED chart failed:', error);
+            }
+            
+            // Wait 2 seconds, then try the original containers
             
             // 🐛 DEBUG: Check container elements first
             var containers = ['cumulativePLChart', 'monthlyPerformanceChart', 'instrumentPerformanceChart', 'winLossDistributionChart'];
