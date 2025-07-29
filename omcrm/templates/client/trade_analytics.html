@@ -67,6 +67,13 @@
 
     <!-- Charts Section -->
     <div class="row g-3 mb-4">
+        <!-- 🧪 SIMPLE TEST DIV -->
+        <div class="col-12">
+            <div id="testDiv" style="width: 500px; height: 200px; background-color: red; color: white; font-size: 20px; text-align: center; line-height: 200px;">
+                TEST DIV - If you see this, the page is working
+            </div>
+        </div>
+        
         <!-- Debug Info Panel -->
         <div id="chartDebugPanel" class="col-12" style="display: none;">
             <div class="card border-warning">
@@ -230,6 +237,37 @@ document.addEventListener('DOMContentLoaded', function() {
             // 🔥 HARDCODED TEST CHARTS FIRST
             console.log('🧪 Creating hardcoded test charts...');
             
+            // 🐛 DEBUG: Check container elements first
+            var containers = ['cumulativePLChart', 'monthlyPerformanceChart', 'instrumentPerformanceChart', 'winLossDistributionChart'];
+            containers.forEach(function(id) {
+                var element = document.getElementById(id);
+                if (element) {
+                    console.log(`📦 Container ${id}:`, {
+                        exists: true,
+                        width: element.offsetWidth,
+                        height: element.offsetHeight,
+                        visible: window.getComputedStyle(element).display,
+                        position: window.getComputedStyle(element).position
+                    });
+                    
+                    // 🔧 FORCE PROPER STYLES
+                    element.style.width = '100%';
+                    element.style.height = '280px';
+                    element.style.display = 'block';
+                    element.style.visibility = 'visible';
+                    element.style.opacity = '1';
+                    element.style.position = 'relative';
+                    element.style.backgroundColor = '#f0f0f0'; // Temporary background to see container
+                    
+                    console.log(`🔧 Fixed styles for ${id}, new dimensions:`, element.offsetWidth, 'x', element.offsetHeight);
+                } else {
+                    console.error(`❌ Container ${id} not found!`);
+                }
+            });
+            
+            // Wait a moment for styles to apply
+            setTimeout(function() {
+            
             // Test 1: Simple line chart
             var testData1 = [{
                 x: ['2024-01-01', '2024-02-01', '2024-03-01'],
@@ -241,11 +279,18 @@ document.addEventListener('DOMContentLoaded', function() {
             var testLayout1 = {
                 title: 'HARDCODED TEST - Cumulative P/L',
                 xaxis: { title: 'Date' },
-                yaxis: { title: 'P/L ($)' }
+                yaxis: { title: 'P/L ($)' },
+                width: 500,
+                height: 280
             };
             
-            Plotly.newPlot('cumulativePLChart', testData1, testLayout1, {responsive: true, displayModeBar: false});
-            console.log('✅ Hardcoded cumulative chart created');
+            console.log('🎯 Attempting to create chart in cumulativePLChart...');
+            try {
+                Plotly.newPlot('cumulativePLChart', testData1, testLayout1, {responsive: true, displayModeBar: false});
+                console.log('✅ Hardcoded cumulative chart created');
+            } catch (error) {
+                console.error('❌ Error creating chart:', error);
+            }
             
             // Test 2: Simple bar chart
             var testData2 = [{
