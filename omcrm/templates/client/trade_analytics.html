@@ -117,38 +117,30 @@
         </div>
         
         <div class="col-md-6">
-            <div class="card border-0 h-100 shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title text-muted">Cumulative P/L</h6>
-                    <div id="cumulativePLChart" style="height:280px; width:100%;"></div>
-                </div>
+            <div style="background: white; border: 2px solid #333; margin: 10px; padding: 10px;">
+                <h6 style="color: #333; text-align: center;">Cumulative P/L</h6>
+                <div id="cumulativePLChart" style="width: 100%; height: 280px; background: #f9f9f9; border: 1px solid #ccc;"></div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card border-0 h-100 shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title text-muted">Monthly Performance</h6>
-                    <div id="monthlyPerformanceChart" style="height:280px; width:100%;"></div>
-                </div>
+            <div style="background: white; border: 2px solid #333; margin: 10px; padding: 10px;">
+                <h6 style="color: #333; text-align: center;">Monthly Performance</h6>
+                <div id="monthlyPerformanceChart" style="width: 100%; height: 280px; background: #f9f9f9; border: 1px solid #ccc;"></div>
             </div>
         </div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-6">
-            <div class="card border-0 h-100 shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title text-muted">Performance by Instrument</h6>
-                    <div id="instrumentPerformanceChart" style="height:280px; width:100%;"></div>
-                </div>
+            <div style="background: white; border: 2px solid #333; margin: 10px; padding: 10px;">
+                <h6 style="color: #333; text-align: center;">Performance by Instrument</h6>
+                <div id="instrumentPerformanceChart" style="width: 100%; height: 280px; background: #f9f9f9; border: 1px solid #ccc;"></div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card border-0 h-100 shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title text-muted">Win/Loss Distribution</h6>
-                    <div id="winLossDistributionChart" style="height:280px; width:100%;"></div>
-                </div>
+            <div style="background: white; border: 2px solid #333; margin: 10px; padding: 10px;">
+                <h6 style="color: #333; text-align: center;">Win/Loss Distribution</h6>
+                <div id="winLossDistributionChart" style="width: 100%; height: 280px; background: #f9f9f9; border: 1px solid #ccc;"></div>
             </div>
         </div>
     </div>
@@ -283,29 +275,63 @@ document.addEventListener('DOMContentLoaded', function() {
 function createRealCharts() {
     console.log('🔄 Creating real charts...');
     
-    if (window.analyticsData && window.analyticsData.cumulative) {
-        try {
-            var data = window.analyticsData.cumulative;
-            if (data.data && data.layout) {
-                Plotly.newPlot('cumulativePLChart', data.data, data.layout, {responsive: true});
-                console.log('✅ Real cumulative chart created');
+    // Create all four charts with real data
+    if (window.analyticsData) {
+        
+        // 1. Cumulative P/L Chart
+        if (window.analyticsData.cumulative) {
+            try {
+                var data = window.analyticsData.cumulative;
+                if (data.data && data.layout) {
+                    Plotly.newPlot('cumulativePLChart', data.data, data.layout, {responsive: true, displayModeBar: false});
+                    console.log('✅ Real cumulative chart created');
+                }
+            } catch (error) {
+                console.error('❌ Cumulative chart error:', error);
             }
-        } catch (error) {
-            console.error('❌ Real chart error:', error);
         }
-    }
-    
-    // Try other charts...
-    if (window.analyticsData && window.analyticsData.monthly) {
-        try {
-            var data = window.analyticsData.monthly;
-            if (data.data && data.layout) {
-                Plotly.newPlot('monthlyPerformanceChart', data.data, data.layout, {responsive: true});
-                console.log('✅ Real monthly chart created');
+        
+        // 2. Monthly Performance Chart
+        if (window.analyticsData.monthly) {
+            try {
+                var data = window.analyticsData.monthly;
+                if (data.data && data.layout) {
+                    Plotly.newPlot('monthlyPerformanceChart', data.data, data.layout, {responsive: true, displayModeBar: false});
+                    console.log('✅ Real monthly chart created');
+                }
+            } catch (error) {
+                console.error('❌ Monthly chart error:', error);
             }
-        } catch (error) {
-            console.error('❌ Monthly chart error:', error);
         }
+        
+        // 3. Instrument Performance Chart
+        if (window.analyticsData.instrument) {
+            try {
+                var data = window.analyticsData.instrument;
+                if (data.data && data.layout) {
+                    Plotly.newPlot('instrumentPerformanceChart', data.data, data.layout, {responsive: true, displayModeBar: false});
+                    console.log('✅ Real instrument chart created');
+                }
+            } catch (error) {
+                console.error('❌ Instrument chart error:', error);
+            }
+        }
+        
+        // 4. Win/Loss Distribution Chart
+        if (window.analyticsData.winLoss) {
+            try {
+                var data = window.analyticsData.winLoss;
+                if (data.data && data.layout) {
+                    Plotly.newPlot('winLossDistributionChart', data.data, data.layout, {responsive: true, displayModeBar: false});
+                    console.log('✅ Real win/loss chart created');
+                }
+            } catch (error) {
+                console.error('❌ Win/loss chart error:', error);
+            }
+        }
+        
+    } else {
+        console.error('❌ No chart data available');
     }
 }
 </script>
