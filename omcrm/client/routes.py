@@ -113,21 +113,15 @@ def trade_analytics():
     instrument_performance_data = generate_instrument_performance_chart(trades)
     win_loss_distribution_data = generate_win_loss_distribution_chart(trades)
     
-    # Create JSON strings for direct embedding in JavaScript
-    # We encode once with dumps() - no need for escaping quotes since we handle parsing in JS
-    cumulative_pl_json = json.dumps(cumulative_pl_data, cls=plotly.utils.PlotlyJSONEncoder)
-    monthly_performance_json = json.dumps(monthly_performance_data, cls=plotly.utils.PlotlyJSONEncoder)
-    instrument_performance_json = json.dumps(instrument_performance_data, cls=plotly.utils.PlotlyJSONEncoder)
-    win_loss_distribution_json = json.dumps(win_loss_distribution_data, cls=plotly.utils.PlotlyJSONEncoder)
-    
+    # Pass raw data to template - let Jinja2 handle JSON encoding
     return render_template("client/trade_analytics.html",
                           title="Trading Analytics",
                           trades=trades,
                           metrics=metrics,
-                          cumulative_pl_data=cumulative_pl_json,
-                          monthly_performance_data=monthly_performance_json,
-                          instrument_performance_data=instrument_performance_json,
-                          win_loss_distribution_data=win_loss_distribution_json,
+                          cumulative_pl_data=cumulative_pl_data,
+                          monthly_performance_data=monthly_performance_data,
+                          instrument_performance_data=instrument_performance_data,
+                          win_loss_distribution_data=win_loss_distribution_data,
                           now=datetime.utcnow())
 
 @client.route("/client/trade/<int:trade_id>")
