@@ -65,8 +65,39 @@
         </div>
     </div>
 
-    <!-- Charts Section - Using Plotly for better rendering -->
+    <!-- Charts Section -->
     <div class="row g-3 mb-4">
+        <!-- Debug Info Panel (only shown if charts fail to load) -->
+        <div id="chartDebugPanel" class="col-12" style="display: none;">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i data-feather="alert-triangle" class="me-2"></i>
+                        Chart Loading Issues Detected
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">If charts are not displaying properly, try these solutions:</p>
+                    <ul class="mb-3">
+                        <li><strong>Refresh the page</strong> - Sometimes charts need a moment to load</li>
+                        <li><strong>Check your internet connection</strong> - Charts require external libraries</li>
+                        <li><strong>Try a different browser</strong> - Some browsers block external scripts</li>
+                        <li><strong>Disable ad blockers temporarily</strong> - They might block chart libraries</li>
+                    </ul>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-sm btn-primary me-2" onclick="location.reload()">
+                                <i data-feather="refresh-cw" class="me-1"></i>Refresh Page
+                            </button>
+                            <a href="{{ url_for('client.chart_debug') }}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                                <i data-feather="tool" class="me-1"></i>Debug Info
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="col-md-6">
             <div class="card border-0 h-100 shadow-sm">
                 <div class="card-body">
@@ -126,7 +157,6 @@
                             <th>Amount</th>
                             <th>P/L</th>
                             <th>Status</th>
-                            <th>Notes</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -134,7 +164,7 @@
                         {% for trade in trades %}
                         <tr class="trade-row {{ 'closed-trade' if trade.status == 'closed' else 'open-trade' }}">
                             <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>{{ trade.instrument.symbol }}</td>
+                            <td>{{ trade.instrument.symbol if trade.instrument else 'N/A' }}</td>
                             <td>
                                 <span class="badge bg-{{ 'success' if trade.trade_type == 'buy' else 'danger' }}">
                                     {{ trade.trade_type.upper() }}
@@ -164,17 +194,8 @@
                                 </span>
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-secondary view-notes-btn" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#tradeNotesModal" 
-                                        data-trade-id="{{ trade.id }}"
-                                        data-trade-notes="{{ trade.notes|default('') }}">
-                                    <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
-                                </button>
-                            </td>
-                            <td>
                                 <a href="{{ url_for('client.view_trade_details', trade_id=trade.id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                    <i data-feather="eye" style="width: 14px; height: 14px;"></i> View
                                 </a>
                             </td>
                         </tr>
@@ -185,71 +206,21 @@
         </div>
     </div>
 </div>
-
-<!-- Trade Notes Modal -->
-<div class="modal fade" id="tradeNotesModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Trade Notes</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="tradeNotesForm">
-                    <input type="hidden" id="tradeId" name="trade_id">
-                    <div class="mb-3">
-                        <textarea class="form-control" id="tradeNotes" name="notes" rows="5" placeholder="Add your notes about this trade..."></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveNotesBtn">Save Notes</button>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock content %}
 
 {% block scripts %}
 {{ super() }}
 <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
 <script>
-// 🔧 CHART DATA - Improved validation and error handling
-let serverData = {};
+// Chart data from server
+var serverData = {
+    cumulative: {{ cumulative_pl_data | safe }},
+    monthly: {{ monthly_performance_data | safe }},
+    instrument: {{ instrument_performance_data | safe }},
+    winLoss: {{ win_loss_distribution_data | safe }}
+};
 
-try {
-    serverData = {
-        cumulative: {{ cumulative_pl_data | safe }},
-        monthly: {{ monthly_performance_data | safe }},
-        instrument: {{ instrument_performance_data | safe }},
-        winLoss: {{ win_loss_distribution_data | safe }}
-    };
-    
-    console.log('📊 Server Data Loaded:', serverData);
-    
-    // Validate each chart data
-    Object.keys(serverData).forEach(key => {
-        if (!serverData[key] || typeof serverData[key] !== 'object') {
-            console.warn(`⚠️  Invalid data for ${key}:`, serverData[key]);
-            serverData[key] = null;
-        } else if (!serverData[key].data || !Array.isArray(serverData[key].data)) {
-            console.warn(`⚠️  Missing or invalid data array for ${key}:`, serverData[key]);
-            serverData[key] = null;
-        } else {
-            console.log(`✅ Valid data for ${key}:`, serverData[key].data.length, 'data series');
-        }
-    });
-    
-} catch (error) {
-    console.error('❌ Error parsing server data:', error);
-    serverData = {
-        cumulative: null,
-        monthly: null,
-        instrument: null,
-        winLoss: null
-    };
-}
+console.log('📊 Server Data Loaded:', serverData);
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Starting chart creation...');
@@ -266,53 +237,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Trade notes modal functionality
-    var notesModal = document.getElementById('tradeNotesModal');
-    if (notesModal) {
-        notesModal.addEventListener('show.bs.modal', function(event) {
-            var button = event.relatedTarget;
-            var tradeId = button.getAttribute('data-trade-id');
-            var tradeNotes = button.getAttribute('data-trade-notes');
-            
-            document.getElementById('tradeId').value = tradeId;
-            document.getElementById('tradeNotes').value = tradeNotes || '';
-        });
-        
-        document.getElementById('saveNotesBtn').addEventListener('click', function() {
-            var tradeId = document.getElementById('tradeId').value;
-            var notes = document.getElementById('tradeNotes').value;
-            
-            // Send AJAX request to save notes
-            fetch('{{ url_for("client.save_trade_notes") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: 'trade_id=' + encodeURIComponent(tradeId) + '&notes=' + encodeURIComponent(notes)
-            })
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                if (data.success) {
-                    // Close modal
-                    var modalInstance = bootstrap.Modal.getInstance(notesModal);
-                    modalInstance.hide();
-                    
-                    // Update button data attribute
-                    document.querySelector('[data-trade-id="' + tradeId + '"]').setAttribute('data-trade-notes', notes);
-                } else {
-                    alert('Error saving notes: ' + data.error);
-                }
-            })
-            .catch(function(error) {
-                console.error('Error:', error);
-                alert('Error saving notes. Please try again.');
-            });
-        });
-    }
-    
     // Initialize Feather icons
     if (typeof feather !== 'undefined') {
         feather.replace();
@@ -320,31 +244,18 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function createCharts() {
-    console.log('📊 Creating charts with data:', serverData);
-    
-    // Define common chart config
     var config = {
         responsive: true,
         displayModeBar: false,
-        modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'autoScale2d'],
         displaylogo: false
     };
     
-    // Check if we have valid server data
-    var hasValidData = serverData && 
-                      Object.values(serverData).some(data => data !== null);
-    
-    console.log('📊 Has valid server data:', hasValidData);
-    
     try {
-        // Create charts one by one with error handling
         createCumulativeChart(config);
         createMonthlyChart(config);
         createInstrumentChart(config);
         createWinLossChart(config);
-        
         console.log('✅ All charts created successfully');
-        
     } catch (error) {
         console.error('❌ Error creating charts:', error);
         showChartError();
@@ -352,30 +263,22 @@ function createCharts() {
 }
 
 function createCumulativeChart(config) {
-    console.log('📈 Creating cumulative chart...');
-    
     try {
         var chartData, chartLayout;
         
         if (serverData.cumulative && serverData.cumulative.data) {
-            console.log('✅ Using server data for cumulative chart');
             chartData = serverData.cumulative.data;
             chartLayout = serverData.cumulative.layout || {};
         } else {
-            console.log('📊 Using placeholder data for cumulative chart');
-            chartData = createPlaceholderCumulativeData();
-            chartLayout = createPlaceholderCumulativeLayout();
+            chartData = [{ x: [], y: [], type: 'scatter', mode: 'lines', name: 'No Data' }];
+            chartLayout = { title: 'No Trade Data Available' };
         }
         
-        // Apply consistent styling
         chartLayout.paper_bgcolor = 'rgba(0,0,0,0)';
         chartLayout.plot_bgcolor = 'rgba(0,0,0,0)';
-        chartLayout.font = {color: '#333'};
         chartLayout.margin = {l: 50, r: 20, b: 50, t: 30, pad: 4};
         
         Plotly.newPlot('cumulativePLChart', chartData, chartLayout, config);
-        console.log('✅ Cumulative chart created');
-        
     } catch (error) {
         console.error('❌ Error creating cumulative chart:', error);
         document.getElementById('cumulativePLChart').innerHTML = '<div class="text-center p-4">Chart Error</div>';
@@ -383,30 +286,22 @@ function createCumulativeChart(config) {
 }
 
 function createMonthlyChart(config) {
-    console.log('📊 Creating monthly chart...');
-    
     try {
         var chartData, chartLayout;
         
         if (serverData.monthly && serverData.monthly.data) {
-            console.log('✅ Using server data for monthly chart');
             chartData = serverData.monthly.data;
             chartLayout = serverData.monthly.layout || {};
         } else {
-            console.log('📊 Using placeholder data for monthly chart');
-            chartData = createPlaceholderMonthlyData();
-            chartLayout = createPlaceholderMonthlyLayout();
+            chartData = [{ x: [], y: [], type: 'bar', name: 'No Data' }];
+            chartLayout = { title: 'No Monthly Data Available' };
         }
         
-        // Apply consistent styling
         chartLayout.paper_bgcolor = 'rgba(0,0,0,0)';
         chartLayout.plot_bgcolor = 'rgba(0,0,0,0)';
-        chartLayout.font = {color: '#333'};
         chartLayout.margin = {l: 50, r: 20, b: 50, t: 30, pad: 4};
         
         Plotly.newPlot('monthlyPerformanceChart', chartData, chartLayout, config);
-        console.log('✅ Monthly chart created');
-        
     } catch (error) {
         console.error('❌ Error creating monthly chart:', error);
         document.getElementById('monthlyPerformanceChart').innerHTML = '<div class="text-center p-4">Chart Error</div>';
@@ -414,29 +309,21 @@ function createMonthlyChart(config) {
 }
 
 function createInstrumentChart(config) {
-    console.log('🔧 Creating instrument chart...');
-    
     try {
         var chartData, chartLayout;
         
         if (serverData.instrument && serverData.instrument.data) {
-            console.log('✅ Using server data for instrument chart');
             chartData = serverData.instrument.data;
             chartLayout = serverData.instrument.layout || {};
         } else {
-            console.log('📊 Using placeholder data for instrument chart');
-            chartData = createPlaceholderInstrumentData();
-            chartLayout = createPlaceholderInstrumentLayout();
+            chartData = [{ labels: [], values: [], type: 'pie' }];
+            chartLayout = { title: 'No Instrument Data Available' };
         }
         
-        // Apply consistent styling
         chartLayout.paper_bgcolor = 'rgba(0,0,0,0)';
-        chartLayout.font = {color: '#333'};
         chartLayout.margin = {l: 20, r: 20, b: 20, t: 30, pad: 4};
         
         Plotly.newPlot('instrumentPerformanceChart', chartData, chartLayout, config);
-        console.log('✅ Instrument chart created');
-        
     } catch (error) {
         console.error('❌ Error creating instrument chart:', error);
         document.getElementById('instrumentPerformanceChart').innerHTML = '<div class="text-center p-4">Chart Error</div>';
@@ -444,29 +331,21 @@ function createInstrumentChart(config) {
 }
 
 function createWinLossChart(config) {
-    console.log('🎯 Creating win/loss chart...');
-    
     try {
         var chartData, chartLayout;
         
         if (serverData.winLoss && serverData.winLoss.data) {
-            console.log('✅ Using server data for win/loss chart');
             chartData = serverData.winLoss.data;
             chartLayout = serverData.winLoss.layout || {};
         } else {
-            console.log('📊 Using placeholder data for win/loss chart');
-            chartData = createPlaceholderWinLossData();
-            chartLayout = createPlaceholderWinLossLayout();
+            chartData = [{ labels: ['Wins', 'Losses'], values: [0, 0], type: 'pie' }];
+            chartLayout = { title: 'No Win/Loss Data Available' };
         }
         
-        // Apply consistent styling
         chartLayout.paper_bgcolor = 'rgba(0,0,0,0)';
-        chartLayout.font = {color: '#333'};
         chartLayout.margin = {l: 20, r: 20, b: 20, t: 30, pad: 4};
         
         Plotly.newPlot('winLossDistributionChart', chartData, chartLayout, config);
-        console.log('✅ Win/loss chart created');
-        
     } catch (error) {
         console.error('❌ Error creating win/loss chart:', error);
         document.getElementById('winLossDistributionChart').innerHTML = '<div class="text-center p-4">Chart Error</div>';
@@ -480,229 +359,9 @@ function showChartError() {
     document.getElementById('monthlyPerformanceChart').innerHTML = errorMessage;
     document.getElementById('instrumentPerformanceChart').innerHTML = errorMessage;
     document.getElementById('winLossDistributionChart').innerHTML = errorMessage;
-}
-
-// Helper functions to create placeholder charts
-function createPlaceholderCumulativeData() {
-    var dates = generateDates(30);
-    var values = generateCumulative(30);
     
-    return [{
-        x: dates,
-        y: values,
-        type: 'scatter',
-        mode: 'lines',
-        fill: 'tozeroy',
-        line: {
-            color: 'rgba(75, 192, 192, 1)',
-            width: 2
-        },
-        fillcolor: 'rgba(75, 192, 192, 0.2)'
-    }];
+    // Show debug panel
+    document.getElementById('chartDebugPanel').style.display = 'block';
 }
-
-function createPlaceholderCumulativeLayout() {
-    return {
-        autosize: true,
-        margin: {l: 50, r: 20, b: 50, t: 30, pad: 4},
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        showlegend: false,
-        title: {
-            text: 'Cumulative P/L',
-            font: {size: 14},
-            y: 0.98
-        },
-        xaxis: {
-            showgrid: false,
-            zeroline: false,
-            title: {
-                text: 'Date',
-                standoff: 10
-            }
-        },
-        yaxis: {
-            showgrid: true,
-            zeroline: true,
-            gridcolor: 'rgba(230,230,230,0.8)',
-            title: {
-                text: 'P/L ($)',
-                standoff: 10
-            }
-        }
-    };
-}
-
-function createPlaceholderMonthlyData() {
-    return [{
-        x: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-        y: [120, -50, 200, -30, 150],
-        type: 'bar',
-        marker: {
-            color: ['rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)', 
-                   'rgba(75, 192, 192, 0.8)', 'rgba(255, 99, 132, 0.8)', 
-                   'rgba(75, 192, 192, 0.8)']
-        }
-    }];
-}
-
-function createPlaceholderMonthlyLayout() {
-    return {
-        autosize: true,
-        margin: {l: 50, r: 20, b: 50, t: 30, pad: 4},
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        showlegend: false,
-        title: {
-            text: 'Monthly Performance',
-            font: {size: 14},
-            y: 0.98
-        },
-        xaxis: {
-            showgrid: false,
-            title: {
-                text: 'Month',
-                standoff: 10
-            }
-        },
-        yaxis: {
-            showgrid: true,
-            gridcolor: 'rgba(230,230,230,0.8)',
-            title: {
-                text: 'P/L ($)',
-                standoff: 10
-            }
-        }
-    };
-}
-
-function createPlaceholderInstrumentData() {
-    return [{
-        labels: ['BTC', 'ETH', 'SOL', 'AAPL', 'TSLA'],
-        values: [30, 25, 15, 20, 10],
-        type: 'pie',
-        hole: 0.5,
-        textinfo: 'label+percent',
-        textposition: 'outside',
-        automargin: true,
-        marker: {
-            colors: [
-                'rgba(54, 162, 235, 0.8)',
-                'rgba(255, 206, 86, 0.8)',
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(153, 102, 255, 0.8)',
-                'rgba(255, 159, 64, 0.8)'
-            ]
-        }
-    }];
-}
-
-function createPlaceholderInstrumentLayout() {
-    return {
-        autosize: true,
-        margin: {l: 20, r: 20, b: 20, t: 30, pad: 4},
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        showlegend: false,
-        title: {
-            text: 'Performance by Instrument',
-            font: {size: 14},
-            y: 0.98
-        }
-    };
-}
-
-function createPlaceholderWinLossData() {
-    return [{
-        labels: ['Winning', 'Losing', 'Break Even'],
-        values: [65, 30, 5],
-        type: 'pie',
-        hole: 0.5,
-        textinfo: 'label+percent',
-        textposition: 'outside',
-        automargin: true,
-        marker: {
-            colors: [
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(255, 99, 132, 0.8)',
-                'rgba(201, 203, 207, 0.8)'
-            ]
-        }
-    }];
-}
-
-function createPlaceholderWinLossLayout() {
-    return {
-        autosize: true,
-        margin: {l: 20, r: 20, b: 20, t: 30, pad: 4},
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        showlegend: false,
-        title: {
-            text: 'Win/Loss Distribution',
-            font: {size: 14},
-            y: 0.98
-        }
-    };
-}
-
-// Helper functions to generate sample data
-function generateDates(count) {
-    var dates = [];
-    var today = new Date();
-    
-    for (var i = count - 1; i >= 0; i--) {
-        var date = new Date(today);
-        date.setDate(today.getDate() - i);
-        dates.push(date);
-    }
-    
-    return dates;
-}
-
-function generateCumulative(count) {
-    var values = [0];
-    var lastValue = 0;
-    
-    for (var i = 1; i < count; i++) {
-        var change = Math.random() * 20 - 5; // Random value between -5 and 15
-        lastValue += change;
-        values.push(lastValue);
-    }
-    
-    return values;
-}
-
-// Window resize handler for charts
-window.addEventListener('resize', function() {
-    setTimeout(function() {
-        try {
-            console.log('📱 Resizing charts for mobile...');
-            if (typeof Plotly !== 'undefined') {
-                Plotly.Plots.resize('cumulativePLChart');
-                Plotly.Plots.resize('monthlyPerformanceChart'); 
-                Plotly.Plots.resize('instrumentPerformanceChart');
-                Plotly.Plots.resize('winLossDistributionChart');
-                console.log('✅ Charts resized');
-            }
-        } catch (error) {
-            console.log('Chart resize error:', error);
-        }
-    }, 300);
-});
-
-// Mobile orientation change handler
-window.addEventListener('orientationchange', function() {
-    setTimeout(function() {
-        try {
-            if (typeof Plotly !== 'undefined') {
-                Plotly.Plots.resize('cumulativePLChart');
-                Plotly.Plots.resize('monthlyPerformanceChart');
-                Plotly.Plots.resize('instrumentPerformanceChart');
-                Plotly.Plots.resize('winLossDistributionChart');
-            }
-        } catch (error) {
-            console.log('Chart orientation resize error:', error);
-        }
-    }, 500);
-});
 </script>
 {% endblock scripts %} 

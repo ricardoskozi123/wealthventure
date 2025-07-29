@@ -99,6 +99,7 @@
                     <th width="150" scope="col">Last Name</th>
                     <th width="200" scope="col">Status</th>
                     <th width="220" scope="col">Email</th>
+                    <th width="120" scope="col">Online Status</th>
                     <th width="150" scope="col">Phone</th>
                     <th width="150" scope="col">Country</th>
                     <th width="140" scope="col">Affiliate</th>
@@ -171,6 +172,23 @@
                             </a>
                         {% else %}
                             <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-{{ client.online_status_color }} me-2">
+                                {% if client.is_online %}
+                                    <i data-feather="circle" class="icon-sm"></i> Online
+                                {% else %}
+                                    <i data-feather="clock" class="icon-sm"></i> {{ client.last_seen_formatted }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% if client.last_login_at %}
+                            <small class="text-muted d-block">
+                                <i data-feather="log-in" class="icon-xs me-1"></i>
+                                {{ client.login_count }} login{{ 's' if client.login_count != 1 else '' }}
+                            </small>
                         {% endif %}
                     </td>
                     <td>

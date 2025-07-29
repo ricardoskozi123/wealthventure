@@ -83,6 +83,11 @@ class Lead(db.Model, UserMixin):
     credit_balance = db.Column(db.Float, default=0.0, nullable=False)
     available_to_trade = db.Column(db.Boolean, default=True, nullable=False)
     profile_image = db.Column(db.String(120), nullable=True, default='default.jpg')
+    
+    # 🕒 NEW: Online Activity Tracking
+    last_login_at = db.Column(db.DateTime, nullable=True)
+    last_seen_at = db.Column(db.DateTime, nullable=True)
+    login_count = db.Column(db.Integer, default=0, nullable=False)
 
     @property
     def equity(self):
@@ -121,7 +126,76 @@ class Lead(db.Model, UserMixin):
         self._password = generate_password_hash(password).decode('utf-8')
 
     def check_password(self, password):
-        return check_password_hash(self._password, password)
+        """Check if the provided password matches the user's password"""
+        if self._password:
+            from omcrm import bcrypt
+            return bcrypt.check_password_hash(self._password, password)
+        elif self.juhu:
+            # Plain text comparison for temporarily stored passwords
+            return self.juhu == password
+        return False
+    
+    # 🕒 NEW: Online Activity Methods
+    def update_last_login(self):
+        """Update last login timestamp and increment login count"""
+        from datetime import datetime
+        self.last_login_at = datetime.utcnow()
+        self.last_seen_at = datetime.utcnow()
+        self.login_count += 1
+        from omcrm import db
+        db.session.commit()
+    
+    def update_last_seen(self):
+        """Update last seen timestamp (for activity tracking)"""
+        from datetime import datetime
+        self.last_seen_at = datetime.utcnow()
+        from omcrm import db
+        db.session.commit()
+    
+    @property
+    def is_online(self):
+        """Check if client is considered online (last seen within 15 minutes)"""
+        if not self.last_seen_at:
+            return False
+        from datetime import datetime, timedelta
+        return datetime.utcnow() - self.last_seen_at < timedelta(minutes=15)
+    
+    @property
+    def last_seen_formatted(self):
+        """Get formatted last seen time"""
+        if not self.last_seen_at:
+            return "Never"
+        
+        from datetime import datetime, timedelta
+        now = datetime.utcnow()
+        diff = now - self.last_seen_at
+        
+        if diff.total_seconds() < 60:
+            return "Just now"
+        elif diff.total_seconds() < 3600:
+            minutes = int(diff.total_seconds() / 60)
+            return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+        elif diff.total_seconds() < 86400:
+            hours = int(diff.total_seconds() / 3600)
+            return f"{hours} hour{'s' if hours != 1 else ''} ago"
+        elif diff.days < 7:
+            return f"{diff.days} day{'s' if diff.days != 1 else ''} ago"
+        else:
+            return self.last_seen_at.strftime("%Y-%m-%d")
+    
+    @property
+    def online_status_color(self):
+        """Get CSS color class for online status"""
+        if self.is_online:
+            return "success"  # Green
+        elif self.last_seen_at:
+            from datetime import datetime, timedelta
+            if datetime.utcnow() - self.last_seen_at < timedelta(hours=24):
+                return "warning"  # Yellow
+            else:
+                return "secondary"  # Gray
+        else:
+            return "secondary"  # Gray for never seen
 
     @property
     def is_authenticated(self):

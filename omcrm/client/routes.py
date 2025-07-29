@@ -24,6 +24,16 @@ from omcrm.activities.models import Activity
 
 client = Blueprint('client', __name__)
 
+# 🕒 NEW: Track client activity on each request
+@client.before_request
+def track_client_activity():
+    """Update last_seen timestamp for authenticated clients"""
+    if current_user.is_authenticated and isinstance(current_user, Lead) and current_user.is_client:
+        # Update last seen every 5 minutes to avoid too many DB writes
+        if (not current_user.last_seen_at or 
+            (datetime.utcnow() - current_user.last_seen_at).total_seconds() > 300):
+            current_user.update_last_seen()
+
 # Client authentication decorator
 def client_only(f):
     @wraps(f)
@@ -966,4 +976,64 @@ def generate_price_chart_data(trade):
     }
     
     return {'data': data, 'layout': layout}
+
+@client.route("/client/chart_debug")
+@login_required
+@client_only
+def chart_debug():
+    """Debug chart data and Plotly setup"""
+    actual_user = current_user._get_current_object()
+    
+    # Get all trades for debugging
+    trades = Trade.query.filter_by(lead_id=actual_user.id).order_by(Trade.date.desc()).all()
+    closed_trades = [t for t in trades if t.status == 'closed' and t.profit_loss is not None]
+    
+    debug_info = {
+        'total_trades': len(trades),
+        'closed_trades': len(closed_trades),
+        'open_trades': len([t for t in trades if t.status == 'open']),
+        'trades_with_pl': len([t for t in trades if t.profit_loss is not None]),
+        'numpy_available': False,
+        'plotly_available': False,
+        'sample_trades': []
+    }
+    
+    # Check imports
+    try:
+        import numpy as np
+        debug_info['numpy_available'] = True
+        debug_info['numpy_version'] = np.__version__
+    except ImportError:
+        debug_info['numpy_error'] = "NumPy not available"
+    
+    try:
+        import plotly
+        debug_info['plotly_available'] = True
+        debug_info['plotly_version'] = plotly.__version__
+    except ImportError:
+        debug_info['plotly_error'] = "Plotly not available"
+    
+    # Sample trade data for debugging
+    for trade in trades[:5]:
+        debug_info['sample_trades'].append({
+            'id': trade.id,
+            'date': trade.date.isoformat() if trade.date else None,
+            'status': trade.status,
+            'profit_loss': trade.profit_loss,
+            'price': trade.price,
+            'amount': trade.amount
+        })
+    
+    # Test chart generation
+    try:
+        chart_data = generate_cumulative_pl_chart(trades)
+        debug_info['chart_generation'] = 'success'
+        debug_info['chart_data_keys'] = list(chart_data.keys())
+        if 'data' in chart_data:
+            debug_info['chart_data_length'] = len(chart_data['data'])
+    except Exception as e:
+        debug_info['chart_generation'] = 'failed'
+        debug_info['chart_error'] = str(e)
+    
+    return jsonify(debug_info)
 

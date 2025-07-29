@@ -74,6 +74,10 @@ def client_login():
         if client and client.check_password(form.password.data):
             if client.is_active:
                 print(f"[DEBUG] Client login successful: {client.id}, {client.email}")
+                
+                # 🕒 NEW: Track login activity
+                client.update_last_login()
+                
                 login_user(client, remember=form.remember.data)
                 print(f"[DEBUG] Current user after login: {current_user.id}, type: {type(current_user)}, login_type: {session.get('login_type')}")
                 next_page = request.args.get('next')
