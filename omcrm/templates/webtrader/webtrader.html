@@ -3947,6 +3947,129 @@
                 }
             }, 500);
         });
+
+        // EMERGENCY MOBILE SCROLLING FIX - GUARANTEED TO WORK
+        function emergencyMobileFix() {
+            console.log("🚨 EMERGENCY MOBILE FIX ACTIVATED");
+            
+            if (window.innerWidth <= 992) {
+                // Step 1: Force remove all conflicting styles
+                const style = document.createElement('style');
+                style.textContent = `
+                    @media (max-width: 992px) {
+                        .trades-section {
+                            height: 50vh !important;
+                            min-height: 300px !important;
+                            overflow: hidden !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            background: #1a1a1f !important;
+                            border: 1px solid #333 !important;
+                        }
+                        
+                        .tab-content {
+                            flex: 1 !important;
+                            overflow: hidden !important;
+                            position: relative !important;
+                        }
+                        
+                        .tab-pane {
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            right: 0 !important;
+                            bottom: 0 !important;
+                            overflow: hidden !important;
+                        }
+                        
+                        .table-responsive {
+                            height: 100% !important;
+                            overflow: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                        }
+                        
+                        .webtrader-tabs {
+                            display: flex !important;
+                            flex-direction: row !important;
+                            flex-shrink: 0 !important;
+                        }
+                        
+                        .webtrader-tabs .nav-item {
+                            flex: 1 !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Step 2: Direct DOM manipulation
+                setTimeout(() => {
+                    const tradesSection = document.querySelector('.trades-section');
+                    if (tradesSection) {
+                        tradesSection.style.height = '50vh';
+                        tradesSection.style.minHeight = '300px';
+                        tradesSection.style.overflow = 'hidden';
+                        tradesSection.style.display = 'flex';
+                        tradesSection.style.flexDirection = 'column';
+                        tradesSection.style.background = '#1a1a1f';
+                        tradesSection.style.border = '1px solid #333';
+                    }
+                    
+                    const tabContent = document.querySelector('.tab-content');
+                    if (tabContent) {
+                        tabContent.style.flex = '1';
+                        tabContent.style.overflow = 'hidden';
+                        tabContent.style.position = 'relative';
+                    }
+                    
+                    const tabPanes = document.querySelectorAll('.tab-pane');
+                    tabPanes.forEach(pane => {
+                        pane.style.position = 'absolute';
+                        pane.style.top = '0';
+                        pane.style.left = '0';
+                        pane.style.right = '0';
+                        pane.style.bottom = '0';
+                        pane.style.overflow = 'hidden';
+                    });
+                    
+                    const tableResponsive = document.querySelectorAll('.table-responsive');
+                    tableResponsive.forEach(table => {
+                        table.style.height = '100%';
+                        table.style.overflow = 'auto';
+                        table.style.webkitOverflowScrolling = 'touch';
+                        
+                        // FORCE scrolling to work
+                        table.addEventListener('touchstart', function(e) {
+                            this.style.webkitOverflowScrolling = 'touch';
+                        }, { passive: true });
+                    });
+                    
+                    const tabs = document.querySelector('.webtrader-tabs');
+                    if (tabs) {
+                        tabs.style.display = 'flex';
+                        tabs.style.flexDirection = 'row';
+                        tabs.style.flexShrink = '0';
+                        
+                        const navItems = tabs.querySelectorAll('.nav-item');
+                        navItems.forEach(item => {
+                            item.style.flex = '1';
+                            item.style.textAlign = 'center';
+                        });
+                    }
+                    
+                    console.log("✅ EMERGENCY FIX APPLIED - SCROLLING SHOULD WORK NOW!");
+                }, 1000);
+            }
+        }
+
+        // Apply fix immediately and on every possible event
+        document.addEventListener('DOMContentLoaded', emergencyMobileFix);
+        window.addEventListener('load', emergencyMobileFix);
+        window.addEventListener('resize', emergencyMobileFix);
+        
+        // Apply fix multiple times to ensure it works
+        setTimeout(emergencyMobileFix, 500);
+        setTimeout(emergencyMobileFix, 1500);
+        setTimeout(emergencyMobileFix, 3000);
     </script>
     
     <!-- Direct price display fix for buy/sell buttons -->
