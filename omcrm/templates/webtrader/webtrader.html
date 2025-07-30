@@ -548,8 +548,49 @@
                 height: auto;
                 overflow: visible;
             }
+            
+            /* Fix trades section scrolling on mobile */
             .trades-section {
-                overflow-y: visible;
+                height: 400px; /* Fixed height for mobile */
+                overflow: hidden; /* Container should not scroll */
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .tab-content {
+                flex: 1;
+                overflow: hidden;
+                height: calc(100% - 50px); /* Account for tabs height */
+            }
+            
+            .tab-pane {
+                height: 100%;
+                overflow: hidden;
+            }
+            
+            .table-responsive {
+                height: 100%;
+                overflow-y: auto;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Make tabs horizontal on mobile */
+            .webtrader-tabs {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                flex-shrink: 0;
+            }
+            
+            .webtrader-tabs .nav-item {
+                flex: 1;
+                text-align: center;
+            }
+            
+            .webtrader-tab-link {
+                padding: 8px 4px !important;
+                font-size: 0.8rem !important;
             }
         }
         /* --- End Scoped Styles --- */
@@ -1220,6 +1261,68 @@
         
         .tab-pane .table-responsive {
             margin: 0;
+        }
+
+        /* Better mobile scrollbars and touch handling */
+        @media (max-width: 768px) {
+            .trades-section {
+                height: 350px; /* Smaller height for phones */
+            }
+            
+            .table-responsive {
+                /* Better touch scrolling */
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+                scrollbar-color: var(--accent-color) var(--medium-bg);
+            }
+            
+            .table-responsive::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            
+            .table-responsive::-webkit-scrollbar-track {
+                background: var(--medium-bg);
+                border-radius: 3px;
+            }
+            
+            .table-responsive::-webkit-scrollbar-thumb {
+                background: var(--accent-color);
+                border-radius: 3px;
+            }
+            
+            .table-responsive::-webkit-scrollbar-thumb:hover {
+                background: var(--success-color);
+            }
+            
+            /* Ensure tables don't break layout */
+            .trades-table {
+                min-width: 600px; /* Force horizontal scroll if needed */
+            }
+            
+            .trades-table th,
+            .trades-table td {
+                white-space: nowrap;
+                padding: 8px 6px;
+                font-size: 0.75rem;
+            }
+            
+            /* Better badge sizing on mobile */
+            .badge {
+                font-size: 0.65rem;
+                padding: 2px 6px;
+            }
+            
+            /* Tab improvements */
+            .webtrader-tab-link {
+                padding: 6px 2px !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .webtrader-tab-link .badge {
+                font-size: 0.6rem !important;
+                margin-left: 2px !important;
+            }
         }
     </style>
 </head>
