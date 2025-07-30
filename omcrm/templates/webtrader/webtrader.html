@@ -1325,6 +1325,35 @@
             }
         }
 
+        /* CRITICAL MOBILE TOUCH SCROLLING FIX */
+        * {
+            /* Remove any touch-action restrictions */
+            touch-action: auto !important;
+        }
+
+        /* Ensure smooth scrolling on mobile */
+        html, body {
+            -webkit-overflow-scrolling: touch !important;
+            overflow-x: hidden !important;
+            touch-action: pan-y pan-x !important;
+        }
+
+        /* Fix for mobile viewport and scrolling */
+        .app-container {
+            touch-action: pan-y pan-x !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        .app-content {
+            touch-action: pan-y pan-x !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        .content-wrapper {
+            touch-action: pan-y pan-x !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+
         /* MOBILE SCROLLING FIX - Override all conflicting rules */
         @media (max-width: 992px) {
             /* Force proper mobile layout */
@@ -1332,17 +1361,20 @@
                 flex-direction: column !important;
                 height: auto !important;
                 overflow: visible !important;
+                touch-action: pan-y pan-x !important;
             }
             
             .app-content {
                 height: auto !important;
                 overflow: visible !important;
+                touch-action: pan-y pan-x !important;
             }
             
             .content-wrapper {
                 flex-direction: column !important;
                 height: auto !important;
                 overflow: visible !important;
+                touch-action: pan-y pan-x !important;
             }
             
             .chart-area {
@@ -1350,18 +1382,21 @@
                 overflow: visible !important;
                 display: flex !important;
                 flex-direction: column !important;
+                touch-action: pan-y pan-x !important;
             }
             
             /* CRITICAL: Make trades section scrollable */
             .trades-section {
-                height: 50vh !important; /* Use viewport height */
-                min-height: 300px !important;
-                max-height: 500px !important;
+                height: 60vh !important; /* Increase height */
+                min-height: 350px !important;
+                max-height: 600px !important;
                 overflow: hidden !important;
                 display: flex !important;
                 flex-direction: column !important;
                 border: 1px solid var(--border-color) !important;
                 background: var(--darker-bg) !important;
+                touch-action: pan-y pan-x !important;
+                -webkit-overflow-scrolling: touch !important;
             }
             
             .webtrader-tabs {
@@ -1370,6 +1405,7 @@
                 flex-direction: row !important;
                 justify-content: space-around !important;
                 background: var(--medium-bg) !important;
+                touch-action: manipulation !important;
             }
             
             .webtrader-tabs .nav-item {
@@ -1381,6 +1417,7 @@
                 padding: 8px 4px !important;
                 font-size: 0.8rem !important;
                 white-space: nowrap !important;
+                touch-action: manipulation !important;
             }
             
             .tab-content {
@@ -1388,6 +1425,7 @@
                 overflow: hidden !important;
                 height: calc(100% - 45px) !important;
                 position: relative !important;
+                touch-action: pan-y pan-x !important;
             }
             
             .tab-pane {
@@ -1398,6 +1436,7 @@
                 left: 0 !important;
                 right: 0 !important;
                 bottom: 0 !important;
+                touch-action: pan-y pan-x !important;
             }
             
             .table-responsive {
@@ -1406,12 +1445,16 @@
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
                 position: relative !important;
+                touch-action: pan-y pan-x !important;
+                /* Force scrolling with momentum */
+                scrollbar-width: thin !important;
             }
             
             /* Ensure tables are properly sized */
             .trades-table {
                 width: 100% !important;
                 min-width: 600px !important;
+                touch-action: pan-y pan-x !important;
             }
             
             .trades-table th,
@@ -1419,6 +1462,11 @@
                 padding: 6px 4px !important;
                 font-size: 0.75rem !important;
                 white-space: nowrap !important;
+            }
+            
+            /* Override any event blocking */
+            .trades-table tbody tr {
+                touch-action: pan-y pan-x !important;
             }
         }
 
@@ -3787,24 +3835,49 @@
         `;
         document.head.appendChild(styleEl);
 
+        // Fix passive event listener issues for mobile scrolling
+        function fixPassiveEventListeners() {
+            // Override addEventListener to make touch events passive by default
+            const originalAddEventListener = EventTarget.prototype.addEventListener;
+            EventTarget.prototype.addEventListener = function(type, listener, options) {
+                if (type === 'touchstart' || type === 'touchmove' || type === 'touchend') {
+                    if (typeof options === 'boolean') {
+                        options = { passive: true, capture: options };
+                    } else if (typeof options === 'object' && options !== null) {
+                        options.passive = true;
+                    } else {
+                        options = { passive: true };
+                    }
+                }
+                return originalAddEventListener.call(this, type, listener, options);
+            };
+        }
+
         // Mobile-specific fixes for tab content
         function initMobileTradesSection() {
             if (window.innerWidth <= 992) {
                 console.log("Initializing mobile trades section...");
                 
+                // Fix passive event listeners first
+                fixPassiveEventListeners();
+                
                 // Ensure tab content is properly positioned
                 const tabContent = document.getElementById('tradeTabContent');
-                const tabPanes = tabContent.querySelectorAll('.tab-pane');
-                
-                tabPanes.forEach(pane => {
-                    pane.style.position = 'absolute';
-                    pane.style.top = '0';
-                    pane.style.left = '0';
-                    pane.style.right = '0';
-                    pane.style.bottom = '0';
-                    pane.style.height = '100%';
-                    pane.style.overflow = 'hidden';
-                });
+                if (tabContent) {
+                    const tabPanes = tabContent.querySelectorAll('.tab-pane');
+                    
+                    tabPanes.forEach(pane => {
+                        pane.style.position = 'absolute';
+                        pane.style.top = '0';
+                        pane.style.left = '0';
+                        pane.style.right = '0';
+                        pane.style.bottom = '0';
+                        pane.style.height = '100%';
+                        pane.style.overflow = 'hidden';
+                        pane.style.touchAction = 'pan-y pan-x';
+                        pane.style.webkitOverflowScrolling = 'touch';
+                    });
+                }
                 
                 // Fix table responsive containers
                 const tableResponsive = document.querySelectorAll('.table-responsive');
@@ -3814,31 +3887,65 @@
                     container.style.overflowX = 'auto';
                     container.style.webkitOverflowScrolling = 'touch';
                     container.style.position = 'relative';
+                    container.style.touchAction = 'pan-y pan-x';
+                    
+                    // Force scroll area to be recognized
+                    container.addEventListener('touchstart', function(e) {
+                        // Allow default touch behavior
+                    }, { passive: true });
+                    
+                    container.addEventListener('touchmove', function(e) {
+                        // Allow default scrolling
+                    }, { passive: true });
                 });
                 
                 // Ensure trades section has proper height
                 const tradesSection = document.querySelector('.trades-section');
                 if (tradesSection) {
-                    tradesSection.style.height = '50vh';
-                    tradesSection.style.minHeight = '300px';
-                    tradesSection.style.maxHeight = '500px';
+                    tradesSection.style.height = '60vh';
+                    tradesSection.style.minHeight = '350px';
+                    tradesSection.style.maxHeight = '600px';
                     tradesSection.style.overflow = 'hidden';
                     tradesSection.style.display = 'flex';
                     tradesSection.style.flexDirection = 'column';
+                    tradesSection.style.touchAction = 'pan-y pan-x';
+                    tradesSection.style.webkitOverflowScrolling = 'touch';
                 }
                 
-                console.log("Mobile trades section initialized!");
+                // Ensure body and html allow scrolling
+                document.body.style.touchAction = 'pan-y pan-x';
+                document.documentElement.style.touchAction = 'pan-y pan-x';
+                document.body.style.webkitOverflowScrolling = 'touch';
+                document.documentElement.style.webkitOverflowScrolling = 'touch';
+                
+                console.log("Mobile trades section initialized with touch support!");
             }
         }
 
         // Initialize on page load and resize
         document.addEventListener('DOMContentLoaded', function() {
+            // Fix passive listeners immediately
+            fixPassiveEventListeners();
+            
+            // Initialize mobile section
             initMobileTradesSection();
             
             // Re-initialize on window resize
             window.addEventListener('resize', function() {
                 setTimeout(initMobileTradesSection, 100);
             });
+            
+            // Force a reflow to ensure styles are applied
+            setTimeout(() => {
+                if (window.innerWidth <= 992) {
+                    const tradesSection = document.querySelector('.trades-section');
+                    if (tradesSection) {
+                        tradesSection.style.display = 'none';
+                        tradesSection.offsetHeight; // Force reflow
+                        tradesSection.style.display = 'flex';
+                    }
+                }
+            }, 500);
         });
     </script>
     
