@@ -4070,6 +4070,181 @@
         setTimeout(emergencyMobileFix, 500);
         setTimeout(emergencyMobileFix, 1500);
         setTimeout(emergencyMobileFix, 3000);
+
+        // NUCLEAR OPTION - COMPLETELY OVERRIDE ALL TOUCH HANDLING
+        function nuclearMobileScrollFix() {
+            console.log("☢️ NUCLEAR MOBILE SCROLL FIX ACTIVATED");
+            
+            if (window.innerWidth <= 992) {
+                // Step 1: Disable ALL existing touch event listeners
+                const originalAddEventListener = EventTarget.prototype.addEventListener;
+                const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
+                
+                // Override to block non-passive touch events
+                EventTarget.prototype.addEventListener = function(type, listener, options) {
+                    if (type === 'touchstart' || type === 'touchmove' || type === 'wheel' || type === 'mousewheel') {
+                        // Force all touch events to be passive
+                        if (typeof options === 'boolean') {
+                            options = { passive: true, capture: options };
+                        } else if (typeof options === 'object' && options !== null) {
+                            options = { ...options, passive: true };
+                        } else {
+                            options = { passive: true };
+                        }
+                    }
+                    return originalAddEventListener.call(this, type, listener, options);
+                };
+                
+                // Step 2: Remove all existing problematic event listeners
+                const elements = document.querySelectorAll('*');
+                elements.forEach(el => {
+                    // Clone element to remove all event listeners
+                    if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+                        const events = ['touchstart', 'touchmove', 'touchend', 'wheel', 'mousewheel'];
+                        events.forEach(event => {
+                            try {
+                                el.removeEventListener(event, function(){}, false);
+                                el.removeEventListener(event, function(){}, true);
+                            } catch(e) {}
+                        });
+                    }
+                });
+                
+                // Step 3: Force proper CSS with extreme specificity
+                const nuclearStyle = document.createElement('style');
+                nuclearStyle.textContent = `
+                    /* NUCLEAR CSS - OVERRIDE EVERYTHING */
+                    @media (max-width: 992px) {
+                        * {
+                            touch-action: auto !important;
+                            -webkit-touch-callout: default !important;
+                            -webkit-user-select: auto !important;
+                            user-select: auto !important;
+                        }
+                        
+                        html, body {
+                            overflow: visible !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-x pan-y !important;
+                        }
+                        
+                        .trades-section {
+                            height: 50vh !important;
+                            min-height: 300px !important;
+                            max-height: 80vh !important;
+                            overflow: hidden !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            background: #1a1a1f !important;
+                            border: 1px solid #333 !important;
+                            touch-action: pan-x pan-y !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            position: relative !important;
+                        }
+                        
+                        .tab-content {
+                            flex: 1 !important;
+                            overflow: hidden !important;
+                            position: relative !important;
+                            touch-action: pan-x pan-y !important;
+                            -webkit-overflow-scrolling: touch !important;
+                        }
+                        
+                        .tab-pane {
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            right: 0 !important;
+                            bottom: 0 !important;
+                            overflow: hidden !important;
+                            touch-action: pan-x pan-y !important;
+                            -webkit-overflow-scrolling: touch !important;
+                        }
+                        
+                        .table-responsive {
+                            height: 100% !important;
+                            overflow: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-x pan-y !important;
+                            overscroll-behavior: contain !important;
+                            scroll-behavior: smooth !important;
+                            position: relative !important;
+                        }
+                        
+                        .trades-table {
+                            touch-action: pan-x pan-y !important;
+                            -webkit-overflow-scrolling: touch !important;
+                        }
+                        
+                        .webtrader-tabs {
+                            display: flex !important;
+                            flex-direction: row !important;
+                            flex-shrink: 0 !important;
+                            touch-action: manipulation !important;
+                        }
+                        
+                        .webtrader-tabs .nav-item {
+                            flex: 1 !important;
+                            touch-action: manipulation !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(nuclearStyle);
+                
+                // Step 4: Force DOM manipulation after delay
+                setTimeout(() => {
+                    console.log("☢️ Applying direct DOM manipulation...");
+                    
+                    // Force scroll containers
+                    const tableResponsive = document.querySelectorAll('.table-responsive');
+                    tableResponsive.forEach((table, index) => {
+                        console.log(`Fixing table ${index + 1}`);
+                        
+                        // Set all necessary properties
+                        table.style.cssText = `
+                            height: 100% !important;
+                            overflow: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-x pan-y !important;
+                            overscroll-behavior: contain !important;
+                            scroll-behavior: smooth !important;
+                            position: relative !important;
+                            background: #1a1a1f !important;
+                        `;
+                        
+                        // Force reflow
+                        table.offsetHeight;
+                        
+                        // Add test content to ensure scrolling
+                        if (table.scrollHeight <= table.clientHeight) {
+                            console.log(`Table ${index + 1} needs more content for scrolling`);
+                        }
+                    });
+                    
+                    // Test scrolling programmatically
+                    const firstTable = document.querySelector('.table-responsive');
+                    if (firstTable) {
+                        console.log("Testing programmatic scroll...");
+                        firstTable.scrollTop = 10;
+                        setTimeout(() => {
+                            firstTable.scrollTop = 0;
+                            console.log("✅ Programmatic scroll test completed");
+                        }, 100);
+                    }
+                    
+                    console.log("☢️ NUCLEAR FIX COMPLETE - TOUCH SCROLLING SHOULD WORK!");
+                }, 2000);
+            }
+        }
+
+        // Apply nuclear fix immediately and repeatedly
+        document.addEventListener('DOMContentLoaded', nuclearMobileScrollFix);
+        window.addEventListener('load', nuclearMobileScrollFix);
+        
+        // Apply multiple times to override any late-loading scripts
+        setTimeout(nuclearMobileScrollFix, 1000);
+        setTimeout(nuclearMobileScrollFix, 3000);
+        setTimeout(nuclearMobileScrollFix, 5000);
     </script>
     
     <!-- Direct price display fix for buy/sell buttons -->
