@@ -319,47 +319,17 @@
             color: var(--trading-green);
         }
 
-        /* Instrument Search */
-        .search-box {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 15px 12px 45px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--trading-green);
-            box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-        }
-
-        /* Instrument Categories */
-        .category-tabs {
+        /* Market Filter Buttons */
+        .market-filter-buttons {
             display: flex;
-            margin-bottom: 15px;
+            gap: 5px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
             padding: 4px;
+            margin-bottom: 15px;
         }
 
-        .category-tab {
+        .market-filter-btn {
             flex: 1;
             padding: 8px 12px;
             background: none;
@@ -372,7 +342,7 @@
             cursor: pointer;
         }
 
-        .category-tab.active {
+        .market-filter-btn.active {
             background: var(--trading-green);
             color: white;
             box-shadow: 0 5px 15px rgba(0, 212, 170, 0.3);
@@ -385,70 +355,46 @@
             padding: 0 20px 20px;
         }
 
-        .instrument-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid transparent;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .instruments-table {
+            width: 100%;
+            font-size: 0.85rem;
         }
 
-        .instrument-item:hover {
-            background: rgba(0, 212, 170, 0.1);
-            border-color: var(--trading-green);
-            transform: translateX(5px);
-        }
-
-        .instrument-item.active {
-            background: linear-gradient(135deg, rgba(0, 212, 170, 0.2), rgba(0, 245, 255, 0.1));
-            border-color: var(--trading-green);
-            box-shadow: 0 5px 20px rgba(0, 212, 170, 0.2);
-        }
-
-        .instrument-info h6 {
-            margin: 0;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .instrument-info span {
-            font-size: 0.75rem;
+        .instruments-table th {
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-secondary);
-        }
-
-        .instrument-price {
-            text-align: right;
-        }
-
-        .price-value {
-            font-family: 'JetBrains Mono', monospace;
             font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-        }
-
-        .price-change {
+            padding: 12px 8px;
+            border: none;
             font-size: 0.75rem;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 6px;
-            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
         }
 
-        .price-change.positive {
-            background: rgba(0, 212, 170, 0.2);
-            color: var(--trading-green);
+        .instruments-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
         }
 
-        .price-change.negative {
-            background: rgba(255, 107, 107, 0.2);
-            color: var(--trading-red);
+        .instruments-table tr:hover {
+            background: rgba(0, 212, 170, 0.1);
+            cursor: pointer;
+        }
+
+        .instruments-table tr.selected {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.2), rgba(0, 245, 255, 0.1));
+            border-left: 3px solid var(--trading-green);
+        }
+
+        .price-up {
+            color: var(--trading-green) !important;
+        }
+
+        .price-down {
+            color: var(--trading-red) !important;
         }
 
         /* Chart Area */
@@ -471,102 +417,98 @@
             background: linear-gradient(135deg, rgba(0, 212, 170, 0.05), rgba(0, 245, 255, 0.02));
         }
 
-        .selected-instrument {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .instrument-logo {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: white;
-        }
-
-        .instrument-details h4 {
-            margin: 0;
+        .current-symbol {
             font-size: 1.3rem;
             font-weight: 700;
             color: var(--text-primary);
         }
 
-        .instrument-details p {
-            margin: 0;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .current-price {
-            text-align: right;
-        }
-
-        .price-display {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0;
-        }
-
-        .price-change-display {
-            font-size: 0.9rem;
-            font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 8px;
-            margin-top: 5px;
-            display: inline-block;
-        }
-
-        .price-change-display.positive {
-            background: rgba(0, 212, 170, 0.2);
-            color: var(--trading-green);
-        }
-
-        .price-change-display.negative {
-            background: rgba(255, 107, 107, 0.2);
-            color: var(--trading-red);
-        }
-
-        /* Chart Timeframes */
-        .timeframe-tabs {
-            display: flex;
-            gap: 5px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 4px;
-        }
-
-        .timeframe-tab {
-            padding: 6px 12px;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            font-weight: 600;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .timeframe-tab.active {
-            background: var(--trading-green);
-            color: white;
-            box-shadow: 0 3px 10px rgba(0, 212, 170, 0.3);
-        }
-
         /* TradingView Chart */
         .tradingview-widget {
             flex: 1;
-            padding: 20px;
-            min-height: 500px;
+            min-height: 300px;
+        }
+
+        #tradingview_chart {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Trades Section */
+        .trades-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid var(--panel-border);
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* WebTrader Tabs */
+        .webtrader-tabs {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 0 20px;
+        }
+
+        .webtrader-tab-link {
+            background: none !important;
+            border: none !important;
+            color: var(--text-secondary) !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .webtrader-tab-link:hover {
+            color: var(--trading-green) !important;
+        }
+
+        .webtrader-tab-link.active {
+            color: var(--trading-green) !important;
+            border-bottom: 2px solid var(--trading-green) !important;
+        }
+
+        .webtrader-tab-link .badge {
+            font-size: 0.7rem;
+        }
+
+        /* Trades Table */
+        .trades-table {
+            width: 100%;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .trades-table th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 8px 10px;
+            border: none;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .trades-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .trades-table tr:hover {
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .badge-buy {
+            background: var(--trading-green) !important;
+            color: white;
+        }
+
+        .badge-sell {
+            background: var(--trading-red) !important;
+            color: white;
         }
 
         /* Trading Panel */
@@ -580,74 +522,84 @@
             flex-direction: column;
         }
 
-        /* Trade Buttons */
-        .trade-buttons {
+        .trade-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--panel-border);
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 245, 255, 0.05));
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* Price Buttons */
+        .price-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 20px;
+            margin: 20px;
         }
 
-        .trade-btn {
-            padding: 15px;
-            border: none;
+        .btn-price {
+            padding: 20px 15px;
+            border: 2px solid transparent;
             border-radius: 12px;
             font-weight: 700;
-            font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            text-align: center;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            flex-direction: column;
+            gap: 5px;
         }
 
-        .buy-btn {
-            background: var(--buy-gradient);
-            color: white;
-            box-shadow: 0 10px 30px rgba(46, 213, 115, 0.3);
+        .btn-sell-price {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 71, 87, 0.1));
+            border-color: var(--trading-red);
+            color: var(--trading-red);
         }
 
-        .buy-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(46, 213, 115, 0.4);
-        }
-
-        .sell-btn {
+        .btn-sell-price:hover, .btn-sell-price.active {
             background: var(--sell-gradient);
             color: white;
-            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.3);
-        }
-
-        .sell-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 15px 40px rgba(255, 71, 87, 0.4);
         }
 
-        /* Trade Form */
-        .trade-form {
-            padding: 0 20px 20px;
+        .btn-buy-price {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(46, 213, 115, 0.1));
+            border-color: var(--trading-green);
+            color: var(--trading-green);
+        }
+
+        .btn-buy-price:hover, .btn-buy-price.active {
+            background: var(--buy-gradient);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(46, 213, 115, 0.4);
+        }
+
+        /* Trading Form */
+        .trading-form-pro {
+            padding: 20px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        .form-label {
-            font-size: 0.85rem;
+        .form-group label {
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             display: block;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .form-input {
+        .form-control {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px 15px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--glass-border);
             border-radius: 10px;
@@ -657,131 +609,62 @@
             transition: all 0.3s ease;
         }
 
-        .form-input:focus {
+        .form-control:focus {
             outline: none;
             border-color: var(--trading-green);
             box-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* Trade Summary */
-        .trade-summary {
-            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 245, 255, 0.05));
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
+        .btn-execute {
+            width: 100%;
             padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-        }
-
-        .summary-row:last-child {
-            margin-bottom: 0;
+            border: none;
+            border-radius: 12px;
             font-weight: 700;
-            font-size: 0.9rem;
-            padding-top: 8px;
-            border-top: 1px solid var(--glass-border);
-        }
-
-        .summary-label {
-            color: var(--text-secondary);
-        }
-
-        .summary-value {
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Open Positions */
-        .positions-section {
-            flex: 1;
-            padding: 20px;
-        }
-
-        .section-title {
             font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-title i {
-            color: var(--trading-green);
-        }
-
-        .position-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
+            background: var(--buy-gradient);
+            color: white;
+            cursor: pointer;
             transition: all 0.3s ease;
-        }
-
-        .position-item:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: var(--trading-green);
-        }
-
-        .position-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(46, 213, 115, 0.3);
         }
 
-        .position-symbol {
-            font-weight: 700;
-            color: var(--text-primary);
+        .btn-execute:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(46, 213, 115, 0.4);
         }
 
-        .position-type {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-weight: 600;
+        /* Success/Error Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
         }
 
-        .position-type.buy {
-            background: rgba(0, 212, 170, 0.2);
-            color: var(--trading-green);
+        .notification.show {
+            transform: translateX(0);
         }
 
-        .position-type.sell {
-            background: rgba(255, 107, 107, 0.2);
-            color: var(--trading-red);
+        .notification.success {
+            background: rgba(0, 212, 170, 0.9);
+            border: 1px solid var(--trading-green);
         }
 
-        .position-details {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-        }
-
-        .position-pnl {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            text-align: right;
-            grid-column: span 2;
-            margin-top: 5px;
-        }
-
-        .position-pnl.positive {
-            color: var(--trading-green);
-        }
-
-        .position-pnl.negative {
-            color: var(--trading-red);
+        .notification.error {
+            background: rgba(255, 107, 107, 0.9);
+            border: 1px solid var(--trading-red);
         }
 
         /* Responsive Design */
@@ -822,65 +705,25 @@
 
         /* Custom Scrollbars */
         .instruments-list::-webkit-scrollbar,
-        .positions-section::-webkit-scrollbar {
+        .trades-section::-webkit-scrollbar {
             width: 6px;
         }
 
         .instruments-list::-webkit-scrollbar-track,
-        .positions-section::-webkit-scrollbar-track {
+        .trades-section::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 3px;
         }
 
         .instruments-list::-webkit-scrollbar-thumb,
-        .positions-section::-webkit-scrollbar-thumb {
+        .trades-section::-webkit-scrollbar-thumb {
             background: var(--trading-green);
             border-radius: 3px;
         }
 
         .instruments-list::-webkit-scrollbar-thumb:hover,
-        .positions-section::-webkit-scrollbar-thumb:hover {
+        .trades-section::-webkit-scrollbar-thumb:hover {
             background: var(--neon-blue);
-        }
-
-        /* Loading Animations */
-        .loading-shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        /* Success/Error Notifications */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            z-index: 10000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: rgba(0, 212, 170, 0.9);
-            border: 1px solid var(--trading-green);
-        }
-
-        .notification.error {
-            background: rgba(255, 107, 107, 0.9);
-            border: 1px solid var(--trading-red);
         }
     </style>
 </head>
@@ -904,26 +747,15 @@
                 <!-- Market Data Ticker -->
                 <div class="col-md-6">
                     <div class="market-ticker" id="marketTicker">
+                        {% for instrument in instruments[:4] %}
                         <div class="ticker-item">
-                            <span class="ticker-symbol">BTC/USD</span>
-                            <span class="ticker-price" id="btc-price">$117,950.75</span>
-                            <span class="ticker-change positive" id="btc-change">+0.15%</span>
+                            <span class="ticker-symbol">{{ instrument.symbol }}</span>
+                            <span class="ticker-price">${{ "%.2f"|format(instrument.current_price) }}</span>
+                            <span class="ticker-change {{ 'positive' if instrument.change >= 0 else 'negative' }}">
+                                {{ '+' if instrument.change >= 0 else '' }}{{ "%.2f"|format(instrument.change) }}%
+                            </span>
                         </div>
-                        <div class="ticker-item">
-                            <span class="ticker-symbol">ETH/USD</span>
-                            <span class="ticker-price" id="eth-price">$3,794.37</span>
-                            <span class="ticker-change positive" id="eth-change">+0.23%</span>
-                        </div>
-                        <div class="ticker-item">
-                            <span class="ticker-symbol">AAPL</span>
-                            <span class="ticker-price" id="aapl-price">$215.23</span>
-                            <span class="ticker-change negative" id="aapl-change">-0.12%</span>
-                        </div>
-                        <div class="ticker-item">
-                            <span class="ticker-symbol">MSFT</span>
-                            <span class="ticker-price" id="msft-price">$428.01</span>
-                            <span class="ticker-change positive" id="msft-change">+0.45%</span>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
                 
@@ -988,301 +820,297 @@
                     Trading Instruments
                 </h5>
                 
-                <!-- Search Box -->
-                <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Search instruments..." id="instrumentSearch">
-                </div>
-                
-                <!-- Category Tabs -->
-                <div class="category-tabs">
-                    <button class="category-tab active" data-category="crypto">Crypto</button>
-                    <button class="category-tab" data-category="stocks">Stocks</button>
-                    <button class="category-tab" data-category="forex">Forex</button>
+                <!-- Market Filter Buttons -->
+                <div class="market-filter-buttons">
+                    <button class="market-filter-btn active" data-filter="all">
+                        <i class="fas fa-globe"></i> All
+                    </button>
+                    <button class="market-filter-btn" data-filter="crypto">
+                        <i class="fab fa-bitcoin"></i> Crypto
+                    </button>
+                    <button class="market-filter-btn" data-filter="stocks">
+                        <i class="fas fa-chart-line"></i> Stocks
+                    </button>
+                    <button class="market-filter-btn" data-filter="forex">
+                        <i class="fas fa-exchange-alt"></i> Forex
+                    </button>
                 </div>
             </div>
             
             <!-- Instruments List -->
             <div class="instruments-list" id="instrumentsList">
-                <!-- Crypto Instruments -->
-                <div class="instrument-item active" data-symbol="BTCUSD" data-category="crypto">
-                    <div class="instrument-info">
-                        <h6>BTC/USD</h6>
-                        <span>Bitcoin</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">$117,950.75</div>
-                        <div class="price-change positive">+0.15%</div>
-                    </div>
-                </div>
-                
-                <div class="instrument-item" data-symbol="ETHUSD" data-category="crypto">
-                    <div class="instrument-info">
-                        <h6>ETH/USD</h6>
-                        <span>Ethereum</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">$3,794.37</div>
-                        <div class="price-change positive">+0.23%</div>
-                    </div>
-                </div>
-                
-                <div class="instrument-item" data-symbol="SOLUSD" data-category="crypto">
-                    <div class="instrument-info">
-                        <h6>SOL/USD</h6>
-                        <span>Solana</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">$234.56</div>
-                        <div class="price-change negative">-0.78%</div>
-                    </div>
-                </div>
-                
-                <div class="instrument-item" data-symbol="ADAUSD" data-category="crypto">
-                    <div class="instrument-info">
-                        <h6>ADA/USD</h6>
-                        <span>Cardano</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">$1.23</div>
-                        <div class="price-change positive">+2.45%</div>
-                    </div>
-                </div>
-                
-                <!-- Stock Instruments -->
-                <div class="instrument-item" data-symbol="AAPL" data-category="stocks" style="display: none;">
-                    <div class="instrument-info">
-                        <h6>AAPL</h6>
-                        <span>Apple Inc.</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">$215.23</div>
-                        <div class="price-change negative">-0.12%</div>
-                    </div>
-                </div>
-                
-                <div class="instrument-item" data-symbol="MSFT" data-category="stocks" style="display: none;">
-                    <div class="instrument-info">
-                        <h6>MSFT</h6>
-                        <span>Microsoft Corp.</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">$428.01</div>
-                        <div class="price-change positive">+0.45%</div>
-                    </div>
-                </div>
-                
-                <div class="instrument-item" data-symbol="GOOGL" data-category="stocks" style="display: none;">
-                    <div class="instrument-info">
-                        <h6>GOOGL</h6>
-                        <span>Alphabet Inc.</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">$175.89</div>
-                        <div class="price-change positive">+1.23%</div>
-                    </div>
-                </div>
-                
-                <!-- Forex Instruments -->
-                <div class="instrument-item" data-symbol="EURUSD" data-category="forex" style="display: none;">
-                    <div class="instrument-info">
-                        <h6>EUR/USD</h6>
-                        <span>Euro / US Dollar</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">1.0523</div>
-                        <div class="price-change negative">-0.08%</div>
-                    </div>
-                </div>
-                
-                <div class="instrument-item" data-symbol="GBPUSD" data-category="forex" style="display: none;">
-                    <div class="instrument-info">
-                        <h6>GBP/USD</h6>
-                        <span>British Pound / US Dollar</span>
-                    </div>
-                    <div class="instrument-price">
-                        <div class="price-value">1.2756</div>
-                        <div class="price-change positive">+0.15%</div>
-                    </div>
-                </div>
+                <table class="instruments-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Price</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for instrument in instruments %}
+                        <tr class="instrument-row {{ 'selected' if loop.first }}" 
+                            data-symbol="{{ instrument.symbol }}" 
+                            data-type="{{ instrument.type }}" 
+                            data-instrument-id="{{ instrument.id }}"
+                            data-price="{{ instrument.current_price }}">
+                            <td style="font-weight: 600;">{{ instrument.symbol }}</td>
+                            <td class="price">${{ "%.2f"|format(instrument.current_price) }}</td>
+                            <td class="change {{ 'price-up' if instrument.change >= 0 else 'price-down' }}">
+                                <i class="fas fa-caret-{{ 'up' if instrument.change >= 0 else 'down' }}"></i>
+                                {{ "%.2f"|format(instrument.change) }}%
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </aside>
 
         <!-- Chart Container -->
         <section class="chart-container" data-aos="fade-up">
             <div class="chart-header">
-                <div class="selected-instrument">
-                    <div class="instrument-logo" id="currentLogo">₿</div>
-                    <div class="instrument-details">
-                        <h4 id="currentSymbol">BTC/USD</h4>
-                        <p id="currentName">Bitcoin / US Dollar</p>
-                    </div>
-                </div>
-                
-                <div class="current-price">
-                    <h3 class="price-display" id="currentPrice">$117,950.75</h3>
-                    <span class="price-change-display positive" id="currentChange">+$178.17 (+0.15%)</span>
-                </div>
-                
-                <div class="timeframe-tabs">
-                    <button class="timeframe-tab" data-timeframe="1">1m</button>
-                    <button class="timeframe-tab" data-timeframe="5">5m</button>
-                    <button class="timeframe-tab" data-timeframe="15">15m</button>
-                    <button class="timeframe-tab" data-timeframe="30">30m</button>
-                    <button class="timeframe-tab active" data-timeframe="60">1h</button>
-                    <button class="timeframe-tab" data-timeframe="240">4h</button>
-                    <button class="timeframe-tab" data-timeframe="D">1D</button>
-                </div>
+                <div class="current-symbol">{{ instruments[0].symbol if instruments else 'BTC/USD' }}</div>
             </div>
             
             <!-- TradingView Chart Widget -->
             <div class="tradingview-widget">
-                <div id="tradingview_chart" style="height: 100%; width: 100%;"></div>
+                <div id="tradingview_chart"></div>
+            </div>
+
+            <!-- Trades Section with Tabs -->
+            <div class="trades-section">
+                <!-- Trade Tabs Navigation -->
+                <ul class="nav nav-tabs webtrader-tabs" id="tradeTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active webtrader-tab-link" id="open-trades-tab" data-bs-toggle="tab" data-bs-target="#open-trades" type="button" role="tab" aria-controls="open-trades" aria-selected="true">
+                            <i class="fas fa-chart-line me-1"></i>Open Trades <span class="badge bg-success ms-1">{{ open_trades|length }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link webtrader-tab-link" id="pending-orders-tab" data-bs-toggle="tab" data-bs-target="#pending-orders" type="button" role="tab" aria-controls="pending-orders" aria-selected="false">
+                            <i class="fas fa-clock me-1"></i>Pending Orders <span class="badge bg-warning ms-1">{{ pending_orders|length }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link webtrader-tab-link" id="closed-trades-tab" data-bs-toggle="tab" data-bs-target="#closed-trades" type="button" role="tab" aria-controls="closed-trades" aria-selected="false">
+                            <i class="fas fa-history me-1"></i>Closed Trades <span class="badge bg-secondary ms-1">{{ closed_trades|length }}</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="tradeTabContent" style="flex: 1; overflow-y: auto;">
+                    <!-- Open Trades Tab -->
+                    <div class="tab-pane fade show active" id="open-trades" role="tabpanel" aria-labelledby="open-trades-tab">
+                        <div class="table-responsive">
+                            <table class="trades-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Amount</th>
+                                        <th>Entry Price</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Current Price</th>
+                                        <th>P/L ($)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trade in open_trades %}
+                                    <tr class="open-trade-row" 
+                                        data-trade-id="{{ trade.id }}" 
+                                        data-instrument-id="{{ trade.instrument.id }}" 
+                                        data-entry-price="{{ trade.price }}" 
+                                        data-trade-amount="{{ trade.amount }}" 
+                                        data-trade-type="{{ trade.trade_type }}">
+                                        <td>{{ trade.instrument.symbol }}</td>
+                                        <td>{{ trade.amount }}</td>
+                                        <td>${{ "%.2f"|format(trade.price) }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ trade.trade_type }}">{{ trade.trade_type | upper }}</span>
+                                        </td>
+                                        <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td class="current-price-cell">--.--</td>
+                                        <td class="profit-loss-cell">--.--</td>
+                                        <td>
+                                            <form method="POST" action="{{ url_for('webtrader.close_trade') }}" style="display:inline;" class="close-trade-form">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="trade_id" value="{{ trade.id }}">
+                                                <button type="submit" class="btn btn-danger btn-sm close-trade-btn">Close</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not open_trades %}
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">No open trades</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pending Orders Tab -->
+                    <div class="tab-pane fade" id="pending-orders" role="tabpanel" aria-labelledby="pending-orders-tab">
+                        <div class="table-responsive">
+                            <table class="trades-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Amount</th>
+                                        <th>Price</th>
+                                        <th>Type</th>
+                                        <th>Order Type</th>
+                                        <th>Target Price</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in pending_orders %}
+                                    <tr>
+                                        <td>{{ order.instrument.symbol }}</td>
+                                        <td>{{ order.amount }}</td>
+                                        <td>${{ "%.2f"|format(order.price) }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ order.trade_type }}">{{ order.trade_type | upper }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge order-type-badge">{{ order.order_type | replace('_', ' ') | title }}</span>
+                                        </td>
+                                        <td>${{ "%.2f"|format(order.target_price) }}</td>
+                                        <td>{{ order.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <form method="POST" action="{{ url_for('webtrader.cancel_order') }}" style="display:inline;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                <button type="submit" class="btn btn-warning btn-sm">Cancel</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not pending_orders %}
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">No pending orders</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Closed Trades Tab -->
+                    <div class="tab-pane fade" id="closed-trades" role="tabpanel" aria-labelledby="closed-trades-tab">
+                        <div class="table-responsive">
+                            <table class="trades-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Amount</th>
+                                        <th>Entry Price</th>
+                                        <th>Exit Price</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Holding Period</th>
+                                        <th>Profit/Loss</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trade in closed_trades %}
+                                    <tr>
+                                        <td>{{ trade.instrument.symbol }}</td>
+                                        <td>{{ trade.amount }}</td>
+                                        <td>${{ "%.2f"|format(trade.price) }}</td>
+                                        <td>
+                                            {% if trade.closing_price %}
+                                                ${{ "%.2f"|format(trade.closing_price) }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ trade.trade_type }}">{{ trade.trade_type | upper }}</span>
+                                        </td>
+                                        <td>{{ trade.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            {% if trade.status == 'closed' %}
+                                                {{ trade.get_holding_period() }}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="{% if trade.profit_loss is not none and trade.profit_loss > 0 %}price-up{% elif trade.profit_loss is not none and trade.profit_loss < 0 %}price-down{% endif %}">
+                                            ${{ "%.2f"|format(trade.profit_loss if trade.profit_loss else 0.00) }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not closed_trades %}
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">No closed trades</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <!-- Trading Panel -->
         <aside class="trading-panel" data-aos="fade-left">
-            <div class="panel-header">
-                <h5 class="panel-title">
-                    <i class="fas fa-chart-line"></i>
-                    Quick Trade
-                </h5>
-                
-                <!-- Trade Buttons -->
-                <div class="trade-buttons">
-                    <button class="trade-btn buy-btn" id="buyBtn">
-                        <i class="fas fa-arrow-up"></i>
-                        BUY
-                    </button>
-                    <button class="trade-btn sell-btn" id="sellBtn">
-                        <i class="fas fa-arrow-down"></i>
-                        SELL
-                    </button>
-                </div>
+            <div class="trade-header">
+                <span id="trade-panel-symbol">{{ instruments[0].symbol if instruments else '--/--' }}</span>
             </div>
             
-            <!-- Trade Form -->
-            <div class="trade-form">
-                <div class="form-group">
-                    <label class="form-label">Amount (BTC)</label>
-                    <input type="number" class="form-input" id="tradeAmount" placeholder="0.00" step="0.01" min="0">
+            <!-- Trading Form -->
+            <form class="trading-form-pro" method="POST" action="{{ url_for('webtrader.execute_trade') }}">
+                {{ form.hidden_tag() if form }}
+                <input type="hidden" id="instrument_id" name="instrument_id" value="{{ instruments[0].id if instruments else '' }}">
+                <input type="hidden" id="trade_type" name="trade_type" value="buy">
+
+                <div class="price-buttons">
+                    <button type="button" class="btn-price btn-sell-price" onclick="setTradeType('sell')">
+                        <span>SELL</span>
+                        <strong id="sell-price-display">--.--</strong>
+                    </button>
+                    <button type="button" class="btn-price btn-buy-price active" onclick="setTradeType('buy')">
+                        <span>BUY</span>
+                        <strong id="buy-price-display">--.--</strong>
+                    </button>
                 </div>
-                
+
+                <!-- Remove Leverage Selector but keep default leverage of 5x -->
+                <input type="hidden" id="leverage-select" value="5">
+
+                <div class="form-group amount-group">
+                    <label for="amount">Amount</label>
+                    <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+
                 <div class="form-group">
-                    <label class="form-label">Order Type</label>
-                    <select class="form-input" id="orderType">
+                    <label for="order_type">Order Type</label>
+                    <select class="form-control" id="order_type" name="order_type">
                         <option value="market">Market Order</option>
                         <option value="limit">Limit Order</option>
-                        <option value="stop">Stop Loss</option>
+                        <option value="stop_loss">Stop Loss</option>
                         <option value="take_profit">Take Profit</option>
                     </select>
                 </div>
-                
-                <div class="form-group" id="limitPriceGroup" style="display: none;">
-                    <label class="form-label">Limit Price ($)</label>
-                    <input type="number" class="form-input" id="limitPrice" placeholder="0.00" step="0.01" min="0">
+
+                <div class="form-group" id="target-price-group" style="display: none;">
+                    <label for="target_price">Target Price</label>
+                    <input type="number" class="form-control" id="target_price" name="target_price" step="0.01" min="0" placeholder="0.00">
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Leverage</label>
-                    <select class="form-input" id="leverage">
-                        <option value="1">1:1 (No Leverage)</option>
-                        <option value="2">1:2</option>
-                        <option value="5" selected>1:5</option>
-                        <option value="10">1:10</option>
-                        <option value="20">1:20</option>
-                        <option value="50">1:50</option>
-                        <option value="100">1:100</option>
-                    </select>
-                </div>
-                
-                <!-- Trade Summary -->
-                <div class="trade-summary">
-                    <div class="summary-row">
-                        <span class="summary-label">Margin Required:</span>
-                        <span class="summary-value" id="marginRequired">$0.00</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Position Size:</span>
-                        <span class="summary-value" id="positionSize">$0.00</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Spread:</span>
-                        <span class="summary-value" id="spread">$2.50</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Total Cost:</span>
-                        <span class="summary-value" id="totalCost">$0.00</span>
-                    </div>
-                </div>
-                
-                <button class="trade-btn buy-btn" id="executeTradeBtn" style="width: 100%; margin-bottom: 15px;">
+
+                <button type="submit" class="btn-execute" id="trade-submit-btn">
                     <i class="fas fa-bolt"></i>
                     Execute Trade
                 </button>
-            </div>
-            
-            <!-- Open Positions -->
-            <div class="positions-section">
-                <h6 class="section-title">
-                    <i class="fas fa-layer-group"></i>
-                    Open Positions
-                </h6>
-                
-                <div id="openPositions">
-                    {% for trade in open_trades %}
-                    <div class="position-item">
-                        <div class="position-header">
-                            <span class="position-symbol">{{ trade.instrument.symbol }}</span>
-                            <span class="position-type {{ trade.trade_type }}">{{ trade.trade_type.upper() }}</span>
-                        </div>
-                        <div class="position-details">
-                            <span>Size: {{ "%.4f"|format(trade.amount) }}</span>
-                            <span>Entry: ${{ "%.2f"|format(trade.price) }}</span>
-                            <span>Current: ${{ "%.2f"|format(trade.instrument.current_price) }}</span>
-                            <span>Leverage: 1:{{ trade.leverage }}</span>
-                        </div>
-                        <div class="position-pnl {{ 'positive' if trade.profit_loss > 0 else 'negative' }}">
-                            P/L: ${{ "%.2f"|format(trade.profit_loss or 0) }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                    
-                    <!-- Sample positions for demo -->
-                    <div class="position-item">
-                        <div class="position-header">
-                            <span class="position-symbol">BTC/USD</span>
-                            <span class="position-type buy">BUY</span>
-                        </div>
-                        <div class="position-details">
-                            <span>Size: 0.02</span>
-                            <span>Entry: $117,800.00</span>
-                            <span>Current: $117,950.75</span>
-                            <span>Leverage: 1:5</span>
-                        </div>
-                        <div class="position-pnl positive">
-                            P/L: +$150.75
-                        </div>
-                    </div>
-                    
-                    <div class="position-item">
-                        <div class="position-header">
-                            <span class="position-symbol">ETH/USD</span>
-                            <span class="position-type sell">SELL</span>
-                        </div>
-                        <div class="position-details">
-                            <span>Size: 0.5</span>
-                            <span>Entry: $3,820.00</span>
-                            <span>Current: $3,794.37</span>
-                            <span>Leverage: 1:10</span>
-                        </div>
-                        <div class="position-pnl positive">
-                            P/L: +$128.15
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </form>
         </aside>
     </main>
 
@@ -1296,6 +1124,14 @@
             duration: 1000,
             once: true
         });
+
+        // Global variables
+        let currentInstrument = {
+            id: {{ instruments[0].id if instruments else 1 }},
+            symbol: '{{ instruments[0].symbol if instruments else "BTC/USD" }}',
+            type: '{{ instruments[0].type if instruments else "crypto" }}',
+            price: {{ instruments[0].current_price if instruments else 117950.75 }}
+        };
 
         // Create particles
         function createParticles() {
@@ -1321,149 +1157,185 @@
 
         // Initialize TradingView Chart
         function initTradingViewChart() {
-            new TradingView.widget({
-                "width": "100%",
-                "height": "100%",
-                "symbol": "COINBASE:BTCUSD",
-                "interval": "60",
-                "timezone": "Etc/UTC",
-                "theme": "dark",
-                "style": "1",
-                "locale": "en",
-                "toolbar_bg": "#0a0a0f",
-                "enable_publishing": false,
-                "hide_top_toolbar": false,
-                "hide_legend": true,
-                "save_image": false,
-                "container_id": "tradingview_chart",
-                "backgroundColor": "rgba(10, 10, 15, 0.8)",
-                "gridColor": "rgba(255, 255, 255, 0.1)",
-                "overrides": {
-                    "paneProperties.background": "#0a0a0f",
-                    "paneProperties.vertGridProperties.color": "rgba(255, 255, 255, 0.1)",
-                    "paneProperties.horzGridProperties.color": "rgba(255, 255, 255, 0.1)",
-                    "symbolWatermarkProperties.transparency": 90,
-                    "scalesProperties.textColor": "#ffffff",
-                    "mainSeriesProperties.candleStyle.upColor": "#00d4aa",
-                    "mainSeriesProperties.candleStyle.downColor": "#ff6b6b",
-                    "mainSeriesProperties.candleStyle.borderUpColor": "#00d4aa",
-                    "mainSeriesProperties.candleStyle.borderDownColor": "#ff6b6b",
-                    "mainSeriesProperties.candleStyle.wickUpColor": "#00d4aa",
-                    "mainSeriesProperties.candleStyle.wickDownColor": "#ff6b6b"
-                }
-            });
+            refreshTradingViewChart();
         }
 
-        // Category switching
-        document.querySelectorAll('.category-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs
-                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+        // Refresh TradingView Chart (from old WebTrader)
+        function refreshTradingViewChart() {
+            const symbol = currentInstrument.symbol;
+            const type = currentInstrument.type;
+            
+            // Show immediate loading state
+            const chartContainer = document.getElementById('tradingview_chart');
+            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a; font-size: 16px;"><i class="fas fa-chart-line fa-spin" style="margin-right: 10px;"></i>Loading ' + symbol + ' chart...</div>';
+            
+            // Determine TradingView symbol immediately
+            let tvSymbol = '';
+            if (type === 'crypto') {
+                const base = symbol.split('/')[0];
+                const quote = symbol.split('/')[1] || 'USD';
+                tvSymbol = `BINANCE:${base}${quote === 'USD' ? 'USDT' : quote}`;
+            } else if (type === 'stock') {
+                tvSymbol = `NASDAQ:${symbol}`;
+            } else if (type === 'forex') {
+                tvSymbol = `FX:${symbol.replace('/', '')}`;
+            } else if (type === 'commodities') {
+                if (symbol === 'GOLD') tvSymbol = 'TVC:GOLD';
+                else if (symbol === 'SILVER') tvSymbol = 'TVC:SILVER';
+                else if (symbol === 'OIL' || symbol === 'WTI') tvSymbol = 'NYMEX:CL1!';
+                else if (symbol === 'NATGAS') tvSymbol = 'NYMEX:NG1!';
+                else tvSymbol = symbol;
+            }
+            
+            console.log(`⚡ FAST CHART: ${symbol} → ${tvSymbol}`);
+            
+            // 🚀 RAPID WIDGET DESTRUCTION - No delays
+            try {
+                if (window.tvWidget && typeof window.tvWidget.remove === 'function') {
+                    window.tvWidget.remove();
+                    console.log("⚡ Widget destroyed instantly");
+                }
+            } catch (error) {
+                console.warn("Widget destruction warning (continuing):", error);
+            }
+            
+            // 🚀 IMMEDIATE RECREATION - No delays
+            try {
+                // Clear container
+                chartContainer.innerHTML = '';
+                
+                // Create new TradingView widget immediately
+                window.tvWidget = new TradingView.widget({
+                    "autosize": true,
+                    "symbol": tvSymbol,
+                    "interval": "15",
+                    "timezone": "Etc/UTC",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "en",
+                    "toolbar_bg": "#0a0a0f",
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_chart",
+                    "overrides": {
+                        "paneProperties.background": "#0a0a0f",
+                        "paneProperties.vertGridProperties.color": "rgba(255, 255, 255, 0.1)",
+                        "paneProperties.horzGridProperties.color": "rgba(255, 255, 255, 0.1)",
+                        "symbolWatermarkProperties.transparency": 90,
+                        "scalesProperties.textColor": "#ffffff",
+                        "mainSeriesProperties.candleStyle.upColor": "#00d4aa",
+                        "mainSeriesProperties.candleStyle.downColor": "#ff6b6b",
+                        "mainSeriesProperties.candleStyle.borderUpColor": "#00d4aa",
+                        "mainSeriesProperties.candleStyle.borderDownColor": "#ff6b6b",
+                        "mainSeriesProperties.candleStyle.wickUpColor": "#00d4aa",
+                        "mainSeriesProperties.candleStyle.wickDownColor": "#ff6b6b"
+                    }
+                });
+                
+                console.log(`⚡ CHART READY: ${symbol} (${tvSymbol})`);
+                
+            } catch (error) {
+                console.error("❌ Chart creation error:", error);
+                chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: #ff6b6b; background: #1a1a1a; font-size: 16px;"><i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>Chart error for ' + symbol + '</div>';
+            }
+        }
+
+        // Market filter functionality
+        document.querySelectorAll('.market-filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.market-filter-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 
-                // Show/hide instruments based on category
-                const category = this.dataset.category;
-                document.querySelectorAll('.instrument-item').forEach(item => {
-                    if (item.dataset.category === category) {
-                        item.style.display = 'flex';
+                const filter = this.dataset.filter;
+                const rows = document.querySelectorAll('.instrument-row');
+                
+                rows.forEach(row => {
+                    if (filter === 'all' || row.dataset.type === filter) {
+                        row.style.display = '';
                     } else {
-                        item.style.display = 'none';
+                        row.style.display = 'none';
                     }
                 });
             });
         });
 
         // Instrument selection
-        document.querySelectorAll('.instrument-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // Remove active class from all instruments
-                document.querySelectorAll('.instrument-item').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
+        document.querySelectorAll('.instrument-row').forEach(row => {
+            row.addEventListener('click', function() {
+                // Remove selected class from all rows
+                document.querySelectorAll('.instrument-row').forEach(r => r.classList.remove('selected'));
+                this.classList.add('selected');
                 
-                // Update chart header
+                // Update current instrument
+                const instrumentId = this.dataset.instrumentId;
                 const symbol = this.dataset.symbol;
-                const name = this.querySelector('.instrument-info h6').textContent;
-                const fullName = this.querySelector('.instrument-info span').textContent;
-                const price = this.querySelector('.price-value').textContent;
-                const change = this.querySelector('.price-change').textContent;
+                const type = this.dataset.type;
+                const price = parseFloat(this.dataset.price);
                 
-                document.getElementById('currentSymbol').textContent = name;
-                document.getElementById('currentName').textContent = fullName;
-                document.getElementById('currentPrice').textContent = price;
-                document.getElementById('currentChange').textContent = change;
+                currentInstrument = {
+                    id: instrumentId,
+                    symbol: symbol,
+                    type: type,
+                    price: price
+                };
                 
-                // Update logo
-                const logo = document.getElementById('currentLogo');
-                if (symbol.includes('BTC')) logo.textContent = '₿';
-                else if (symbol.includes('ETH')) logo.textContent = 'Ξ';
-                else if (symbol.includes('SOL')) logo.textContent = 'S';
-                else if (symbol.includes('ADA')) logo.textContent = 'A';
-                else logo.textContent = symbol.charAt(0);
+                // Update current symbol display
+                document.querySelector('.current-symbol').textContent = symbol;
+                document.getElementById('trade-panel-symbol').textContent = symbol;
+                
+                // Update trading form
+                document.getElementById('instrument_id').value = instrumentId;
+                
+                // Update price buttons
+                updatePriceButtons(price);
+                
+                // Refresh chart
+                refreshTradingViewChart();
             });
         });
 
-        // Timeframe switching
-        document.querySelectorAll('.timeframe-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.timeframe-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Update chart timeframe (would integrate with TradingView API)
-                console.log('Switching to timeframe:', this.dataset.timeframe);
-            });
-        });
+        // Trade type switching
+        function setTradeType(type) {
+            document.getElementById('trade_type').value = type;
+            
+            // Update button states
+            document.querySelectorAll('.btn-price').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.btn-${type}-price`).classList.add('active');
+            
+            // Update submit button
+            const submitBtn = document.getElementById('trade-submit-btn');
+            if (type === 'buy') {
+                submitBtn.className = 'btn-execute';
+                submitBtn.style.background = 'var(--buy-gradient)';
+                submitBtn.innerHTML = '<i class="fas fa-arrow-up"></i> BUY';
+            } else {
+                submitBtn.className = 'btn-execute';
+                submitBtn.style.background = 'var(--sell-gradient)';
+                submitBtn.innerHTML = '<i class="fas fa-arrow-down"></i> SELL';
+            }
+        }
 
-        // Trade calculations
-        function updateTradeCalculations() {
-            const amount = parseFloat(document.getElementById('tradeAmount').value) || 0;
-            const currentPrice = 117950.75; // Would be dynamic
-            const leverage = parseFloat(document.getElementById('leverage').value) || 1;
+        // Update price buttons
+        function updatePriceButtons(price) {
+            const spread = 0.0005; // 0.05% spread
+            const sellPrice = price * (1 - spread);
+            const buyPrice = price * (1 + spread);
             
-            const positionSize = amount * currentPrice;
-            const marginRequired = positionSize / leverage;
-            const totalCost = marginRequired + 2.50; // Spread
-            
-            document.getElementById('positionSize').textContent = '$' + positionSize.toLocaleString('en-US', {minimumFractionDigits: 2});
-            document.getElementById('marginRequired').textContent = '$' + marginRequired.toLocaleString('en-US', {minimumFractionDigits: 2});
-            document.getElementById('totalCost').textContent = '$' + totalCost.toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
+            document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
         }
 
         // Order type handling
-        document.getElementById('orderType').addEventListener('change', function() {
-            const limitPriceGroup = document.getElementById('limitPriceGroup');
-            if (this.value === 'limit') {
-                limitPriceGroup.style.display = 'block';
+        document.getElementById('order_type').addEventListener('change', function() {
+            const targetPriceGroup = document.getElementById('target-price-group');
+            if (this.value === 'limit' || this.value === 'stop_loss' || this.value === 'take_profit') {
+                targetPriceGroup.style.display = 'block';
+                document.getElementById('target_price').required = true;
             } else {
-                limitPriceGroup.style.display = 'none';
+                targetPriceGroup.style.display = 'none';
+                document.getElementById('target_price').required = false;
             }
-        });
-
-        // Trade amount and leverage change listeners
-        document.getElementById('tradeAmount').addEventListener('input', updateTradeCalculations);
-        document.getElementById('leverage').addEventListener('change', updateTradeCalculations);
-
-        // Execute trade
-        document.getElementById('executeTradeBtn').addEventListener('click', function() {
-            const amount = document.getElementById('tradeAmount').value;
-            if (!amount || amount <= 0) {
-                showNotification('Please enter a valid trade amount', 'error');
-                return;
-            }
-            
-            // Show loading state
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            this.disabled = true;
-            
-            // Simulate trade execution
-            setTimeout(() => {
-                showNotification('Trade executed successfully!', 'success');
-                this.innerHTML = '<i class="fas fa-bolt"></i> Execute Trade';
-                this.disabled = false;
-                
-                // Reset form
-                document.getElementById('tradeAmount').value = '';
-                updateTradeCalculations();
-            }, 2000);
         });
 
         // Show notification
@@ -1484,55 +1356,45 @@
             }, 3000);
         }
 
-        // Search functionality
-        document.getElementById('instrumentSearch').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const activeCategory = document.querySelector('.category-tab.active').dataset.category;
+        // Trade form submission
+        document.querySelector('.trading-form-pro').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('trade-submit-btn');
             
-            document.querySelectorAll('.instrument-item').forEach(item => {
-                const symbol = item.querySelector('.instrument-info h6').textContent.toLowerCase();
-                const name = item.querySelector('.instrument-info span').textContent.toLowerCase();
-                const matchesSearch = symbol.includes(searchTerm) || name.includes(searchTerm);
-                const matchesCategory = item.dataset.category === activeCategory;
-                
-                if (matchesSearch && matchesCategory) {
-                    item.style.display = 'flex';
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            submitBtn.disabled = true;
+            
+            // Re-enable after response (form will redirect on success)
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                const tradeType = document.getElementById('trade_type').value;
+                if (tradeType === 'buy') {
+                    submitBtn.innerHTML = '<i class="fas fa-arrow-up"></i> BUY';
                 } else {
-                    item.style.display = 'none';
+                    submitBtn.innerHTML = '<i class="fas fa-arrow-down"></i> SELL';
                 }
-            });
+            }, 3000);
         });
 
         // Initialize everything
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
-            setTimeout(initTradingViewChart, 1000); // Wait for DOM
-            updateTradeCalculations();
+            
+            // Initialize chart after delay
+            setTimeout(() => {
+                initTradingViewChart();
+            }, 1000);
+            
+            // Initialize price buttons with first instrument
+            if (currentInstrument.price) {
+                updatePriceButtons(currentInstrument.price);
+            }
         });
 
-        // Real-time price updates (simulate)
-        function simulatePriceUpdates() {
-            const instruments = document.querySelectorAll('.instrument-item');
-            instruments.forEach(item => {
-                const priceElement = item.querySelector('.price-value');
-                const changeElement = item.querySelector('.price-change');
-                
-                // Simulate price change (random walk)
-                let currentPrice = parseFloat(priceElement.textContent.replace(/[$,]/g, ''));
-                const changePercent = (Math.random() - 0.5) * 0.02; // ±1% max change
-                const newPrice = currentPrice * (1 + changePercent);
-                
-                priceElement.textContent = '$' + newPrice.toLocaleString('en-US', {minimumFractionDigits: 2});
-                
-                // Update change indicator
-                const isPositive = changePercent > 0;
-                changeElement.className = `price-change ${isPositive ? 'positive' : 'negative'}`;
-                changeElement.textContent = (isPositive ? '+' : '') + (changePercent * 100).toFixed(2) + '%';
-            });
+        // CSRF token helper
+        function getCsrfToken() {
+            return document.querySelector('input[name="csrf_token"]').value;
         }
-
-        // Start price simulation
-        setInterval(simulatePriceUpdates, 5000); // Update every 5 seconds
     </script>
 </body>
 </html>
