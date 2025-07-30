@@ -136,15 +136,21 @@
             border-radius: 15px;
             padding: 10px 15px;
             display: flex;
-            overflow-x: auto;
-            gap: 30px;
+            overflow: hidden;
             backdrop-filter: blur(10px);
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            position: relative;
         }
 
-        .market-ticker::-webkit-scrollbar {
-            display: none;
+        .ticker-content {
+            display: flex;
+            gap: 30px;
+            animation: scroll-ticker 30s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes scroll-ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
 
         .ticker-item {
@@ -355,46 +361,78 @@
             padding: 0 20px 20px;
         }
 
-        .instruments-table {
-            width: 100%;
-            font-size: 0.85rem;
+        .instruments-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .instruments-table th {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-secondary);
-            font-weight: 600;
-            padding: 12px 8px;
-            border: none;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: sticky;
-            top: 0;
-        }
-
-        .instruments-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            vertical-align: middle;
-        }
-
-        .instruments-table tr:hover {
-            background: rgba(0, 212, 170, 0.1);
+        .instrument-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            border-radius: 12px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .instruments-table tr.selected {
+        .instrument-item:hover {
+            background: rgba(0, 212, 170, 0.1);
+            border-color: var(--trading-green);
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 212, 170, 0.2);
+        }
+
+        .instrument-item.selected {
             background: linear-gradient(135deg, rgba(0, 212, 170, 0.2), rgba(0, 245, 255, 0.1));
-            border-left: 3px solid var(--trading-green);
+            border-color: var(--trading-green);
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.3);
+            transform: translateX(10px);
         }
 
-        .price-up {
-            color: var(--trading-green) !important;
+        .instrument-info h6 {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
-        .price-down {
-            color: var(--trading-red) !important;
+        .instrument-info span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .instrument-price {
+            text-align: right;
+        }
+
+        .price-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .price-change {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 6px;
+            margin-top: 2px;
+        }
+
+        .price-change.positive {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--trading-green);
+        }
+
+        .price-change.negative {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--trading-red);
         }
 
         /* Chart Area */
@@ -808,29 +846,59 @@
         @media (max-width: 992px) {
             .trading-container {
                 grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr auto;
+                grid-template-rows: auto auto auto;
                 height: auto;
+                gap: 10px;
+            }
+
+            .trades-section {
+                height: 400px;
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+
+            .tab-content {
+                height: 300px;
+                overflow-y: auto;
             }
 
             .balance-cards {
                 justify-content: center;
+            }
+
+            .chart-container {
+                order: 1;
+            }
+
+            .instruments-panel {
+                order: 2;
+                height: 300px;
+            }
+
+            .trading-panel {
+                order: 3;
+                height: auto;
             }
         }
 
         @media (max-width: 768px) {
-            .trading-header .row > div {
-                text-align: center !important;
-                margin-bottom: 15px;
+            .trades-section {
+                height: 350px;
             }
 
-            .balance-cards {
-                flex-direction: column;
-                align-items: center;
+            .tab-content {
+                height: 250px;
+                overflow-y: scroll;
+                -webkit-overflow-scrolling: touch;
             }
 
-            .user-profile {
-                width: 100%;
-                justify-content: center;
+            .trades-table {
+                font-size: 0.7rem;
+            }
+
+            .trades-table th,
+            .trades-table td {
+                padding: 6px 4px;
             }
         }
 
@@ -878,15 +946,27 @@
                 <!-- Market Data Ticker -->
                 <div class="col-md-6">
                     <div class="market-ticker" id="marketTicker">
-                        {% for instrument in instruments[:4] %}
-                        <div class="ticker-item">
-                            <span class="ticker-symbol">{{ instrument.symbol }}</span>
-                            <span class="ticker-price">${{ "%.2f"|format(instrument.current_price) }}</span>
-                            <span class="ticker-change {{ 'positive' if instrument.change >= 0 else 'negative' }}">
-                                {{ '+' if instrument.change >= 0 else '' }}{{ "%.2f"|format(instrument.change) }}%
-                            </span>
+                        <div class="ticker-content">
+                            {% for instrument in instruments[:4] %}
+                            <div class="ticker-item">
+                                <span class="ticker-symbol">{{ instrument.symbol }}</span>
+                                <span class="ticker-price">${{ "%.2f"|format(instrument.current_price) }}</span>
+                                <span class="ticker-change {{ 'positive' if instrument.change >= 0 else 'negative' }}">
+                                    {{ '+' if instrument.change >= 0 else '' }}{{ "%.2f"|format(instrument.change) }}%
+                                </span>
+                            </div>
+                            {% endfor %}
+                            <!-- Duplicate for seamless loop -->
+                            {% for instrument in instruments[:4] %}
+                            <div class="ticker-item">
+                                <span class="ticker-symbol">{{ instrument.symbol }}</span>
+                                <span class="ticker-price">${{ "%.2f"|format(instrument.current_price) }}</span>
+                                <span class="ticker-change {{ 'positive' if instrument.change >= 0 else 'negative' }}">
+                                    {{ '+' if instrument.change >= 0 else '' }}{{ "%.2f"|format(instrument.change) }}%
+                                </span>
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
                 
@@ -970,31 +1050,27 @@
             
             <!-- Instruments List -->
             <div class="instruments-list" id="instrumentsList">
-                <table class="instruments-table">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Price</th>
-                            <th>Change</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for instrument in instruments %}
-                        <tr class="instrument-row {{ 'selected' if loop.first }}" 
-                            data-symbol="{{ instrument.symbol }}" 
-                            data-type="{{ instrument.type }}" 
-                            data-instrument-id="{{ instrument.id }}"
-                            data-price="{{ instrument.current_price }}">
-                            <td style="font-weight: 600;">{{ instrument.symbol }}</td>
-                            <td class="price">${{ "%.2f"|format(instrument.current_price) }}</td>
-                            <td class="change {{ 'price-up' if instrument.change >= 0 else 'price-down' }}">
+                <div class="instruments-container">
+                    {% for instrument in instruments %}
+                    <div class="instrument-item {{ 'selected' if loop.first }}" 
+                        data-symbol="{{ instrument.symbol }}" 
+                        data-type="{{ instrument.type }}" 
+                        data-instrument-id="{{ instrument.id }}"
+                        data-price="{{ instrument.current_price }}">
+                        <div class="instrument-info">
+                            <h6>{{ instrument.symbol }}</h6>
+                            <span>{{ instrument.name }}</span>
+                        </div>
+                        <div class="instrument-price">
+                            <span class="price-value">${{ "%.2f"|format(instrument.current_price) }}</span>
+                            <span class="price-change {{ 'positive' if instrument.change >= 0 else 'negative' }}">
                                 <i class="fas fa-caret-{{ 'up' if instrument.change >= 0 else 'down' }}"></i>
                                 {{ "%.2f"|format(instrument.change) }}%
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </aside>
 
@@ -1422,7 +1498,7 @@
                 this.classList.add('active');
                 
                 const filter = this.dataset.filter;
-                const rows = document.querySelectorAll('.instrument-row');
+                const rows = document.querySelectorAll('.instrument-item');
                 
                 rows.forEach(row => {
                     if (filter === 'all' || row.dataset.type === filter) {
@@ -1435,10 +1511,10 @@
         });
 
         // Instrument selection
-        document.querySelectorAll('.instrument-row').forEach(row => {
+        document.querySelectorAll('.instrument-item').forEach(row => {
             row.addEventListener('click', function() {
                 // Remove selected class from all rows
-                document.querySelectorAll('.instrument-row').forEach(r => r.classList.remove('selected'));
+                document.querySelectorAll('.instrument-item').forEach(r => r.classList.remove('selected'));
                 this.classList.add('selected');
                 
                 // Update current instrument
@@ -1604,7 +1680,157 @@
                 updatePriceButtons(currentInstrument.price);
                 updateTradeCalculations();
             }
+
+            // Start live price updates
+            startLivePriceUpdates();
+            
+            // Start P/L updates for open trades
+            updateAllOpenTradesPL();
+            setInterval(updateAllOpenTradesPL, 15000); // Update P/L every 15 seconds
         });
+
+        // Live price update functionality
+        function startLivePriceUpdates() {
+            // Update current instrument price
+            setInterval(function() {
+                if (currentInstrument.id) {
+                    updateInstrumentPriceAndUI();
+                }
+                updateMarketDataTicker();
+            }, 60000); // Update every 60 seconds
+
+            // Update immediately on load
+            setTimeout(() => {
+                if (currentInstrument.id) {
+                    updateInstrumentPriceAndUI();
+                }
+                updateMarketDataTicker();
+            }, 2000);
+        }
+
+        function updateInstrumentPriceAndUI() {
+            if (!currentInstrument.id) return;
+            
+            fetch(`/webtrader/get_price?instrument_id=${currentInstrument.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.current_price !== null) {
+                        const price = parseFloat(data.current_price);
+                        currentInstrument.price = price;
+                        
+                        // Update current price display
+                        document.getElementById('currentPrice').textContent = '$' + price.toLocaleString('en-US', {minimumFractionDigits: 2});
+                        
+                        // Update Bid/Ask in the trading panel
+                        const spread = price * 0.0005; // 0.05% spread
+                        const sellPrice = (price - spread / 2);
+                        const buyPrice = (price + spread / 2);
+                        
+                        document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
+                        document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
+                        
+                        // Update price in the instrument list
+                        const instrumentItem = document.querySelector(`.instrument-item[data-instrument-id="${currentInstrument.id}"]`);
+                        if (instrumentItem) {
+                            const priceCell = instrumentItem.querySelector('.price-value');
+                            priceCell.textContent = `$${price.toFixed(2)}`;
+                        }
+                        
+                        // Update trade calculations
+                        updateTradeCalculations();
+                    }
+                })
+                .catch(error => console.error('Error fetching instrument price:', error));
+        }
+
+        function updateMarketDataTicker() {
+            const tickerItems = document.querySelectorAll('.ticker-item');
+            tickerItems.forEach((item, index) => {
+                const symbol = item.querySelector('.ticker-symbol').textContent;
+                
+                // Find instrument by symbol
+                const instrumentItem = document.querySelector(`.instrument-item[data-symbol="${symbol}"]`);
+                if (instrumentItem) {
+                    const instrumentId = instrumentItem.dataset.instrumentId;
+                    
+                    fetch(`/webtrader/get_price?instrument_id=${instrumentId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.current_price !== null) {
+                                const price = parseFloat(data.current_price);
+                                const priceElement = item.querySelector('.ticker-price');
+                                const changeElement = item.querySelector('.ticker-change');
+                                
+                                // Get old price for comparison
+                                const oldPriceText = priceElement.textContent.replace(/[^\d.]/g, '');
+                                const oldPrice = parseFloat(oldPriceText) || price;
+                                
+                                // Update price
+                                priceElement.textContent = `$${price.toFixed(2)}`;
+                                
+                                // Calculate and update change
+                                const changePercent = ((price - oldPrice) / oldPrice * 100) || (Math.random() * 1 - 0.5);
+                                changeElement.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                                changeElement.className = `ticker-change ${changePercent >= 0 ? 'positive' : 'negative'}`;
+                            }
+                        })
+                        .catch(error => console.error(`Error fetching ticker price for ${symbol}:`, error));
+                }
+            });
+        }
+
+        // P/L calculation for open trades
+        function updateAllOpenTradesPL() {
+            console.log("Updating P/L for open trades...");
+            const openTradeRows = document.querySelectorAll('.open-trade-row');
+            
+            openTradeRows.forEach(row => {
+                const instrumentId = row.getAttribute('data-instrument-id');
+                const entryPrice = parseFloat(row.getAttribute('data-entry-price'));
+                const tradeAmount = parseFloat(row.getAttribute('data-trade-amount'));
+                const tradeType = row.getAttribute('data-trade-type');
+                const plCell = row.querySelector('.profit-loss-cell');
+                const currentPriceCell = row.querySelector('.current-price-cell');
+                
+                if (!instrumentId || isNaN(entryPrice) || isNaN(tradeAmount) || !tradeType || !plCell || !currentPriceCell) {
+                    console.warn("Missing data for P/L calculation on row:", row);
+                    return;
+                }
+                
+                fetch(`/webtrader/get_price?instrument_id=${instrumentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.current_price !== null) {
+                            const currentPrice = parseFloat(data.current_price);
+                            
+                            // Update current price cell
+                            currentPriceCell.textContent = `$${currentPrice.toFixed(2)}`;
+                            
+                            // Calculate P/L
+                            let profitLoss = 0;
+                            if (tradeType === 'buy') {
+                                profitLoss = (currentPrice - entryPrice) * tradeAmount;
+                            } else if (tradeType === 'sell') {
+                                profitLoss = (entryPrice - currentPrice) * tradeAmount;
+                            }
+                            
+                            // Update P/L cell
+                            plCell.textContent = `$${profitLoss.toFixed(2)}`;
+                            plCell.className = 'profit-loss-cell ' + (profitLoss >= 0 ? 'price-up' : 'price-down');
+                        } else {
+                            currentPriceCell.textContent = '--.--';
+                            plCell.textContent = '--.--';
+                            plCell.className = 'profit-loss-cell';
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching price for P/L calc (Instrument ID ${instrumentId}):`, error);
+                        currentPriceCell.textContent = 'Error';
+                        plCell.textContent = 'Error';
+                        plCell.className = 'profit-loss-cell price-down';
+                    });
+            });
+        }
 
         // CSRF token helper
         function getCsrfToken() {
