@@ -1488,6 +1488,187 @@
                 font-size: 0.7rem !important;
             }
         }
+
+        /* Enhanced Buy/Sell Buttons */
+        .price-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .btn-price {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 12px;
+            border: 2px solid;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-price::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-price:hover::before {
+            left: 100%;
+        }
+
+        .btn-price span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .btn-price strong {
+            font-size: 1.1rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .btn-sell-price {
+            border-color: #ff4757;
+            color: #ff4757;
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), rgba(255, 107, 107, 0.05));
+        }
+
+        .btn-sell-price:hover,
+        .btn-sell-price.active {
+            background: linear-gradient(135deg, #ff4757, #ff3838);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
+            border-color: #ff3838;
+        }
+
+        .btn-buy-price {
+            border-color: var(--success-color);
+            color: var(--success-color);
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(46, 213, 115, 0.05));
+        }
+
+        .btn-buy-price:hover,
+        .btn-buy-price.active {
+            background: linear-gradient(135deg, var(--success-color), #2ed573);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 170, 0.4);
+            border-color: #2ed573;
+        }
+
+        /* Dynamic Trading Panel Positioning */
+        .trading-panel-pro {
+            width: 300px;
+            background-color: var(--darker-bg);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .trading-panel-pro.expanded {
+            /* When no trades - expand trading panel */
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.05), rgba(0, 245, 255, 0.02));
+            border-left: 2px solid var(--success-color);
+        }
+
+        .trading-form-pro {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .trading-form-pro.no-trades {
+            /* Extra spacing when no trades */
+            padding: 30px 20px;
+            gap: 25px;
+        }
+
+        /* Enhanced Execute Button */
+        .btn-group {
+            margin-top: 20px;
+        }
+
+        .btn-execute {
+            width: 100%;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            background: linear-gradient(135deg, var(--success-color), #2ed573);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(0, 212, 170, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-execute::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-execute:hover::before {
+            left: 100%;
+        }
+
+        .btn-execute:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.4);
+            background: linear-gradient(135deg, #2ed573, var(--success-color));
+        }
+
+        .btn-execute:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-execute.sell-mode {
+            background: linear-gradient(135deg, #ff4757, #ff3838);
+            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.3);
+        }
+
+        .btn-execute.sell-mode:hover {
+            background: linear-gradient(135deg, #ff3838, #ff4757);
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -4245,6 +4426,90 @@
         setTimeout(nuclearMobileScrollFix, 1000);
         setTimeout(nuclearMobileScrollFix, 3000);
         setTimeout(nuclearMobileScrollFix, 5000);
+
+        // Dynamic Trading Panel Layout
+        function adjustTradingPanelLayout() {
+            const openTradesCount = document.querySelectorAll('.open-trade-row').length;
+            const pendingOrdersCount = document.querySelectorAll('#pending-orders tbody tr').length - 1; // -1 for "no orders" row
+            const closedTradesCount = document.querySelectorAll('#closed-trades tbody tr').length - 1; // -1 for "no trades" row
+            
+            const tradingPanel = document.querySelector('.trading-panel-pro');
+            const tradingForm = document.querySelector('.trading-form-pro');
+            const tradesSection = document.querySelector('.trades-section');
+            
+            const hasAnyTrades = openTradesCount > 0 || pendingOrdersCount > 0 || closedTradesCount > 0;
+            
+            console.log(`📊 Trades Count: Open=${openTradesCount}, Pending=${pendingOrdersCount}, Closed=${closedTradesCount}`);
+            
+            if (!hasAnyTrades) {
+                // No trades - expand trading panel
+                console.log("🎯 No trades detected - expanding trading panel");
+                tradingPanel.classList.add('expanded');
+                tradingForm.classList.add('no-trades');
+                
+                // Reduce trades section height to make more room
+                if (tradesSection) {
+                    tradesSection.style.minHeight = '200px';
+                    tradesSection.style.height = '30vh';
+                }
+            } else {
+                // Has trades - normal layout
+                console.log("📈 Trades detected - normal layout");
+                tradingPanel.classList.remove('expanded');
+                tradingForm.classList.remove('no-trades');
+                
+                // Restore normal trades section height
+                if (tradesSection) {
+                    tradesSection.style.minHeight = '300px';
+                    tradesSection.style.height = '50vh';
+                }
+            }
+        }
+
+        // Enhanced trade type switching
+        function setTradeType(type) {
+            document.getElementById('trade_type').value = type;
+            
+            // Update button states
+            document.querySelectorAll('.btn-price').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.btn-${type}-price`).classList.add('active');
+            
+            // Update execute button
+            const executeBtn = document.querySelector('.btn-execute');
+            if (executeBtn) {
+                if (type === 'sell') {
+                    executeBtn.className = 'btn-execute sell-mode';
+                    executeBtn.innerHTML = '<i class="fas fa-arrow-down"></i> EXECUTE SELL';
+                } else {
+                    executeBtn.className = 'btn-execute';
+                    executeBtn.innerHTML = '<i class="fas fa-arrow-up"></i> EXECUTE BUY';
+                }
+            }
+            
+            console.log(`🔄 Trade type switched to: ${type.toUpperCase()}`);
+        }
+
+        // Initialize layout on page load and update on tab changes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial layout adjustment
+            setTimeout(adjustTradingPanelLayout, 1000);
+            
+            // Monitor tab changes to re-adjust layout
+            const tabLinks = document.querySelectorAll('.webtrader-tab-link');
+            tabLinks.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    setTimeout(adjustTradingPanelLayout, 300);
+                });
+            });
+            
+            // Re-adjust on window resize
+            window.addEventListener('resize', function() {
+                setTimeout(adjustTradingPanelLayout, 100);
+            });
+            
+            // Set initial trade type
+            setTradeType('buy');
+        });
     </script>
     
     <!-- Direct price display fix for buy/sell buttons -->
