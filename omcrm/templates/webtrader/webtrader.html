@@ -423,6 +423,137 @@
             color: var(--text-primary);
         }
 
+        /* Chart Header Elements */
+        .selected-instrument {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .instrument-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .instrument-details h4 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .instrument-details p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .current-price {
+            text-align: right;
+        }
+
+        .price-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--trading-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .price-change-display {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 8px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .price-change-display.positive {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--trading-green);
+        }
+
+        .price-change-display.negative {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--trading-red);
+        }
+
+        /* Chart Timeframes */
+        .timeframe-tabs {
+            display: flex;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 4px;
+        }
+
+        .timeframe-tab {
+            padding: 6px 12px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .timeframe-tab.active {
+            background: var(--trading-green);
+            color: white;
+            box-shadow: 0 3px 10px rgba(0, 212, 170, 0.3);
+        }
+
+        .timeframe-tab:hover {
+            color: var(--trading-green);
+        }
+
+        /* Trading Information Panel */
+        .trade-info {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 245, 255, 0.05));
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding-top: 8px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .info-item span:first-child {
+            color: var(--text-secondary);
+        }
+
+        .info-item span:last-child {
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+
         /* TradingView Chart */
         .tradingview-widget {
             flex: 1;
@@ -870,7 +1001,28 @@
         <!-- Chart Container -->
         <section class="chart-container" data-aos="fade-up">
             <div class="chart-header">
-                <div class="current-symbol">{{ instruments[0].symbol if instruments else 'BTC/USD' }}</div>
+                <div class="selected-instrument">
+                    <div class="instrument-logo" id="currentLogo">₿</div>
+                    <div class="instrument-details">
+                        <h4 id="currentSymbol">{{ instruments[0].symbol if instruments else 'BTC/USD' }}</h4>
+                        <p id="currentName">{{ instruments[0].name if instruments else 'Bitcoin / US Dollar' }}</p>
+                    </div>
+                </div>
+
+                <div class="current-price">
+                    <h3 class="price-display" id="currentPrice">${{ "%.2f"|format(instruments[0].current_price) if instruments else '117,950.75' }}</h3>
+                    <span class="price-change-display positive" id="currentChange">+$178.17 (+0.15%)</span>
+                </div>
+                
+                <div class="timeframe-tabs">
+                    <button class="timeframe-tab" data-timeframe="1">1m</button>
+                    <button class="timeframe-tab" data-timeframe="5">5m</button>
+                    <button class="timeframe-tab" data-timeframe="15">15m</button>
+                    <button class="timeframe-tab" data-timeframe="30">30m</button>
+                    <button class="timeframe-tab active" data-timeframe="60">1h</button>
+                    <button class="timeframe-tab" data-timeframe="240">4h</button>
+                    <button class="timeframe-tab" data-timeframe="D">1D</button>
+                </div>
             </div>
             
             <!-- TradingView Chart Widget -->
@@ -1083,12 +1235,29 @@
                     </button>
                 </div>
 
-                <!-- Remove Leverage Selector but keep default leverage of 5x -->
-                <input type="hidden" id="leverage-select" value="5">
-
                 <div class="form-group amount-group">
                     <label for="amount">Amount</label>
                     <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+
+                <!-- Trading Information Display -->
+                <div class="trade-info">
+                    <div class="info-item">
+                        <span>Margin Required:</span>
+                        <span id="margin-required-value">$0.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Effective Leverage:</span>
+                        <span id="effective-leverage">5x</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Value:</span>
+                        <span id="trade-value">$0.00</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Available Balance:</span>
+                        <span id="available-balance">${{ "%.2f"|format(current_user.current_balance) }}</span>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1118,6 +1287,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     
+    <!-- Embed instrument data as separate script to avoid syntax errors -->
+    <script id="instrumentDataScript">
+    window.instrumentData = {
+        id: {{ instruments[0].id if instruments else 1 }},
+        symbol: '{{ instruments[0].symbol if instruments else "BTC/USD" }}',
+        type: '{{ instruments[0].type if instruments else "crypto" }}',
+        price: {{ instruments[0].current_price if instruments else 117950.75 }}
+    };
+    </script>
+    
     <script>
         // Initialize AOS
         AOS.init({
@@ -1126,12 +1305,7 @@
         });
 
         // Global variables
-        let currentInstrument = {
-            id: {{ instruments[0].id if instruments else 1 }},
-            symbol: '{{ instruments[0].symbol if instruments else "BTC/USD" }}',
-            type: '{{ instruments[0].type if instruments else "crypto" }}',
-            price: {{ instruments[0].current_price if instruments else 117950.75 }}
-        };
+        let currentInstrument = window.instrumentData;
 
         // Create particles
         function createParticles() {
@@ -1281,17 +1455,40 @@
                 };
                 
                 // Update current symbol display
-                document.querySelector('.current-symbol').textContent = symbol;
+                document.getElementById('currentSymbol').textContent = symbol;
                 document.getElementById('trade-panel-symbol').textContent = symbol;
+                
+                // Update instrument logo
+                const logo = document.getElementById('currentLogo');
+                if (symbol.includes('BTC')) logo.textContent = '₿';
+                else if (symbol.includes('ETH')) logo.textContent = 'Ξ';
+                else if (symbol.includes('SOL')) logo.textContent = 'S';
+                else if (symbol.includes('ADA')) logo.textContent = 'A';
+                else logo.textContent = symbol.charAt(0);
+                
+                // Update price display
+                document.getElementById('currentPrice').textContent = '$' + price.toLocaleString('en-US', {minimumFractionDigits: 2});
                 
                 // Update trading form
                 document.getElementById('instrument_id').value = instrumentId;
                 
-                // Update price buttons
+                // Update price buttons and trading calculations
                 updatePriceButtons(price);
+                updateTradeCalculations();
                 
                 // Refresh chart
                 refreshTradingViewChart();
+            });
+        });
+
+        // Timeframe switching
+        document.querySelectorAll('.timeframe-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.timeframe-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update chart timeframe (would integrate with TradingView API)
+                console.log('Switching to timeframe:', this.dataset.timeframe);
             });
         });
 
@@ -1326,6 +1523,20 @@
             document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
         }
 
+        // Update trading calculations
+        function updateTradeCalculations() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const currentPrice = currentInstrument.price || 0;
+            const leverage = 5; // Default leverage
+            
+            const tradeValue = amount * currentPrice;
+            const marginRequired = tradeValue / leverage;
+            
+            document.getElementById('trade-value').textContent = '$' + tradeValue.toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('margin-required-value').textContent = '$' + marginRequired.toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('effective-leverage').textContent = leverage + 'x';
+        }
+
         // Order type handling
         document.getElementById('order_type').addEventListener('change', function() {
             const targetPriceGroup = document.getElementById('target-price-group');
@@ -1337,6 +1548,9 @@
                 document.getElementById('target_price').required = false;
             }
         });
+
+        // Amount input listener
+        document.getElementById('amount').addEventListener('input', updateTradeCalculations);
 
         // Show notification
         function showNotification(message, type) {
@@ -1388,6 +1602,7 @@
             // Initialize price buttons with first instrument
             if (currentInstrument.price) {
                 updatePriceButtons(currentInstrument.price);
+                updateTradeCalculations();
             }
         });
 
