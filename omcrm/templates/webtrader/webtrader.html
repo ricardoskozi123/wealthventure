@@ -1608,13 +1608,14 @@
             gap: 25px;
         }
 
-        /* Enhanced Execute Button */
+        /* Enhanced Execute Button - FULL WIDTH */
         .btn-group {
             margin-top: 20px;
+            width: 100%;
         }
 
         .btn-execute {
-            width: 100%;
+            width: 100% !important; /* FORCE FULL WIDTH */
             padding: 16px 20px;
             border: none;
             border-radius: 12px;
@@ -1633,6 +1634,7 @@
             letter-spacing: 1px;
             position: relative;
             overflow: hidden;
+            margin: 0; /* Remove any margins */
         }
 
         .btn-execute::before {
@@ -1668,6 +1670,39 @@
         .btn-execute.sell-mode:hover {
             background: linear-gradient(135deg, #ff3838, #ff4757);
             box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+        }
+
+        /* DESKTOP CHART HEIGHT FIX */
+        @media (min-width: 993px) {
+            .chart-area {
+                height: 100% !important;
+                overflow: visible !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            
+            .trades-section {
+                /* Restore original desktop height */
+                height: auto !important;
+                min-height: auto !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .trading-panel-pro.expanded {
+                /* Enhanced styling when no trades on desktop */
+                background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(0, 245, 255, 0.03));
+                border-left: 3px solid var(--success-color);
+                box-shadow: -5px 0 20px rgba(0, 212, 170, 0.1);
+            }
+            
+            .trading-form-pro.no-trades {
+                /* More prominent styling on desktop when no trades */
+                padding: 40px 25px;
+                gap: 30px;
+                background: rgba(255, 255, 255, 0.02);
+                border-radius: 15px;
+                margin: 10px;
+            }
         }
     </style>
 </head>
@@ -4427,41 +4462,68 @@
         setTimeout(nuclearMobileScrollFix, 3000);
         setTimeout(nuclearMobileScrollFix, 5000);
 
-        // Dynamic Trading Panel Layout
+        // Dynamic Trading Panel Layout - FIXED
         function adjustTradingPanelLayout() {
-            const openTradesCount = document.querySelectorAll('.open-trade-row').length;
-            const pendingOrdersCount = document.querySelectorAll('#pending-orders tbody tr').length - 1; // -1 for "no orders" row
-            const closedTradesCount = document.querySelectorAll('#closed-trades tbody tr').length - 1; // -1 for "no trades" row
+            // Better detection of trades
+            const openTradesTable = document.querySelector('#open-trades .trades-table tbody');
+            const pendingOrdersTable = document.querySelector('#pending-orders .trades-table tbody');
+            const closedTradesTable = document.querySelector('#closed-trades .trades-table tbody');
+            
+            let hasOpenTrades = false;
+            let hasPendingOrders = false;
+            let hasClosedTrades = false;
+            
+            // Check for actual trade rows (not "No trades" messages)
+            if (openTradesTable) {
+                const openRows = openTradesTable.querySelectorAll('tr:not(.no-trades)');
+                hasOpenTrades = openRows.length > 0 && !openRows[0].textContent.includes('No open trades');
+            }
+            
+            if (pendingOrdersTable) {
+                const pendingRows = pendingOrdersTable.querySelectorAll('tr:not(.no-orders)');
+                hasPendingOrders = pendingRows.length > 0 && !pendingRows[0].textContent.includes('No pending orders');
+            }
+            
+            if (closedTradesTable) {
+                const closedRows = closedTradesTable.querySelectorAll('tr:not(.no-closed)');
+                hasClosedTrades = closedRows.length > 0 && !closedRows[0].textContent.includes('No closed trades');
+            }
             
             const tradingPanel = document.querySelector('.trading-panel-pro');
             const tradingForm = document.querySelector('.trading-form-pro');
             const tradesSection = document.querySelector('.trades-section');
             
-            const hasAnyTrades = openTradesCount > 0 || pendingOrdersCount > 0 || closedTradesCount > 0;
+            const hasAnyTrades = hasOpenTrades || hasPendingOrders || hasClosedTrades;
             
-            console.log(`📊 Trades Count: Open=${openTradesCount}, Pending=${pendingOrdersCount}, Closed=${closedTradesCount}`);
+            console.log(`📊 Trades Status: Open=${hasOpenTrades}, Pending=${hasPendingOrders}, Closed=${hasClosedTrades}, HasAny=${hasAnyTrades}`);
             
             if (!hasAnyTrades) {
                 // No trades - expand trading panel
-                console.log("🎯 No trades detected - expanding trading panel");
+                console.log("🎯 NO TRADES - Expanding trading panel");
                 tradingPanel.classList.add('expanded');
                 tradingForm.classList.add('no-trades');
                 
-                // Reduce trades section height to make more room
-                if (tradesSection) {
-                    tradesSection.style.minHeight = '200px';
+                // Only reduce on mobile, keep desktop normal
+                if (window.innerWidth <= 992 && tradesSection) {
                     tradesSection.style.height = '30vh';
+                    tradesSection.style.minHeight = '200px';
                 }
             } else {
                 // Has trades - normal layout
-                console.log("📈 Trades detected - normal layout");
+                console.log("📈 HAS TRADES - Normal layout");
                 tradingPanel.classList.remove('expanded');
                 tradingForm.classList.remove('no-trades');
                 
-                // Restore normal trades section height
+                // Restore normal height
                 if (tradesSection) {
-                    tradesSection.style.minHeight = '300px';
-                    tradesSection.style.height = '50vh';
+                    if (window.innerWidth <= 992) {
+                        tradesSection.style.height = '50vh';
+                        tradesSection.style.minHeight = '300px';
+                    } else {
+                        // Desktop - keep original height
+                        tradesSection.style.height = '';
+                        tradesSection.style.minHeight = '';
+                    }
                 }
             }
         }
