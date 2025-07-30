@@ -1324,6 +1324,122 @@
                 margin-left: 2px !important;
             }
         }
+
+        /* MOBILE SCROLLING FIX - Override all conflicting rules */
+        @media (max-width: 992px) {
+            /* Force proper mobile layout */
+            .app-container {
+                flex-direction: column !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+            
+            .app-content {
+                height: auto !important;
+                overflow: visible !important;
+            }
+            
+            .content-wrapper {
+                flex-direction: column !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+            
+            .chart-area {
+                height: auto !important;
+                overflow: visible !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            
+            /* CRITICAL: Make trades section scrollable */
+            .trades-section {
+                height: 50vh !important; /* Use viewport height */
+                min-height: 300px !important;
+                max-height: 500px !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+                border: 1px solid var(--border-color) !important;
+                background: var(--darker-bg) !important;
+            }
+            
+            .webtrader-tabs {
+                flex-shrink: 0 !important;
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-around !important;
+                background: var(--medium-bg) !important;
+            }
+            
+            .webtrader-tabs .nav-item {
+                flex: 1 !important;
+                text-align: center !important;
+            }
+            
+            .webtrader-tab-link {
+                padding: 8px 4px !important;
+                font-size: 0.8rem !important;
+                white-space: nowrap !important;
+            }
+            
+            .tab-content {
+                flex: 1 !important;
+                overflow: hidden !important;
+                height: calc(100% - 45px) !important;
+                position: relative !important;
+            }
+            
+            .tab-pane {
+                height: 100% !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+            }
+            
+            .table-responsive {
+                height: 100% !important;
+                overflow-y: auto !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                position: relative !important;
+            }
+            
+            /* Ensure tables are properly sized */
+            .trades-table {
+                width: 100% !important;
+                min-width: 600px !important;
+            }
+            
+            .trades-table th,
+            .trades-table td {
+                padding: 6px 4px !important;
+                font-size: 0.75rem !important;
+                white-space: nowrap !important;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 576px) {
+            .trades-section {
+                height: 40vh !important;
+                min-height: 250px !important;
+            }
+            
+            .webtrader-tab-link {
+                padding: 6px 2px !important;
+                font-size: 0.7rem !important;
+            }
+            
+            .trades-table th,
+            .trades-table td {
+                padding: 4px 2px !important;
+                font-size: 0.7rem !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -3670,6 +3786,60 @@
             }
         `;
         document.head.appendChild(styleEl);
+
+        // Mobile-specific fixes for tab content
+        function initMobileTradesSection() {
+            if (window.innerWidth <= 992) {
+                console.log("Initializing mobile trades section...");
+                
+                // Ensure tab content is properly positioned
+                const tabContent = document.getElementById('tradeTabContent');
+                const tabPanes = tabContent.querySelectorAll('.tab-pane');
+                
+                tabPanes.forEach(pane => {
+                    pane.style.position = 'absolute';
+                    pane.style.top = '0';
+                    pane.style.left = '0';
+                    pane.style.right = '0';
+                    pane.style.bottom = '0';
+                    pane.style.height = '100%';
+                    pane.style.overflow = 'hidden';
+                });
+                
+                // Fix table responsive containers
+                const tableResponsive = document.querySelectorAll('.table-responsive');
+                tableResponsive.forEach(container => {
+                    container.style.height = '100%';
+                    container.style.overflowY = 'auto';
+                    container.style.overflowX = 'auto';
+                    container.style.webkitOverflowScrolling = 'touch';
+                    container.style.position = 'relative';
+                });
+                
+                // Ensure trades section has proper height
+                const tradesSection = document.querySelector('.trades-section');
+                if (tradesSection) {
+                    tradesSection.style.height = '50vh';
+                    tradesSection.style.minHeight = '300px';
+                    tradesSection.style.maxHeight = '500px';
+                    tradesSection.style.overflow = 'hidden';
+                    tradesSection.style.display = 'flex';
+                    tradesSection.style.flexDirection = 'column';
+                }
+                
+                console.log("Mobile trades section initialized!");
+            }
+        }
+
+        // Initialize on page load and resize
+        document.addEventListener('DOMContentLoaded', function() {
+            initMobileTradesSection();
+            
+            // Re-initialize on window resize
+            window.addEventListener('resize', function() {
+                setTimeout(initMobileTradesSection, 100);
+            });
+        });
     </script>
     
     <!-- Direct price display fix for buy/sell buttons -->
