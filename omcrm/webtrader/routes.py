@@ -15,445 +15,36 @@ logging.basicConfig(level=logging.DEBUG)
 
 webtrader = Blueprint('webtrader', __name__)
 
-def get_crypto_price(name):
-    """Get real-time cryptocurrency price from multiple sources with fallbacks. Prioritizes APIs."""
-    crypto_id = None
-    crypto_mappings = {
-        'bitcoin': ['btc', 'bitcoin', 'BTCUSDT', 'BTC-USD'],
-        'ethereum': ['eth', 'ethereum', 'ETHUSDT', 'ETH-USD'],
-        'solana': ['sol', 'solana', 'SOLUSDT', 'SOL-USD'],
-        # Add other mappings as needed
-    }
-    for base_id, aliases in crypto_mappings.items():
-        if name.lower() in aliases or name.lower() == base_id:
-            crypto_id = base_id
-            break
-            
-    api_providers = [
-        {'name': 'CoinGecko', 'func': fetch_coingecko, 'args': (name.lower(), crypto_id)},
-        {'name': 'Binance', 'func': fetch_binance, 'args': (name.upper(),)},
-        {'name': 'YahooFinance', 'func': fetch_yfinance_crypto, 'args': (name.upper(),)}
-    ]
-
-    # Try APIs first
-    for provider in api_providers:
-        try:
-            logging.debug(f"Trying API: {provider['name']} for {name}")
-            price = provider['func'](*provider['args'])
-            if price is not None:
-                logging.info(f"Got price {price} for {name} from {provider['name']}")
-                return round(float(price), 6) # Use more precision for crypto
-            # Add a small delay between API calls to avoid rate limiting
-            time.sleep(0.1) 
-        except Exception as e:
-            logging.warning(f"API call to {provider['name']} for {name} failed: {str(e)}")
-            time.sleep(0.1) # Delay even on failure
-
-    # Fallback to hardcoded values if all APIs fail
-    logging.warning(f"All APIs failed for crypto {name}. Falling back to hardcoded prices.")
-    current_prices = {
-        'bitcoin': 65337.34, 'ethereum': 3430.85, 'solana': 147.42,
-        'binancecoin': 589.13, 'ripple': 0.5243, 'cardano': 0.3765,
-        'dogecoin': 0.1234, 'polkadot': 6.78, 'avalanche': 32.45,
-        'polygon': 0.7832
-    }
-    if crypto_id and crypto_id in current_prices:
-        return current_prices[crypto_id]
-    elif name.lower() in current_prices:
-         return current_prices[name.lower()]
-
-    logging.error(f"Cryptocurrency {name} not found in APIs or fallbacks.")
-    return None
-
-def fetch_coingecko(name_lower, crypto_id):
-    # Try direct name first
-    url = f'https://api.coingecko.com/api/v3/simple/price?ids={name_lower}&vs_currencies=usd'
-    response = requests.get(url, timeout=5)
-    response.raise_for_status() # Raise exception for bad status codes
-    data = response.json()
-    if name_lower in data and 'usd' in data[name_lower]:
-        return data[name_lower]['usd']
-        
-    # Try mapped ID if available and different from name_lower
-    if crypto_id and crypto_id != name_lower:
-        url = f'https://api.coingecko.com/api/v3/simple/price?ids={crypto_id}&vs_currencies=usd'
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-        data = response.json()
-        if crypto_id in data and 'usd' in data[crypto_id]:
-            return data[crypto_id]['usd']
-    return None
-    
-def fetch_binance(name_upper):
-    symbol = name_upper + 'USDT'
-    url = f'https://api.binance.com/api/v3/ticker/price?symbol={symbol}'
-    response = requests.get(url, timeout=5)
-    response.raise_for_status()
-    data = response.json()
-    if 'price' in data:
-        return data['price']
-    return None
-
-def fetch_yfinance_crypto(name_upper):
-    import yfinance as yf
-    ticker = yf.Ticker(f"{name_upper}-USD")
-    # Use '1m' interval for more recent data, fallback to '1d' if needed
-    data = ticker.history(period="1d", interval="1m", auto_adjust=True)
-    if not data.empty:
-        return data['Close'].iloc[-1]
-    # Fallback to daily data if 1m fails
-    data = ticker.history(period="1d", auto_adjust=True)
-    if not data.empty:
-         return data['Close'].iloc[-1]
-    return None
-
-
-def get_stock_price(symbol):
-    """Get real-time stock price from multiple sources with fallbacks. Prioritizes APIs."""
-    symbol_upper = symbol.upper()
-    
-    # IMPROVED: Better fallback prices with more stocks
-    stock_fallback_prices = {
-        'AAPL': 214.09, 'MSFT': 428.52, 'GOOGL': 174.57, 'AMZN': 186.85,
-        'TSLA': 248.30, 'META': 513.26, 'NVDA': 128.74, 'JPM': 198.43,
-        'V': 278.56, 'WMT': 68.92, 'NFLX': 645.23, 'CRM': 234.12,
-        'AMD': 145.67, 'INTC': 89.45, 'BABA': 234.56, 'TSM': 167.89
-    }
-    
-    # Try fallback first for demo purposes (APIs are failing)
-    if symbol_upper in stock_fallback_prices:
-        # Add small random variation to simulate price movement
-        base_price = stock_fallback_prices[symbol_upper]
-        variation = random.uniform(-0.02, 0.02)  # ±2% variation
-        simulated_price = base_price * (1 + variation)
-        logging.info(f"Using simulated stock price for {symbol_upper}: ${simulated_price:.2f}")
-        return round(simulated_price, 2)
-    
-    api_providers = [
-        {'name': 'AlphaVantage', 'func': fetch_alphavantage, 'args': (symbol_upper,)},
-        {'name': 'YahooFinance', 'func': fetch_yfinance_stock, 'args': (symbol_upper,)},
-        {'name': 'FinancialModelingPrep', 'func': fetch_fmp, 'args': (symbol_upper,)}
-    ]
-    
-    # Try APIs (but they're currently failing, so this is backup)
-    for provider in api_providers:
-        try:
-            logging.debug(f"Trying API: {provider['name']} for {symbol_upper}")
-            price = provider['func'](*provider['args'])
-            if price is not None:
-                logging.info(f"Got price {price} for {symbol_upper} from {provider['name']}")
-                return round(float(price), 2)
-            time.sleep(0.05)  # Reduced delay
-        except Exception as e:
-            logging.warning(f"API call to {provider['name']} for {symbol_upper} failed: {str(e)}")
-            time.sleep(0.05)  # Reduced delay
-            
-    # Final fallback
-    logging.warning(f"All APIs failed for stock {symbol_upper}. Using base fallback price.")
-    return stock_fallback_prices.get(symbol_upper, 100.0)  # Default $100 if not found
-
-def fetch_alphavantage(symbol_upper):
-    api_key = 'J54VFE3RK2YHL5MN' # Use environment variable in production
-    url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol_upper}&apikey={api_key}'
-    response = requests.get(url, timeout=5)
-    response.raise_for_status()
-    data = response.json()
-    quote = data.get('Global Quote', {})
-    if quote and '05. price' in quote:
-        return quote['05. price']
-    return None
-    
-def fetch_yfinance_stock(symbol_upper):
-    import yfinance as yf
-    ticker = yf.Ticker(symbol_upper)
-     # Use '1m' interval for more recent data, fallback to '1d' if needed
-    data = ticker.history(period="1d", interval="1m", auto_adjust=True)
-    if not data.empty:
-        return data['Close'].iloc[-1]
-    # Fallback to daily data if 1m fails
-    data = ticker.history(period="1d", auto_adjust=True)
-    if not data.empty:
-         return data['Close'].iloc[-1]
-    return None
-
-def fetch_fmp(symbol_upper):
-    # Note: Using 'demo' key has limits. Replace with your own key if available.
-    api_key = 'demo' 
-    url = f'https://financialmodelingprep.com/api/v3/quote-short/{symbol_upper}?apikey={api_key}'
-    response = requests.get(url, timeout=5)
-    response.raise_for_status()
-    data = response.json()
-    if data and isinstance(data, list) and len(data) > 0 and 'price' in data[0]:
-        return data[0]['price']
-    return None
-
+# 🎯 ONLY TWELVE DATA API - Old Binance WebSocket code removed
 
 def get_real_time_price(symbol, name, instrument_type):
-    """Get real-time price based on instrument type using API calls first."""
-    price = None
+    """Get real-time price ONLY from Twelve Data API - NO MORE MIXED SOURCES"""
     
-    # Standard API retrieval based on type
+    # 🎯 TWELVE DATA API ONLY - Clean and Consistent
     try:
-        if instrument_type == 'crypto':
-            # Clean up symbol/name for API calls
-            clean_name = name.lower().strip()
-            if '/' in symbol:
-                # For pairs like BTC/USD, use the base currency (BTC)
-                clean_symbol_for_api = symbol.split('/')[0].lower().strip()
-                price = get_crypto_price(clean_symbol_for_api)
-            else:
-                # Assume name is the primary identifier (e.g., 'bitcoin')
-                price = get_crypto_price(clean_name)
-        elif instrument_type == 'stock':
-            clean_symbol_for_api = symbol.upper().strip()
-            price = get_stock_price(clean_symbol_for_api)
-        # Add logic for 'forex', 'commodities' if needed, using appropriate APIs/logic
-        elif instrument_type == 'forex':
-             # Example: Placeholder - integrate a real Forex API later
-             logging.warning(f"Forex pricing not fully implemented for {symbol}. Using fallback.")
-             price = get_forex_price_fallback(symbol) # Implement this
-        elif instrument_type == 'commodities':
-             # Example: Placeholder - integrate a real Commodities API later
-             logging.warning(f"Commodities pricing not fully implemented for {symbol}. Using fallback.")
-             price = get_commodity_price_fallback(symbol) # Implement this
+        logging.info(f"🎯 Getting Twelve Data price for {symbol} ({instrument_type})")
+        price = get_twelve_data_price(symbol, instrument_type)
+        
+        if price:
+            # Format based on type with proper precision
+            if instrument_type == 'crypto':
+                return round(float(price), 6)
+            elif instrument_type == 'forex':
+                return round(float(price), 5)
+            elif instrument_type == 'commodity':
+                return round(float(price), 2)
+            else:  # stocks
+                return round(float(price), 2)
         else:
-            logging.error(f"Invalid instrument type: {instrument_type} for symbol {symbol}")
-            return None
+            logging.warning(f"⚠️ Twelve Data API returned None for {symbol}")
             
     except Exception as e:
-        logging.error(f"Error during API price fetch for {symbol} ({instrument_type}): {str(e)}")
-        price = None # Ensure price is None if API fetch fails
-
-    if price is not None:
-        # Format based on type
-        if instrument_type == 'crypto':
-             return round(float(price), 6)
-        elif instrument_type == 'forex':
-             return round(float(price), 4) # Forex usually uses 4 decimal places
-        else: # Stocks, commodities
-             return round(float(price), 2)
-
-    # --- Fallback Logic ---
-    logging.warning(f"API price fetch failed for {symbol}. Trying database price fallback.")
+        logging.error(f"❌ Twelve Data API error for {symbol}: {str(e)}")
     
-    # Fallback 1: Check database price (if reasonably recent)
-    instrument = TradingInstrument.query.filter_by(symbol=symbol).first()
-    if instrument and instrument.current_price and instrument.last_updated:
-         time_since_update = datetime.utcnow() - instrument.last_updated
-         # Only use DB price if it's less than ~5 minutes old, otherwise it's too stale
-         if time_since_update.total_seconds() < 300: 
-             logging.warning(f"Using recent database price {instrument.current_price} for {symbol}")
-             return instrument.current_price # Return the stale price directly
-         else:
-             logging.warning(f"Database price for {symbol} is too old ({time_since_update}).")
-
-    # Fallback 2: Use hardcoded dictionary values
-    logging.warning(f"Database fallback failed for {symbol}. Trying final hardcoded dictionary.")
-    final_fallback_price = None
-    if instrument_type == 'crypto':
-        crypto_fallback_prices = {
-            'bitcoin': 65337.34, 'ethereum': 3430.85, 'solana': 147.42,
-        }
-        crypto_id = None
-        crypto_mappings = { 'bitcoin': ['btc', 'bitcoin'], 'ethereum': ['eth', 'ethereum'], 'solana': ['sol', 'solana']}
-        lookup_name = symbol.split('/')[0].lower().strip() if '/' in symbol else name.lower().strip()
-        for base_id, aliases in crypto_mappings.items():
-            if lookup_name in aliases or lookup_name == base_id:
-                 crypto_id = base_id
-                 break
-        if crypto_id and crypto_id in crypto_fallback_prices:
-            final_fallback_price = crypto_fallback_prices[crypto_id]
-        elif lookup_name in crypto_fallback_prices:
-            final_fallback_price = crypto_fallback_prices[lookup_name]
-            
-    elif instrument_type == 'stock':
-        stock_fallback_prices = {
-            'AAPL': 214.09, 'MSFT': 428.52, 'GOOGL': 174.57, 'AMZN': 186.85,
-        }
-        if symbol.upper() in stock_fallback_prices:
-             final_fallback_price = stock_fallback_prices[symbol.upper()]
-
-    if final_fallback_price is not None:
-         logging.warning(f"Using final hardcoded dictionary price {final_fallback_price} for {symbol}")
-         return final_fallback_price
-
-    # Last resort: return None
-    logging.error(f"Could not determine price for {symbol} using any method.")
+    # 🚫 NO MORE FALLBACKS - Only use Twelve Data or return None
+    # This prevents price conflicts and ensures consistency
+    logging.error(f"❌ Could not get Twelve Data price for {symbol}")
     return None
-
-# Placeholder functions for Forex/Commodities - replace with actual API calls
-def get_forex_price_fallback(symbol):
-    prices = {'EUR/USD': 1.0821, 'GBP/USD': 1.2673, 'USD/JPY': 153.42}
-    return prices.get(symbol, 1.0)
-
-def get_commodity_price_fallback(symbol):
-    prices = {'GOLD': 2324.15, 'SILVER': 27.43, 'OIL': 78.32}
-    return prices.get(symbol, 100.0)
-
-# Twelve Data WebSocket Integration
-def get_twelve_data_websocket_config():
-    """Get WebSocket configuration for Twelve Data real-time feeds"""
-    return {
-        'url': 'wss://ws.twelvedata.com/v1/quotes/price',
-        'api_key': '902d8585e8c040f591a3293d1b79ab88',  # Your actual Twelve Data API key
-        'subscription_limit': 500  # Pro plan WebSocket credits
-    }
-
-def get_twelve_data_price(symbol, instrument_type='forex'):
-    """Get real-time price from Twelve Data API with commodity support - FOR PRICE WORKER ONLY"""
-    try:
-        # Map internal symbols to Twelve Data format
-        symbol_mapping = {
-            # Forex - already compatible
-            'EUR/USD': 'EUR/USD',
-            'GBP/USD': 'GBP/USD',
-            'USD/JPY': 'USD/JPY',
-            'USD/CHF': 'USD/CHF',
-            'AUD/USD': 'AUD/USD',
-            'USD/CAD': 'USD/CAD',
-            'NZD/USD': 'NZD/USD',
-            'EUR/GBP': 'EUR/GBP',
-            'EUR/JPY': 'EUR/JPY',
-            'GBP/JPY': 'GBP/JPY',
-            'EUR/CHF': 'EUR/CHF',
-            'GBP/CHF': 'GBP/CHF',
-            'AUD/JPY': 'AUD/JPY',
-            'CAD/JPY': 'CAD/JPY',
-            'CHF/JPY': 'CHF/JPY',
-            'USD/TRY': 'USD/TRY',
-            'USD/ZAR': 'USD/ZAR',
-            'USD/MXN': 'USD/MXN',
-            'USD/SGD': 'USD/SGD',
-            'USD/NOK': 'USD/NOK',
-            'USD/SEK': 'USD/SEK',
-            
-            # Crypto - Twelve Data format
-            'BTC/USD': 'BTC/USD',
-            'ETH/USD': 'ETH/USD',
-            'ADA/USD': 'ADA/USD',
-            'SOL/USD': 'SOL/USD',
-            'DOT/USD': 'DOT/USD',
-            'AVAX/USD': 'AVAX/USD',
-            'MATIC/USD': 'MATIC/USD',
-            'LINK/USD': 'LINK/USD',
-            'UNI/USD': 'UNI/USD',
-            'LTC/USD': 'LTC/USD',
-            'XRP/USD': 'XRP/USD',
-            'DOGE/USD': 'DOGE/USD',
-            'SHIB/USD': 'SHIB/USD',
-            'ATOM/USD': 'ATOM/USD',
-            'ALGO/USD': 'ALGO/USD',
-            'XLM/USD': 'XLM/USD',
-            'VET/USD': 'VET/USD',
-            'FIL/USD': 'FIL/USD',
-            
-            # Commodities - Twelve Data symbols
-            'XAU/USD': 'XAU/USD',  # Gold
-            'XAG/USD': 'XAG/USD',  # Silver
-            'XPT/USD': 'XPT/USD',  # Platinum
-            'XPD/USD': 'XPD/USD',  # Palladium
-            'COPPER': 'COPPER',
-            'WTI': 'WTI',          # Crude Oil
-            'BRENT': 'BRENT',      # Brent Oil
-            'NATGAS': 'NATGAS',    # Natural Gas
-            'GASOLINE': 'GASOLINE',
-            'HEATING_OIL': 'HEATING_OIL',
-            'WHEAT': 'WHEAT',
-            'CORN': 'CORN',
-            'SOYBEANS': 'SOYBEANS',
-            'COFFEE': 'COFFEE',
-            'SUGAR': 'SUGAR',
-            'COTTON': 'COTTON',
-            
-            # Stocks
-            'AAPL': 'AAPL',
-            'MSFT': 'MSFT',
-            'GOOGL': 'GOOGL',
-            'AMZN': 'AMZN',
-            'TSLA': 'TSLA',
-            'META': 'META',
-            'NVDA': 'NVDA',
-            'NFLX': 'NFLX',
-            'DIS': 'DIS',
-            'PYPL': 'PYPL',
-            'ADBE': 'ADBE',
-            'CRM': 'CRM',
-            'ZOOM': 'ZOOM',
-            'UBER': 'UBER',
-            'SPOT': 'SPOT'
-        }
-        
-        # Get mapped symbol
-        twelve_data_symbol = symbol_mapping.get(symbol, symbol)
-        
-        # API endpoint for real-time price
-        url = f'https://api.twelvedata.com/price'
-        params = {
-            'symbol': twelve_data_symbol,
-            'apikey': '902d8585e8c040f591a3293d1b79ab88'  # Your actual Twelve Data API key
-        }
-        
-        response = requests.get(url, params=params, timeout=5)
-        response.raise_for_status()
-        data = response.json()
-        
-        if 'price' in data:
-            price = float(data['price'])
-            logging.info(f"Got Twelve Data price {price} for {symbol}")
-            return price
-        elif 'message' in data:
-            logging.warning(f"Twelve Data API message for {symbol}: {data['message']}")
-            
-    except Exception as e:
-        logging.warning(f"Twelve Data API call for {symbol} failed: {str(e)}")
-    
-    # Fallback to existing methods
-    if instrument_type == 'crypto':
-        return get_crypto_price(symbol.split('/')[0])  # Use base currency
-    elif instrument_type == 'commodity':
-        return get_commodity_fallback_price(symbol)
-    else:
-        return get_forex_fallback_price(symbol)
-
-def get_commodity_fallback_price(symbol):
-    """Fallback commodity prices when APIs fail"""
-    commodity_prices = {
-        'XAU/USD': 2045.50,    # Gold
-        'XAG/USD': 24.85,      # Silver
-        'XPT/USD': 1003.20,    # Platinum
-        'XPD/USD': 1245.75,    # Palladium
-        'COPPER': 3.85,        # Copper
-        'WTI': 78.45,          # Crude Oil WTI
-        'BRENT': 82.15,        # Brent Oil
-        'NATGAS': 2.85,        # Natural Gas
-        'GASOLINE': 2.45,      # Gasoline
-        'HEATING_OIL': 2.75,   # Heating Oil
-        'WHEAT': 645.25,       # Wheat
-        'CORN': 485.50,        # Corn
-        'SOYBEANS': 1245.75,   # Soybeans
-        'COFFEE': 185.45,      # Coffee
-        'SUGAR': 21.85,        # Sugar
-        'COTTON': 75.25        # Cotton
-    }
-    
-    return commodity_prices.get(symbol, 100.00)
-
-def get_forex_fallback_price(symbol):
-    """Fallback forex prices when APIs fail"""
-    forex_prices = {
-        'EUR/USD': 1.0875,
-        'GBP/USD': 1.2645,
-        'USD/JPY': 148.25,
-        'USD/CHF': 0.8945,
-        'AUD/USD': 0.6785,
-        'USD/CAD': 1.3542,
-        'NZD/USD': 0.6124,
-        'EUR/GBP': 0.8598,
-        'EUR/JPY': 161.25,
-        'GBP/JPY': 187.45
-    }
-    
-    return forex_prices.get(symbol, 1.0000)
 
 
 @webtrader.route("/get_price/")
@@ -586,109 +177,133 @@ def webtrader_dashboard():
                           open_trades=open_trades, closed_trades=closed_trades, pending_orders=pending_orders,
                           available_to_trade=available_to_trade)
 
-# Global variables to store WebSocket connection and cache
-crypto_ws = None
-crypto_price_cache = {}
+# 🎯 ONLY TWELVE DATA API FUNCTIONS REMAIN ACTIVE
 
-def start_crypto_websocket(binance_symbols):
-    """Start crypto WebSocket using the EXACT working pattern from simple_websocket_test.py"""
-    global crypto_ws, crypto_price_cache
-    
-    if crypto_ws is not None:
-        logging.info("🔄 WebSocket already running, skipping...")
-        return
-    
-    # NON-BLOCKING: Don't block the main worker thread
-    def start_websocket_async():
-        try:
-            # Create WebSocket URL for multiple symbols (exact same pattern)
-            streams = [f"{symbol}@ticker" for symbol in binance_symbols]
-            ws_url = f"wss://stream.binance.com:9443/ws/{'/'.join(streams)}"
-            
-            logging.info(f"🔗 Connecting to Binance WebSocket...")
-            logging.info(f"📊 Subscribing to: {', '.join(binance_symbols)}")
-            logging.info(f"🌐 URL: {ws_url}")
-            
-            def on_message(ws, message):
-                try:
-                    data = json.loads(message)
-                    
-                    # Handle single stream data (exact same pattern)
-                    if 'stream' in data and 'data' in data:
-                        ticker_data = data['data']
-                    else:
-                        ticker_data = data
-                    
-                    symbol = ticker_data.get('s', 'UNKNOWN')
-                    price = float(ticker_data.get('c', 0))
-                    change_24h = float(ticker_data.get('P', 0))
-                    
-                    # Convert BTCUSDT -> BTC/USD for database lookup
-                    if symbol.endswith('USDT'):
-                        base_symbol = symbol.replace('USDT', '')
-                        db_symbol = f"{base_symbol}/USD"
-                        
-                        # Cache the price data
-                        crypto_price_cache[db_symbol] = {
-                            'price': price,
-                            'change_24h': change_24h,
-                            'timestamp': time.time()
-                        }
-                        
-                        color = "🟢" if change_24h >= 0 else "🔴"
-                        logging.info(f"{color} {db_symbol}: ${price:,.6f} ({change_24h:+.2f}%)")
-                        
-                except Exception as e:
-                    logging.error(f"❌ Error parsing WebSocket message: {e}")
-            
-            def on_error(ws, error):
-                logging.error(f"❌ WebSocket Error: {error}")
-            
-            def on_close(ws, close_status_code, close_msg):
-                global crypto_ws
-                crypto_ws = None
-                logging.info(f"🔌 WebSocket Closed: {close_status_code} - {close_msg}")
-            
-            def on_open(ws):
-                logging.info(f"✅ WebSocket Connected Successfully!")
-                logging.info(f"💰 Receiving unlimited free real-time crypto prices...")
-            
-            # Create WebSocket connection (exact same pattern)
-            import websocket
-            global crypto_ws
-            crypto_ws = websocket.WebSocketApp(
-                ws_url,
-                on_message=on_message,
-                on_error=on_error,
-                on_close=on_close,
-                on_open=on_open
-            )
-            
-            # Run WebSocket (this will block in the background thread)
-            crypto_ws.run_forever()
-            
-        except Exception as e:
-            logging.error(f"❌ WebSocket startup error: {e}")
-    
-    # Start in background thread to avoid blocking worker
-    import threading
-    ws_thread = threading.Thread(target=start_websocket_async, daemon=True)
-    ws_thread.start()
-    
-    logging.info("🚀 WebSocket thread started (non-blocking)!")
+# Twelve Data WebSocket Integration
+def get_twelve_data_websocket_config():
+    """Get WebSocket configuration for Twelve Data real-time feeds"""
+    return {
+        'url': 'wss://ws.twelvedata.com/v1/quotes/price',
+        'api_key': '902d8585e8c040f591a3293d1b79ab88',  # Your actual Twelve Data API key
+        'subscription_limit': 500  # Pro plan WebSocket credits
+    }
 
-def get_cached_crypto_price(symbol):
-    """Get cached price from WebSocket data"""
-    global crypto_price_cache
+def get_twelve_data_price(symbol, instrument_type='forex'):
+    """Get real-time price from Twelve Data API with commodity support - FOR PRICE WORKER ONLY"""
+    try:
+        # Map internal symbols to Twelve Data format
+        symbol_mapping = {
+            # Forex - already compatible
+            'EUR/USD': 'EUR/USD',
+            'GBP/USD': 'GBP/USD',
+            'USD/JPY': 'USD/JPY',
+            'USD/CHF': 'USD/CHF',
+            'AUD/USD': 'AUD/USD',
+            'USD/CAD': 'USD/CAD',
+            'NZD/USD': 'NZD/USD',
+            'EUR/GBP': 'EUR/GBP',
+            'EUR/JPY': 'EUR/JPY',
+            'GBP/JPY': 'GBP/JPY',
+            'EUR/CHF': 'EUR/CHF',
+            'GBP/CHF': 'GBP/CHF',
+            'AUD/JPY': 'AUD/JPY',
+            'CAD/JPY': 'CAD/JPY',
+            'CHF/JPY': 'CHF/JPY',
+            'USD/TRY': 'USD/TRY',
+            'USD/ZAR': 'USD/ZAR',
+            'USD/MXN': 'USD/MXN',
+            'USD/SGD': 'USD/SGD',
+            'USD/NOK': 'USD/NOK',
+            'USD/SEK': 'USD/SEK',
+            
+            # Crypto - Twelve Data format
+            'BTC/USD': 'BTC/USD',
+            'ETH/USD': 'ETH/USD',
+            'ADA/USD': 'ADA/USD',
+            'SOL/USD': 'SOL/USD',
+            'DOT/USD': 'DOT/USD',
+            'AVAX/USD': 'AVAX/USD',
+            'MATIC/USD': 'MATIC/USD',
+            'LINK/USD': 'LINK/USD',
+            'UNI/USD': 'UNI/USD',
+            'LTC/USD': 'LTC/USD',
+            'XRP/USD': 'XRP/USD',
+            'DOGE/USD': 'DOGE/USD',
+            'SHIB/USD': 'SHIB/USD',
+            'ATOM/USD': 'ATOM/USD',
+            'ALGO/USD': 'ALGO/USD',
+            'XLM/USD': 'XLM/USD',
+            'VET/USD': 'VET/USD',
+            'FIL/USD': 'FIL/USD',
+            
+            # Commodities - Twelve Data symbols
+            'XAU/USD': 'XAU/USD',  # Gold
+            'XAG/USD': 'XAG/USD',  # Silver
+            'XPT/USD': 'XPT/USD',  # Platinum
+            'XPD/USD': 'XPD/USD',  # Palladium
+            'COPPER': 'COPPER',
+            'WTI': 'WTI',          # Crude Oil
+            'BRENT': 'BRENT',      # Brent Oil
+            'NATGAS': 'NATGAS',    # Natural Gas
+            'GASOLINE': 'GASOLINE',
+            'HEATING_OIL': 'HEATING_OIL',
+            'WHEAT': 'WHEAT',
+            'CORN': 'CORN',
+            'SOYBEANS': 'SOYBEANS',
+            'COFFEE': 'COFFEE',
+            'SUGAR': 'SUGAR',
+            'COTTON': 'COTTON',
+            
+            # Stocks
+            'AAPL': 'AAPL',
+            'MSFT': 'MSFT',
+            'GOOGL': 'GOOGL',
+            'AMZN': 'AMZN',
+            'TSLA': 'TSLA',
+            'META': 'META',
+            'NVDA': 'NVDA',
+            'NFLX': 'NFLX',
+            'DIS': 'DIS',
+            'PYPL': 'PYPL',
+            'ADBE': 'ADBE',
+            'CRM': 'CRM',
+            'ZOOM': 'ZOOM',
+            'UBER': 'UBER',
+            'SPOT': 'SPOT'
+        }
+        
+        # Get mapped symbol
+        twelve_data_symbol = symbol_mapping.get(symbol, symbol)
+        
+        # API endpoint for real-time price
+        url = f'https://api.twelvedata.com/price'
+        params = {
+            'symbol': twelve_data_symbol,
+            'apikey': '902d8585e8c040f591a3293d1b79ab88'  # Your actual Twelve Data API key
+        }
+        
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        if 'price' in data:
+            price = float(data['price'])
+            logging.info(f"Got Twelve Data price {price} for {symbol}")
+            return price
+        elif 'message' in data:
+            logging.warning(f"Twelve Data API message for {symbol}: {data['message']}")
+            
+    except Exception as e:
+        logging.warning(f"Twelve Data API call for {symbol} failed: {str(e)}")
     
-    cached_data = crypto_price_cache.get(symbol)
-    if cached_data:
-        # Check if data is recent (less than 30 seconds old)
-        age = time.time() - cached_data['timestamp']
-        if age < 30:
-            return cached_data['price']
-    
-    return None
+    # Fallback to existing methods
+    if instrument_type == 'crypto':
+        return get_twelve_data_price(symbol.split('/')[0])  # Use base currency
+    elif instrument_type == 'commodity':
+        return get_twelve_data_price(symbol)
+    else:
+        return get_twelve_data_price(symbol)
+
 
 def execute_market_order(user, instrument, amount, current_price, trade_type):
     """Execute a market order for buying or selling - using DB price only"""
@@ -790,19 +405,22 @@ def list_instruments():
 def new_instrument():
     form = InstrumentForm()
     if form.validate_on_submit():
-        current_price = get_real_time_price(form.symbol.data.upper(), form.name.data, form.type.data)
-        instrument = TradingInstrument(
-            symbol=form.symbol.data.upper(),
-            name=form.name.data,
-            type=form.type.data,
-            current_price=current_price,
-            last_updated=datetime.utcnow()
-        )
-        db.session.add(instrument)
-        db.session.commit()
-        flash('Instrument has been created!', 'success')
-        return redirect(url_for('webtrader.list_instruments'))
-    return render_template("webtrader/form.html", form=form, title="New Instrument")
+        current_price = get_twelve_data_price(form.symbol.data.upper(), form.type.data)
+        if current_price:
+            instrument = TradingInstrument(
+                symbol=form.symbol.data.upper(),
+                name=form.name.data,
+                type=form.type.data,
+                current_price=current_price,
+                last_updated=datetime.utcnow()
+            )
+            db.session.add(instrument)
+            db.session.commit()
+            flash('Instrument has been created!', 'success')
+            return redirect(url_for('webtrader.list_instruments'))
+        else:
+            flash('Could not fetch price from Twelve Data API. Please check the symbol.', 'danger')
+    return render_template("add_instrument.html", form=form, title="New Instrument")
 
 @webtrader.route("/instruments/edit/", methods=['GET', 'POST'])
 @login_required
@@ -814,7 +432,7 @@ def edit_instrument():
         instrument.symbol = form.symbol.data.upper()
         instrument.name = form.name.data
         instrument.type = form.type.data
-        instrument.current_price = get_real_time_price(form.symbol.data.upper(), form.name.data, form.type.data)
+        instrument.current_price = get_twelve_data_price(form.symbol.data.upper(), form.name.data, form.type.data)
         instrument.last_updated = datetime.utcnow()
         db.session.commit()
         flash('Instrument has been updated!', 'success')
@@ -874,7 +492,7 @@ def update_all_prices():
             try:
                 # Add slight delay to avoid hammering APIs simultaneously
                 time.sleep(0.1 * random.random())  # Random delay between 0-100ms
-                new_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
+                new_price = get_twelve_data_price(instrument.symbol, instrument.name, instrument.type)
                 if new_price:
                     # Use the new update_price method instead of direct assignment
                     instrument.update_price(new_price)
@@ -898,7 +516,7 @@ def update_all_prices():
         
         for instrument in instruments:
             try:
-                new_price = get_real_time_price(instrument.symbol, instrument.name, instrument.type)
+                new_price = get_twelve_data_price(instrument.symbol, instrument.name, instrument.type)
                 if new_price:
                     instrument.current_price = new_price
                     instrument.last_updated = now
@@ -1283,3 +901,52 @@ def liquidate_account():
         logging.error(f"Account liquidation error: {str(e)}")
     
     return redirect(url_for('webtrader.webtrader_dashboard'))
+
+@webtrader.route("/test_twelve_data_api")
+@login_required
+def test_twelve_data_api():
+    """Test endpoint to verify Twelve Data API is working"""
+    test_results = []
+    
+    # Test symbols from different asset classes
+    test_symbols = [
+        ('AAPL', 'stock'),
+        ('EUR/USD', 'forex'),
+        ('BTC/USD', 'crypto'),
+        ('XAU/USD', 'commodity')
+    ]
+    
+    for symbol, asset_type in test_symbols:
+        try:
+            price = get_twelve_data_price(symbol, asset_type)
+            if price:
+                test_results.append({
+                    'symbol': symbol,
+                    'type': asset_type,
+                    'price': price,
+                    'status': 'SUCCESS',
+                    'formatted_price': f"${price:,.6f}" if asset_type == 'crypto' else f"${price:,.2f}"
+                })
+            else:
+                test_results.append({
+                    'symbol': symbol,
+                    'type': asset_type,
+                    'price': None,
+                    'status': 'FAILED',
+                    'formatted_price': 'N/A'
+                })
+        except Exception as e:
+            test_results.append({
+                'symbol': symbol,
+                'type': asset_type,
+                'price': None,
+                'status': 'ERROR',
+                'formatted_price': str(e)
+            })
+    
+    return jsonify({
+        'api_key': '902d8585e8c040f591a3293d1b79ab88',
+        'test_results': test_results,
+        'total_tests': len(test_symbols),
+        'successful': len([r for r in test_results if r['status'] == 'SUCCESS'])
+    })
