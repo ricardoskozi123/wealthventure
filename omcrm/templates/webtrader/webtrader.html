@@ -4397,6 +4397,157 @@
         setTimeout(nuclearMobileScrollFix, 2000);
         setTimeout(nuclearMobileScrollFix, 5000);
     </script>
+
+    <!-- ENHANCED MOBILE SCROLLING FIX - MAGIC SOLUTION -->
+    <script>
+        // ENHANCED MOBILE SCROLL MAGIC ACTIVATED
+        function enhancedMobileScrolling() {
+            console.log("🎯 ENHANCED MOBILE SCROLL MAGIC ACTIVATED");
+            
+            if (window.innerWidth <= 992) {
+                // Step 1: Force body and html to be scrollable
+                document.body.style.overflow = 'auto';
+                document.body.style.height = 'auto';
+                document.body.style.minHeight = '100vh';
+                document.body.style.webkitOverflowScrolling = 'touch';
+                document.body.style.touchAction = 'pan-y';
+                
+                document.documentElement.style.overflow = 'auto';
+                document.documentElement.style.height = 'auto';
+                document.documentElement.style.webkitOverflowScrolling = 'touch';
+                document.documentElement.style.touchAction = 'pan-y';
+                
+                // Step 2: Fix main containers
+                const appContainer = document.querySelector('.app-container');
+                if (appContainer) {
+                    appContainer.style.height = 'auto';
+                    appContainer.style.minHeight = '100vh';
+                    appContainer.style.overflow = 'visible';
+                    appContainer.style.flexDirection = 'column';
+                }
+                
+                const appContent = document.querySelector('.app-content');
+                if (appContent) {
+                    appContent.style.height = 'auto';
+                    appContent.style.overflow = 'visible';
+                    appContent.style.display = 'flex';
+                    appContent.style.flexDirection = 'column';
+                }
+                
+                const contentWrapper = document.querySelector('.content-wrapper');
+                if (contentWrapper) {
+                    contentWrapper.style.height = 'auto';
+                    contentWrapper.style.overflow = 'visible';
+                    contentWrapper.style.display = 'flex';
+                    contentWrapper.style.flexDirection = 'column';
+                    contentWrapper.style.gap = '10px';
+                }
+                
+                // Step 3: Make each section properly sized
+                const instrumentsList = document.querySelector('.instruments-list');
+                if (instrumentsList) {
+                    instrumentsList.style.height = '250px';
+                    instrumentsList.style.overflowY = 'auto';
+                    instrumentsList.style.webkitOverflowScrolling = 'touch';
+                    instrumentsList.style.flexShrink = '0';
+                }
+                
+                const chartArea = document.querySelector('.chart-area');
+                if (chartArea) {
+                    chartArea.style.height = 'auto';
+                    chartArea.style.minHeight = '400px';
+                    chartArea.style.overflow = 'visible';
+                    chartArea.style.display = 'flex';
+                    chartArea.style.flexDirection = 'column';
+                    chartArea.style.flexShrink = '0';
+                }
+                
+                const tradingPanel = document.querySelector('.trading-panel-pro');
+                if (tradingPanel) {
+                    tradingPanel.style.height = 'auto';
+                    tradingPanel.style.overflow = 'visible';
+                    tradingPanel.style.width = '100%';
+                    tradingPanel.style.flexShrink = '0';
+                }
+                
+                // Step 4: Apply CSS injection for mobile scrolling
+                const scrollStyle = document.createElement('style');
+                scrollStyle.id = 'mobile-scroll-fix';
+                scrollStyle.textContent = `
+                    @media (max-width: 992px) {
+                        /* Force page scrolling */
+                        html, body {
+                            overflow: auto !important;
+                            height: auto !important;
+                            min-height: 100vh !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-y !important;
+                        }
+                        
+                        .app-container {
+                            height: auto !important;
+                            min-height: 100vh !important;
+                            overflow: visible !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                        }
+                        
+                        .app-content {
+                            height: auto !important;
+                            overflow: visible !important;
+                            flex: 1 !important;
+                        }
+                        
+                        .content-wrapper {
+                            height: auto !important;
+                            overflow: visible !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            gap: 10px !important;
+                        }
+                        
+                        .instruments-list {
+                            height: 250px !important;
+                            flex-shrink: 0 !important;
+                            overflow-y: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                        }
+                        
+                        .chart-area {
+                            height: auto !important;
+                            min-height: 400px !important;
+                            flex-shrink: 0 !important;
+                            overflow: visible !important;
+                        }
+                        
+                        .trading-panel-pro {
+                            height: auto !important;
+                            flex-shrink: 0 !important;
+                            width: 100% !important;
+                            order: 999 !important;
+                        }
+                    }
+                `;
+                
+                // Remove any existing scroll fix
+                const existingStyle = document.getElementById('mobile-scroll-fix');
+                if (existingStyle) existingStyle.remove();
+                
+                document.head.appendChild(scrollStyle);
+                
+                console.log("🎯 ENHANCED MOBILE SCROLL MAGIC COMPLETE!");
+                console.log("📱 Page should now be fully scrollable");
+            }
+        }
+
+        // Apply enhanced mobile scrolling
+        document.addEventListener('DOMContentLoaded', enhancedMobileScrolling);
+        window.addEventListener('load', enhancedMobileScrolling);
+        window.addEventListener('resize', enhancedMobileScrolling);
+        
+        setTimeout(enhancedMobileScrolling, 1000);
+        setTimeout(enhancedMobileScrolling, 3000);
+    </script>
 </body>
 </html>
 
