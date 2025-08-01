@@ -1,16 +1,458 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Add Instrument</h1>
-<form method="POST">
-    <div>
-        <label for="symbol">Symbol</label>
-        <input type="text" id="symbol" name="symbol" required>
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h2 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Add Trading Instrument
+                    </h2>
+                    <p class="mb-0 opacity-75">Add forex, crypto, commodities, or stocks to your trading platform</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Instrument Search & Preview -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-search me-1"></i>Search Instruments
+                                </label>
+                                <input type="text" id="instrumentSearch" class="form-control form-control-lg" 
+                                       placeholder="Search by symbol or name (e.g., EURUSD, GOLD, BTC)" 
+                                       autocomplete="off">
+                                <div id="searchResults" class="search-results mt-2"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="instrument-preview p-3 bg-light rounded">
+                                <h6 class="fw-bold mb-2">Preview</h6>
+                                <div id="previewContent">
+                                    <span class="text-muted">Select an instrument to preview</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categories Tabs -->
+                    <ul class="nav nav-pills nav-fill mb-4" id="categoryTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="forex-tab" data-bs-toggle="pill" data-bs-target="#forex" type="button" role="tab">
+                                <i class="fas fa-exchange-alt me-1"></i>Forex (47)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="crypto-tab" data-bs-toggle="pill" data-bs-target="#crypto" type="button" role="tab">
+                                <i class="fab fa-bitcoin me-1"></i>Crypto (50+)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="commodities-tab" data-bs-toggle="pill" data-bs-target="#commodities" type="button" role="tab">
+                                <i class="fas fa-coins me-1"></i>Commodities (25)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="stocks-tab" data-bs-toggle="pill" data-bs-target="#stocks" type="button" role="tab">
+                                <i class="fas fa-chart-line me-1"></i>Stocks (Top 50)
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Category Content -->
+                    <div class="tab-content" id="categoryContent">
+                        <!-- Forex -->
+                        <div class="tab-pane fade show active" id="forex" role="tabpanel">
+                            <div class="instruments-grid">
+                                <!-- Major Pairs -->
+                                <div class="instrument-group mb-3">
+                                    <h6 class="text-primary fw-bold mb-2">Major Pairs</h6>
+                                    <div class="row g-2" id="forexMajor"></div>
+                                </div>
+                                <!-- Minor Pairs -->
+                                <div class="instrument-group mb-3">
+                                    <h6 class="text-primary fw-bold mb-2">Minor Pairs</h6>
+                                    <div class="row g-2" id="forexMinor"></div>
+                                </div>
+                                <!-- Exotic Pairs -->
+                                <div class="instrument-group">
+                                    <h6 class="text-primary fw-bold mb-2">Exotic Pairs</h6>
+                                    <div class="row g-2" id="forexExotic"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Crypto -->
+                        <div class="tab-pane fade" id="crypto" role="tabpanel">
+                            <div class="instruments-grid">
+                                <div class="instrument-group mb-3">
+                                    <h6 class="text-warning fw-bold mb-2">Top Cryptocurrencies</h6>
+                                    <div class="row g-2" id="cryptoList"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Commodities -->
+                        <div class="tab-pane fade" id="commodities" role="tabpanel">
+                            <div class="instruments-grid">
+                                <!-- Precious Metals -->
+                                <div class="instrument-group mb-3">
+                                    <h6 class="text-warning fw-bold mb-2">Precious Metals</h6>
+                                    <div class="row g-2" id="commoditiesMetals"></div>
+                                </div>
+                                <!-- Energy -->
+                                <div class="instrument-group mb-3">
+                                    <h6 class="text-danger fw-bold mb-2">Energy</h6>
+                                    <div class="row g-2" id="commoditiesEnergy"></div>
+                                </div>
+                                <!-- Agriculture -->
+                                <div class="instrument-group">
+                                    <h6 class="text-success fw-bold mb-2">Agriculture</h6>
+                                    <div class="row g-2" id="commoditiesAgri"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stocks -->
+                        <div class="tab-pane fade" id="stocks" role="tabpanel">
+                            <div class="instruments-grid">
+                                <div class="instrument-group">
+                                    <h6 class="text-info fw-bold mb-2">Top US Stocks</h6>
+                                    <div class="row g-2" id="stocksList"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Instrument Form -->
+                    <form method="POST" id="addInstrumentForm" class="mt-4 p-4 bg-light rounded">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-plus me-2"></i>Add Selected Instrument
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="symbol" class="form-label fw-bold">Symbol *</label>
+                                <input type="text" id="symbol" name="symbol" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="name" class="form-label fw-bold">Name *</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="type" class="form-label fw-bold">Type *</label>
+                                <select id="type" name="type" class="form-select" required>
+                                    <option value="">Select Type</option>
+                                    <option value="forex">Forex</option>
+                                    <option value="crypto">Cryptocurrency</option>
+                                    <option value="commodity">Commodity</option>
+                                    <option value="stock">Stock</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-plus me-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" required>
-    </div>
-    <button type="submit">Add Instrument</button>
-</form>
+</div>
+
+<style>
+.search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background: white;
+    display: none;
+}
+
+.search-result-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.instrument-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.instrument-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    transform: translateY(-1px);
+}
+
+.instrument-card.selected {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.instrument-symbol {
+    font-weight: bold;
+    color: #0d6efd;
+    font-size: 0.9rem;
+}
+
+.instrument-name {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.instruments-grid {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+</style>
+
+<script>
+// Instrument data from Twelve Data API
+const instrumentData = {
+    forex: {
+        major: [
+            {symbol: 'EUR/USD', name: 'Euro / US Dollar', type: 'forex'},
+            {symbol: 'GBP/USD', name: 'British Pound / US Dollar', type: 'forex'},
+            {symbol: 'USD/JPY', name: 'US Dollar / Japanese Yen', type: 'forex'},
+            {symbol: 'USD/CHF', name: 'US Dollar / Swiss Franc', type: 'forex'},
+            {symbol: 'AUD/USD', name: 'Australian Dollar / US Dollar', type: 'forex'},
+            {symbol: 'USD/CAD', name: 'US Dollar / Canadian Dollar', type: 'forex'},
+            {symbol: 'NZD/USD', name: 'New Zealand Dollar / US Dollar', type: 'forex'}
+        ],
+        minor: [
+            {symbol: 'EUR/GBP', name: 'Euro / British Pound', type: 'forex'},
+            {symbol: 'EUR/JPY', name: 'Euro / Japanese Yen', type: 'forex'},
+            {symbol: 'GBP/JPY', name: 'British Pound / Japanese Yen', type: 'forex'},
+            {symbol: 'EUR/CHF', name: 'Euro / Swiss Franc', type: 'forex'},
+            {symbol: 'GBP/CHF', name: 'British Pound / Swiss Franc', type: 'forex'},
+            {symbol: 'AUD/JPY', name: 'Australian Dollar / Japanese Yen', type: 'forex'},
+            {symbol: 'CAD/JPY', name: 'Canadian Dollar / Japanese Yen', type: 'forex'},
+            {symbol: 'CHF/JPY', name: 'Swiss Franc / Japanese Yen', type: 'forex'}
+        ],
+        exotic: [
+            {symbol: 'USD/TRY', name: 'US Dollar / Turkish Lira', type: 'forex'},
+            {symbol: 'USD/ZAR', name: 'US Dollar / South African Rand', type: 'forex'},
+            {symbol: 'USD/MXN', name: 'US Dollar / Mexican Peso', type: 'forex'},
+            {symbol: 'USD/SGD', name: 'US Dollar / Singapore Dollar', type: 'forex'},
+            {symbol: 'USD/NOK', name: 'US Dollar / Norwegian Krone', type: 'forex'},
+            {symbol: 'USD/SEK', name: 'US Dollar / Swedish Krona', type: 'forex'}
+        ]
+    },
+    crypto: [
+        {symbol: 'BTC/USD', name: 'Bitcoin', type: 'crypto'},
+        {symbol: 'ETH/USD', name: 'Ethereum', type: 'crypto'},
+        {symbol: 'ADA/USD', name: 'Cardano', type: 'crypto'},
+        {symbol: 'SOL/USD', name: 'Solana', type: 'crypto'},
+        {symbol: 'DOT/USD', name: 'Polkadot', type: 'crypto'},
+        {symbol: 'AVAX/USD', name: 'Avalanche', type: 'crypto'},
+        {symbol: 'MATIC/USD', name: 'Polygon', type: 'crypto'},
+        {symbol: 'LINK/USD', name: 'Chainlink', type: 'crypto'},
+        {symbol: 'UNI/USD', name: 'Uniswap', type: 'crypto'},
+        {symbol: 'LTC/USD', name: 'Litecoin', type: 'crypto'},
+        {symbol: 'XRP/USD', name: 'Ripple', type: 'crypto'},
+        {symbol: 'DOGE/USD', name: 'Dogecoin', type: 'crypto'},
+        {symbol: 'SHIB/USD', name: 'Shiba Inu', type: 'crypto'},
+        {symbol: 'ATOM/USD', name: 'Cosmos', type: 'crypto'},
+        {symbol: 'ALGO/USD', name: 'Algorand', type: 'crypto'},
+        {symbol: 'XLM/USD', name: 'Stellar', type: 'crypto'},
+        {symbol: 'VET/USD', name: 'VeChain', type: 'crypto'},
+        {symbol: 'FIL/USD', name: 'Filecoin', type: 'crypto'}
+    ],
+    commodities: {
+        metals: [
+            {symbol: 'XAU/USD', name: 'Gold', type: 'commodity'},
+            {symbol: 'XAG/USD', name: 'Silver', type: 'commodity'},
+            {symbol: 'XPT/USD', name: 'Platinum', type: 'commodity'},
+            {symbol: 'XPD/USD', name: 'Palladium', type: 'commodity'},
+            {symbol: 'COPPER', name: 'Copper', type: 'commodity'}
+        ],
+        energy: [
+            {symbol: 'WTI', name: 'Crude Oil WTI', type: 'commodity'},
+            {symbol: 'BRENT', name: 'Brent Oil', type: 'commodity'},
+            {symbol: 'NATGAS', name: 'Natural Gas', type: 'commodity'},
+            {symbol: 'GASOLINE', name: 'Gasoline', type: 'commodity'},
+            {symbol: 'HEATING_OIL', name: 'Heating Oil', type: 'commodity'}
+        ],
+        agriculture: [
+            {symbol: 'WHEAT', name: 'Wheat', type: 'commodity'},
+            {symbol: 'CORN', name: 'Corn', type: 'commodity'},
+            {symbol: 'SOYBEANS', name: 'Soybeans', type: 'commodity'},
+            {symbol: 'COFFEE', name: 'Coffee', type: 'commodity'},
+            {symbol: 'SUGAR', name: 'Sugar', type: 'commodity'},
+            {symbol: 'COTTON', name: 'Cotton', type: 'commodity'}
+        ]
+    },
+    stocks: [
+        {symbol: 'AAPL', name: 'Apple Inc.', type: 'stock'},
+        {symbol: 'MSFT', name: 'Microsoft Corporation', type: 'stock'},
+        {symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'stock'},
+        {symbol: 'AMZN', name: 'Amazon.com Inc.', type: 'stock'},
+        {symbol: 'TSLA', name: 'Tesla Inc.', type: 'stock'},
+        {symbol: 'META', name: 'Meta Platforms Inc.', type: 'stock'},
+        {symbol: 'NVDA', name: 'NVIDIA Corporation', type: 'stock'},
+        {symbol: 'NFLX', name: 'Netflix Inc.', type: 'stock'},
+        {symbol: 'DIS', name: 'The Walt Disney Company', type: 'stock'},
+        {symbol: 'PYPL', name: 'PayPal Holdings Inc.', type: 'stock'},
+        {symbol: 'ADBE', name: 'Adobe Inc.', type: 'stock'},
+        {symbol: 'CRM', name: 'Salesforce Inc.', type: 'stock'},
+        {symbol: 'ZOOM', name: 'Zoom Video Communications', type: 'stock'},
+        {symbol: 'UBER', name: 'Uber Technologies Inc.', type: 'stock'},
+        {symbol: 'SPOT', name: 'Spotify Technology S.A.', type: 'stock'}
+    ]
+};
+
+// Flatten all instruments for search
+const allInstruments = [
+    ...instrumentData.forex.major,
+    ...instrumentData.forex.minor,
+    ...instrumentData.forex.exotic,
+    ...instrumentData.crypto,
+    ...instrumentData.commodities.metals,
+    ...instrumentData.commodities.energy,
+    ...instrumentData.commodities.agriculture,
+    ...instrumentData.stocks
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Populate instrument grids
+    populateInstrumentGrid('forexMajor', instrumentData.forex.major);
+    populateInstrumentGrid('forexMinor', instrumentData.forex.minor);
+    populateInstrumentGrid('forexExotic', instrumentData.forex.exotic);
+    populateInstrumentGrid('cryptoList', instrumentData.crypto);
+    populateInstrumentGrid('commoditiesMetals', instrumentData.commodities.metals);
+    populateInstrumentGrid('commoditiesEnergy', instrumentData.commodities.energy);
+    populateInstrumentGrid('commoditiesAgri', instrumentData.commodities.agriculture);
+    populateInstrumentGrid('stocksList', instrumentData.stocks);
+
+    // Search functionality
+    const searchInput = document.getElementById('instrumentSearch');
+    const searchResults = document.getElementById('searchResults');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        const filtered = allInstruments.filter(instrument => 
+            instrument.symbol.toLowerCase().includes(query) || 
+            instrument.name.toLowerCase().includes(query)
+        );
+
+        displaySearchResults(filtered);
+    });
+
+    // Click outside to close search
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+});
+
+function populateInstrumentGrid(containerId, instruments) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    instruments.forEach(instrument => {
+        const col = document.createElement('div');
+        col.className = 'col-md-3 col-sm-4 col-6';
+        
+        col.innerHTML = `
+            <div class="instrument-card" onclick="selectInstrument('${instrument.symbol}', '${instrument.name}', '${instrument.type}')">
+                <div class="instrument-symbol">${instrument.symbol}</div>
+                <div class="instrument-name">${instrument.name}</div>
+            </div>
+        `;
+        
+        container.appendChild(col);
+    });
+}
+
+function displaySearchResults(instruments) {
+    const searchResults = document.getElementById('searchResults');
+    
+    if (instruments.length === 0) {
+        searchResults.innerHTML = '<div class="search-result-item">No instruments found</div>';
+        searchResults.style.display = 'block';
+        return;
+    }
+
+    const html = instruments.slice(0, 10).map(instrument => `
+        <div class="search-result-item" onclick="selectInstrument('${instrument.symbol}', '${instrument.name}', '${instrument.type}'); closeSearch();">
+            <div class="instrument-symbol">${instrument.symbol}</div>
+            <div class="instrument-name">${instrument.name}</div>
+        </div>
+    `).join('');
+
+    searchResults.innerHTML = html;
+    searchResults.style.display = 'block';
+}
+
+function selectInstrument(symbol, name, type) {
+    // Fill form
+    document.getElementById('symbol').value = symbol;
+    document.getElementById('name').value = name;
+    document.getElementById('type').value = type;
+
+    // Update preview
+    const preview = document.getElementById('previewContent');
+    preview.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div class="fw-bold text-primary">${symbol}</div>
+                <div class="text-muted small">${name}</div>
+            </div>
+            <span class="badge bg-${getTypeBadgeColor(type)}">${type.toUpperCase()}</span>
+        </div>
+    `;
+
+    // Highlight selected card
+    document.querySelectorAll('.instrument-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    event.target.closest('.instrument-card')?.classList.add('selected');
+}
+
+function closeSearch() {
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('instrumentSearch').value = '';
+}
+
+function getTypeBadgeColor(type) {
+    const colors = {
+        'forex': 'primary',
+        'crypto': 'warning',
+        'commodity': 'success',
+        'stock': 'info'
+    };
+    return colors[type] || 'secondary';
+}
+</script>
 {% endblock %}

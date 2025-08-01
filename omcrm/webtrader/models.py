@@ -8,13 +8,54 @@ logging.basicConfig(level=logging.DEBUG)
 
 class TradingInstrument(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    symbol = db.Column(db.String(10), unique=True, nullable=False)
+    symbol = db.Column(db.String(20), unique=True, nullable=False)  # Increased length for commodity symbols
     name = db.Column(db.String(100), nullable=False)
     current_price = db.Column(db.Float, nullable=False)
     previous_price = db.Column(db.Float, nullable=True, default=None)  # Added for change calculation
     change = db.Column(db.Float, nullable=True, default=0.0)  # Percentage change
-    type = db.Column(db.String(10), nullable=False)  # 'stock' or 'crypto'
+    type = db.Column(db.String(20), nullable=False)  # Updated: 'forex', 'crypto', 'commodity', 'stock'
     last_updated = db.Column(db.DateTime, nullable=True)
+
+    # Valid instrument types
+    VALID_TYPES = ['forex', 'crypto', 'commodity', 'stock']
+
+    def __init__(self, **kwargs):
+        # Validate instrument type
+        if 'type' in kwargs and kwargs['type'] not in self.VALID_TYPES:
+            raise ValueError(f"Invalid instrument type. Must be one of: {', '.join(self.VALID_TYPES)}")
+        super().__init__(**kwargs)
+
+    @property
+    def precision(self):
+        """Get decimal precision based on instrument type"""
+        precision_map = {
+            'forex': 5,      # Most forex pairs have 5 decimal places
+            'crypto': 6,     # Crypto needs high precision
+            'commodity': 2,  # Commodities typically 2 decimal places
+            'stock': 2       # Stocks typically 2 decimal places
+        }
+        return precision_map.get(self.type, 2)
+
+    @property
+    def formatted_price(self):
+        """Get price formatted according to instrument type precision"""
+        if self.current_price is None:
+            return "0.00"
+        return f"{self.current_price:.{self.precision}f}"
+
+    @property
+    def price_change_color(self):
+        """Get CSS class for price change color"""
+        if self.change is None or self.change == 0:
+            return 'text-muted'
+        return 'text-success' if self.change > 0 else 'text-danger'
+
+    @property
+    def change_direction(self):
+        """Get direction indicator for price change"""
+        if self.change is None or self.change == 0:
+            return ''
+        return '↑' if self.change > 0 else '↓'
 
     def update_price(self, new_price):
         """Update the price and calculate the change percentage"""
@@ -38,6 +79,26 @@ class TradingInstrument(db.Model):
         # Always update the current price
         self.current_price = new_price
         self.last_updated = datetime.utcnow()
+
+    def to_dict(self):
+        """Convert instrument to dictionary for JSON responses"""
+        return {
+            'id': self.id,
+            'symbol': self.symbol,
+            'name': self.name,
+            'type': self.type,
+            'current_price': self.current_price,
+            'previous_price': self.previous_price,
+            'change': self.change,
+            'formatted_price': self.formatted_price,
+            'precision': self.precision,
+            'change_direction': self.change_direction,
+            'price_change_color': self.price_change_color,
+            'last_updated': self.last_updated.isoformat() if self.last_updated else None
+        }
+
+    def __repr__(self):
+        return f'<TradingInstrument {self.symbol}: {self.formatted_price} ({self.type})>'
 
 class Trade(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -290,6 +290,171 @@ def get_commodity_price_fallback(symbol):
     prices = {'GOLD': 2324.15, 'SILVER': 27.43, 'OIL': 78.32}
     return prices.get(symbol, 100.0)
 
+# Twelve Data WebSocket Integration
+def get_twelve_data_websocket_config():
+    """Get WebSocket configuration for Twelve Data real-time feeds"""
+    return {
+        'url': 'wss://ws.twelvedata.com/v1/quotes/price',
+        'api_key': '902d8585e8c040f591a3293d1b79ab88',  # Your actual Twelve Data API key
+        'subscription_limit': 500  # Pro plan WebSocket credits
+    }
+
+def get_twelve_data_price(symbol, instrument_type='forex'):
+    """Get real-time price from Twelve Data API with commodity support - FOR PRICE WORKER ONLY"""
+    try:
+        # Map internal symbols to Twelve Data format
+        symbol_mapping = {
+            # Forex - already compatible
+            'EUR/USD': 'EUR/USD',
+            'GBP/USD': 'GBP/USD',
+            'USD/JPY': 'USD/JPY',
+            'USD/CHF': 'USD/CHF',
+            'AUD/USD': 'AUD/USD',
+            'USD/CAD': 'USD/CAD',
+            'NZD/USD': 'NZD/USD',
+            'EUR/GBP': 'EUR/GBP',
+            'EUR/JPY': 'EUR/JPY',
+            'GBP/JPY': 'GBP/JPY',
+            'EUR/CHF': 'EUR/CHF',
+            'GBP/CHF': 'GBP/CHF',
+            'AUD/JPY': 'AUD/JPY',
+            'CAD/JPY': 'CAD/JPY',
+            'CHF/JPY': 'CHF/JPY',
+            'USD/TRY': 'USD/TRY',
+            'USD/ZAR': 'USD/ZAR',
+            'USD/MXN': 'USD/MXN',
+            'USD/SGD': 'USD/SGD',
+            'USD/NOK': 'USD/NOK',
+            'USD/SEK': 'USD/SEK',
+            
+            # Crypto - Twelve Data format
+            'BTC/USD': 'BTC/USD',
+            'ETH/USD': 'ETH/USD',
+            'ADA/USD': 'ADA/USD',
+            'SOL/USD': 'SOL/USD',
+            'DOT/USD': 'DOT/USD',
+            'AVAX/USD': 'AVAX/USD',
+            'MATIC/USD': 'MATIC/USD',
+            'LINK/USD': 'LINK/USD',
+            'UNI/USD': 'UNI/USD',
+            'LTC/USD': 'LTC/USD',
+            'XRP/USD': 'XRP/USD',
+            'DOGE/USD': 'DOGE/USD',
+            'SHIB/USD': 'SHIB/USD',
+            'ATOM/USD': 'ATOM/USD',
+            'ALGO/USD': 'ALGO/USD',
+            'XLM/USD': 'XLM/USD',
+            'VET/USD': 'VET/USD',
+            'FIL/USD': 'FIL/USD',
+            
+            # Commodities - Twelve Data symbols
+            'XAU/USD': 'XAU/USD',  # Gold
+            'XAG/USD': 'XAG/USD',  # Silver
+            'XPT/USD': 'XPT/USD',  # Platinum
+            'XPD/USD': 'XPD/USD',  # Palladium
+            'COPPER': 'COPPER',
+            'WTI': 'WTI',          # Crude Oil
+            'BRENT': 'BRENT',      # Brent Oil
+            'NATGAS': 'NATGAS',    # Natural Gas
+            'GASOLINE': 'GASOLINE',
+            'HEATING_OIL': 'HEATING_OIL',
+            'WHEAT': 'WHEAT',
+            'CORN': 'CORN',
+            'SOYBEANS': 'SOYBEANS',
+            'COFFEE': 'COFFEE',
+            'SUGAR': 'SUGAR',
+            'COTTON': 'COTTON',
+            
+            # Stocks
+            'AAPL': 'AAPL',
+            'MSFT': 'MSFT',
+            'GOOGL': 'GOOGL',
+            'AMZN': 'AMZN',
+            'TSLA': 'TSLA',
+            'META': 'META',
+            'NVDA': 'NVDA',
+            'NFLX': 'NFLX',
+            'DIS': 'DIS',
+            'PYPL': 'PYPL',
+            'ADBE': 'ADBE',
+            'CRM': 'CRM',
+            'ZOOM': 'ZOOM',
+            'UBER': 'UBER',
+            'SPOT': 'SPOT'
+        }
+        
+        # Get mapped symbol
+        twelve_data_symbol = symbol_mapping.get(symbol, symbol)
+        
+        # API endpoint for real-time price
+        url = f'https://api.twelvedata.com/price'
+        params = {
+            'symbol': twelve_data_symbol,
+            'apikey': '902d8585e8c040f591a3293d1b79ab88'  # Your actual Twelve Data API key
+        }
+        
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        if 'price' in data:
+            price = float(data['price'])
+            logging.info(f"Got Twelve Data price {price} for {symbol}")
+            return price
+        elif 'message' in data:
+            logging.warning(f"Twelve Data API message for {symbol}: {data['message']}")
+            
+    except Exception as e:
+        logging.warning(f"Twelve Data API call for {symbol} failed: {str(e)}")
+    
+    # Fallback to existing methods
+    if instrument_type == 'crypto':
+        return get_crypto_price(symbol.split('/')[0])  # Use base currency
+    elif instrument_type == 'commodity':
+        return get_commodity_fallback_price(symbol)
+    else:
+        return get_forex_fallback_price(symbol)
+
+def get_commodity_fallback_price(symbol):
+    """Fallback commodity prices when APIs fail"""
+    commodity_prices = {
+        'XAU/USD': 2045.50,    # Gold
+        'XAG/USD': 24.85,      # Silver
+        'XPT/USD': 1003.20,    # Platinum
+        'XPD/USD': 1245.75,    # Palladium
+        'COPPER': 3.85,        # Copper
+        'WTI': 78.45,          # Crude Oil WTI
+        'BRENT': 82.15,        # Brent Oil
+        'NATGAS': 2.85,        # Natural Gas
+        'GASOLINE': 2.45,      # Gasoline
+        'HEATING_OIL': 2.75,   # Heating Oil
+        'WHEAT': 645.25,       # Wheat
+        'CORN': 485.50,        # Corn
+        'SOYBEANS': 1245.75,   # Soybeans
+        'COFFEE': 185.45,      # Coffee
+        'SUGAR': 21.85,        # Sugar
+        'COTTON': 75.25        # Cotton
+    }
+    
+    return commodity_prices.get(symbol, 100.00)
+
+def get_forex_fallback_price(symbol):
+    """Fallback forex prices when APIs fail"""
+    forex_prices = {
+        'EUR/USD': 1.0875,
+        'GBP/USD': 1.2645,
+        'USD/JPY': 148.25,
+        'USD/CHF': 0.8945,
+        'AUD/USD': 0.6785,
+        'USD/CAD': 1.3542,
+        'NZD/USD': 0.6124,
+        'EUR/GBP': 0.8598,
+        'EUR/JPY': 161.25,
+        'GBP/JPY': 187.45
+    }
+    
+    return forex_prices.get(symbol, 1.0000)
+
 
 @webtrader.route("/get_price/")
 @login_required
@@ -745,6 +910,40 @@ def update_all_prices():
         flash(f'Updated prices for {updated_count} out of {len(instruments)} instruments', 'success')
         
     return redirect(url_for('webtrader.list_instruments'))
+
+@webtrader.route("/update_price", methods=['POST'])
+@login_required
+def update_price_from_websocket():
+    """Update instrument price from WebSocket - SUPPLEMENTARY to price worker"""
+    try:
+        data = request.get_json()
+        symbol = data.get('symbol')
+        price = data.get('price')
+        
+        if not symbol or not price:
+            return jsonify({'success': False, 'message': 'Missing symbol or price'}), 400
+            
+        # Find instrument by symbol
+        instrument = TradingInstrument.query.filter_by(symbol=symbol).first()
+        if not instrument:
+            return jsonify({'success': False, 'message': f'Instrument {symbol} not found'}), 404
+            
+        # Update price using the model's update_price method
+        instrument.update_price(float(price))
+        db.session.commit()
+        
+        logging.info(f"📡 WebSocket updated {symbol}: ${price}")
+        
+        return jsonify({
+            'success': True, 
+            'symbol': symbol, 
+            'price': price,
+            'change': instrument.change
+        })
+        
+    except Exception as e:
+        logging.error(f"Error updating price from WebSocket: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @webtrader.route("/cancel_order", methods=['POST'])
 @login_required
