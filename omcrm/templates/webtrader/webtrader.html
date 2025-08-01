@@ -548,49 +548,8 @@
                 height: auto;
                 overflow: visible;
             }
-            
-            /* Fix trades section scrolling on mobile */
             .trades-section {
-                height: 400px; /* Fixed height for mobile */
-                overflow: hidden; /* Container should not scroll */
-                display: flex;
-                flex-direction: column;
-            }
-            
-            .tab-content {
-                flex: 1;
-                overflow: hidden;
-                height: calc(100% - 50px); /* Account for tabs height */
-            }
-            
-            .tab-pane {
-                height: 100%;
-                overflow: hidden;
-            }
-            
-            .table-responsive {
-                height: 100%;
-                overflow-y: auto;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            /* Make tabs horizontal on mobile */
-            .webtrader-tabs {
-                display: flex;
-                flex-direction: row;
-                justify-content: space-around;
-                flex-shrink: 0;
-            }
-            
-            .webtrader-tabs .nav-item {
-                flex: 1;
-                text-align: center;
-            }
-            
-            .webtrader-tab-link {
-                padding: 8px 4px !important;
-                font-size: 0.8rem !important;
+                overflow-y: visible;
             }
         }
         /* --- End Scoped Styles --- */
@@ -1261,448 +1220,6 @@
         
         .tab-pane .table-responsive {
             margin: 0;
-        }
-
-        /* Better mobile scrollbars and touch handling */
-        @media (max-width: 768px) {
-            .trades-section {
-                height: 350px; /* Smaller height for phones */
-            }
-            
-            .table-responsive {
-                /* Better touch scrolling */
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: thin;
-                scrollbar-color: var(--accent-color) var(--medium-bg);
-            }
-            
-            .table-responsive::-webkit-scrollbar {
-                width: 6px;
-                height: 6px;
-            }
-            
-            .table-responsive::-webkit-scrollbar-track {
-                background: var(--medium-bg);
-                border-radius: 3px;
-            }
-            
-            .table-responsive::-webkit-scrollbar-thumb {
-                background: var(--accent-color);
-                border-radius: 3px;
-            }
-            
-            .table-responsive::-webkit-scrollbar-thumb:hover {
-                background: var(--success-color);
-            }
-            
-            /* Ensure tables don't break layout */
-            .trades-table {
-                min-width: 600px; /* Force horizontal scroll if needed */
-            }
-            
-            .trades-table th,
-            .trades-table td {
-                white-space: nowrap;
-                padding: 8px 6px;
-                font-size: 0.75rem;
-            }
-            
-            /* Better badge sizing on mobile */
-            .badge {
-                font-size: 0.65rem;
-                padding: 2px 6px;
-            }
-            
-            /* Tab improvements */
-            .webtrader-tab-link {
-                padding: 6px 2px !important;
-                font-size: 0.75rem !important;
-            }
-            
-            .webtrader-tab-link .badge {
-                font-size: 0.6rem !important;
-                margin-left: 2px !important;
-            }
-        }
-
-        /* CRITICAL MOBILE TOUCH SCROLLING FIX */
-        * {
-            /* Remove any touch-action restrictions */
-            touch-action: auto !important;
-        }
-
-        /* Ensure smooth scrolling on mobile */
-        html, body {
-            -webkit-overflow-scrolling: touch !important;
-            overflow-x: hidden !important;
-            touch-action: pan-y pan-x !important;
-        }
-
-        /* Fix for mobile viewport and scrolling */
-        .app-container {
-            touch-action: pan-y pan-x !important;
-            -webkit-overflow-scrolling: touch !important;
-        }
-
-        .app-content {
-            touch-action: pan-y pan-x !important;
-            -webkit-overflow-scrolling: touch !important;
-        }
-
-        .content-wrapper {
-            touch-action: pan-y pan-x !important;
-            -webkit-overflow-scrolling: touch !important;
-        }
-
-        /* MOBILE SCROLLING FIX - Override all conflicting rules */
-        @media (max-width: 992px) {
-            /* Force proper mobile layout */
-            .app-container {
-                flex-direction: column !important;
-                height: auto !important;
-                overflow: visible !important;
-                touch-action: pan-y pan-x !important;
-            }
-            
-            .app-content {
-                height: auto !important;
-                overflow: visible !important;
-                touch-action: pan-y pan-x !important;
-            }
-            
-            .content-wrapper {
-                flex-direction: column !important;
-                height: auto !important;
-                overflow: visible !important;
-                touch-action: pan-y pan-x !important;
-            }
-            
-            .chart-area {
-                height: auto !important;
-                overflow: visible !important;
-                display: flex !important;
-                flex-direction: column !important;
-                touch-action: pan-y pan-x !important;
-            }
-            
-            /* CRITICAL: Make trades section scrollable */
-            .trades-section {
-                height: 60vh !important; /* Increase height */
-                min-height: 350px !important;
-                max-height: 600px !important;
-                overflow: hidden !important;
-                display: flex !important;
-                flex-direction: column !important;
-                border: 1px solid var(--border-color) !important;
-                background: var(--darker-bg) !important;
-                touch-action: pan-y pan-x !important;
-                -webkit-overflow-scrolling: touch !important;
-            }
-            
-            .webtrader-tabs {
-                flex-shrink: 0 !important;
-                display: flex !important;
-                flex-direction: row !important;
-                justify-content: space-around !important;
-                background: var(--medium-bg) !important;
-                touch-action: manipulation !important;
-            }
-            
-            .webtrader-tabs .nav-item {
-                flex: 1 !important;
-                text-align: center !important;
-            }
-            
-            .webtrader-tab-link {
-                padding: 8px 4px !important;
-                font-size: 0.8rem !important;
-                white-space: nowrap !important;
-                touch-action: manipulation !important;
-            }
-            
-            .tab-content {
-                flex: 1 !important;
-                overflow: hidden !important;
-                height: calc(100% - 45px) !important;
-                position: relative !important;
-                touch-action: pan-y pan-x !important;
-            }
-            
-            .tab-pane {
-                height: 100% !important;
-                overflow: hidden !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                bottom: 0 !important;
-                touch-action: pan-y pan-x !important;
-            }
-            
-            .table-responsive {
-                height: 100% !important;
-                overflow-y: auto !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-                position: relative !important;
-                touch-action: pan-y pan-x !important;
-                /* Force scrolling with momentum */
-                scrollbar-width: thin !important;
-            }
-            
-            /* Ensure tables are properly sized */
-            .trades-table {
-                width: 100% !important;
-                min-width: 600px !important;
-                touch-action: pan-y pan-x !important;
-            }
-            
-            .trades-table th,
-            .trades-table td {
-                padding: 6px 4px !important;
-                font-size: 0.75rem !important;
-                white-space: nowrap !important;
-            }
-            
-            /* Override any event blocking */
-            .trades-table tbody tr {
-                touch-action: pan-y pan-x !important;
-            }
-        }
-
-        /* Extra small screens */
-        @media (max-width: 576px) {
-            .trades-section {
-                height: 40vh !important;
-                min-height: 250px !important;
-            }
-            
-            .webtrader-tab-link {
-                padding: 6px 2px !important;
-                font-size: 0.7rem !important;
-            }
-            
-            .trades-table th,
-            .trades-table td {
-                padding: 4px 2px !important;
-                font-size: 0.7rem !important;
-            }
-        }
-
-        /* Enhanced Buy/Sell Buttons */
-        .price-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding: 0 5px;
-        }
-
-        .btn-price {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 18px 12px;
-            border: 2px solid;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-price::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-price:hover::before {
-            left: 100%;
-        }
-
-        .btn-price span {
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-
-        .btn-price strong {
-            font-size: 1.1rem;
-            font-weight: 800;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .btn-sell-price {
-            border-color: #ff4757;
-            color: #ff4757;
-            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), rgba(255, 107, 107, 0.05));
-        }
-
-        .btn-sell-price:hover,
-        .btn-sell-price.active {
-            background: linear-gradient(135deg, #ff4757, #ff3838);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
-            border-color: #ff3838;
-        }
-
-        .btn-buy-price {
-            border-color: var(--success-color);
-            color: var(--success-color);
-            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(46, 213, 115, 0.05));
-        }
-
-        .btn-buy-price:hover,
-        .btn-buy-price.active {
-            background: linear-gradient(135deg, var(--success-color), #2ed573);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 212, 170, 0.4);
-            border-color: #2ed573;
-        }
-
-        /* Dynamic Trading Panel Positioning */
-        .trading-panel-pro {
-            width: 300px;
-            background-color: var(--darker-bg);
-            border-left: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-
-        .trading-panel-pro.expanded {
-            /* When no trades - expand trading panel */
-            background: linear-gradient(135deg, rgba(0, 212, 170, 0.05), rgba(0, 245, 255, 0.02));
-            border-left: 2px solid var(--success-color);
-        }
-
-        .trading-form-pro {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .trading-form-pro.no-trades {
-            /* Extra spacing when no trades */
-            padding: 30px 20px;
-            gap: 25px;
-        }
-
-        /* Enhanced Execute Button - FULL WIDTH */
-        .btn-group {
-            margin-top: 20px;
-            width: 100%;
-        }
-
-        .btn-execute {
-            width: 100% !important; /* FORCE FULL WIDTH */
-            padding: 16px 20px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 1rem;
-            background: linear-gradient(135deg, var(--success-color), #2ed573);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 6px 20px rgba(0, 212, 170, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-            margin: 0; /* Remove any margins */
-        }
-
-        .btn-execute::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.6s;
-        }
-
-        .btn-execute:hover::before {
-            left: 100%;
-        }
-
-        .btn-execute:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.4);
-            background: linear-gradient(135deg, #2ed573, var(--success-color));
-        }
-
-        .btn-execute:active {
-            transform: translateY(-1px);
-        }
-
-        .btn-execute.sell-mode {
-            background: linear-gradient(135deg, #ff4757, #ff3838);
-            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.3);
-        }
-
-        .btn-execute.sell-mode:hover {
-            background: linear-gradient(135deg, #ff3838, #ff4757);
-            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
-        }
-
-        /* DESKTOP CHART HEIGHT FIX */
-        @media (min-width: 993px) {
-            .chart-area {
-                height: 100% !important;
-                overflow: visible !important;
-                display: flex !important;
-                flex-direction: column !important;
-            }
-            
-            .trades-section {
-                /* Restore original desktop height */
-                height: auto !important;
-                min-height: auto !important;
-                flex-shrink: 0 !important;
-            }
-            
-            .trading-panel-pro.expanded {
-                /* Enhanced styling when no trades on desktop */
-                background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(0, 245, 255, 0.03));
-                border-left: 3px solid var(--success-color);
-                box-shadow: -5px 0 20px rgba(0, 212, 170, 0.1);
-            }
-            
-            .trading-form-pro.no-trades {
-                /* More prominent styling on desktop when no trades */
-                padding: 40px 25px;
-                gap: 30px;
-                background: rgba(255, 255, 255, 0.02);
-                border-radius: 15px;
-                margin: 10px;
-            }
         }
     </style>
 </head>
@@ -4050,528 +3567,6 @@
             }
         `;
         document.head.appendChild(styleEl);
-
-        // Fix passive event listener issues for mobile scrolling
-        function fixPassiveEventListeners() {
-            // Override addEventListener to make touch events passive by default
-            const originalAddEventListener = EventTarget.prototype.addEventListener;
-            EventTarget.prototype.addEventListener = function(type, listener, options) {
-                if (type === 'touchstart' || type === 'touchmove' || type === 'touchend') {
-                    if (typeof options === 'boolean') {
-                        options = { passive: true, capture: options };
-                    } else if (typeof options === 'object' && options !== null) {
-                        options.passive = true;
-                    } else {
-                        options = { passive: true };
-                    }
-                }
-                return originalAddEventListener.call(this, type, listener, options);
-            };
-        }
-
-        // Mobile-specific fixes for tab content
-        function initMobileTradesSection() {
-            if (window.innerWidth <= 992) {
-                console.log("Initializing mobile trades section...");
-                
-                // Fix passive event listeners first
-                fixPassiveEventListeners();
-                
-                // Ensure tab content is properly positioned
-                const tabContent = document.getElementById('tradeTabContent');
-                if (tabContent) {
-                    const tabPanes = tabContent.querySelectorAll('.tab-pane');
-                    
-                    tabPanes.forEach(pane => {
-                        pane.style.position = 'absolute';
-                        pane.style.top = '0';
-                        pane.style.left = '0';
-                        pane.style.right = '0';
-                        pane.style.bottom = '0';
-                        pane.style.height = '100%';
-                        pane.style.overflow = 'hidden';
-                        pane.style.touchAction = 'pan-y pan-x';
-                        pane.style.webkitOverflowScrolling = 'touch';
-                    });
-                }
-                
-                // Fix table responsive containers
-                const tableResponsive = document.querySelectorAll('.table-responsive');
-                tableResponsive.forEach(container => {
-                    container.style.height = '100%';
-                    container.style.overflowY = 'auto';
-                    container.style.overflowX = 'auto';
-                    container.style.webkitOverflowScrolling = 'touch';
-                    container.style.position = 'relative';
-                    container.style.touchAction = 'pan-y pan-x';
-                    
-                    // Force scroll area to be recognized
-                    container.addEventListener('touchstart', function(e) {
-                        // Allow default touch behavior
-                    }, { passive: true });
-                    
-                    container.addEventListener('touchmove', function(e) {
-                        // Allow default scrolling
-                    }, { passive: true });
-                });
-                
-                // Ensure trades section has proper height
-                const tradesSection = document.querySelector('.trades-section');
-                if (tradesSection) {
-                    tradesSection.style.height = '60vh';
-                    tradesSection.style.minHeight = '350px';
-                    tradesSection.style.maxHeight = '600px';
-                    tradesSection.style.overflow = 'hidden';
-                    tradesSection.style.display = 'flex';
-                    tradesSection.style.flexDirection = 'column';
-                    tradesSection.style.touchAction = 'pan-y pan-x';
-                    tradesSection.style.webkitOverflowScrolling = 'touch';
-                }
-                
-                // Ensure body and html allow scrolling
-                document.body.style.touchAction = 'pan-y pan-x';
-                document.documentElement.style.touchAction = 'pan-y pan-x';
-                document.body.style.webkitOverflowScrolling = 'touch';
-                document.documentElement.style.webkitOverflowScrolling = 'touch';
-                
-                console.log("Mobile trades section initialized with touch support!");
-            }
-        }
-
-        // Initialize on page load and resize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Fix passive listeners immediately
-            fixPassiveEventListeners();
-            
-            // Initialize mobile section
-            initMobileTradesSection();
-            
-            // Re-initialize on window resize
-            window.addEventListener('resize', function() {
-                setTimeout(initMobileTradesSection, 100);
-            });
-            
-            // Force a reflow to ensure styles are applied
-            setTimeout(() => {
-                if (window.innerWidth <= 992) {
-                    const tradesSection = document.querySelector('.trades-section');
-                    if (tradesSection) {
-                        tradesSection.style.display = 'none';
-                        tradesSection.offsetHeight; // Force reflow
-                        tradesSection.style.display = 'flex';
-                    }
-                }
-            }, 500);
-        });
-
-        // EMERGENCY MOBILE SCROLLING FIX - GUARANTEED TO WORK
-        function emergencyMobileFix() {
-            console.log("🚨 EMERGENCY MOBILE FIX ACTIVATED");
-            
-            if (window.innerWidth <= 992) {
-                // Step 1: Force remove all conflicting styles
-                const style = document.createElement('style');
-                style.textContent = `
-                    @media (max-width: 992px) {
-                        .trades-section {
-                            height: 50vh !important;
-                            min-height: 300px !important;
-                            overflow: hidden !important;
-                            display: flex !important;
-                            flex-direction: column !important;
-                            background: #1a1a1f !important;
-                            border: 1px solid #333 !important;
-                        }
-                        
-                        .tab-content {
-                            flex: 1 !important;
-                            overflow: hidden !important;
-                            position: relative !important;
-                        }
-                        
-                        .tab-pane {
-                            position: absolute !important;
-                            top: 0 !important;
-                            left: 0 !important;
-                            right: 0 !important;
-                            bottom: 0 !important;
-                            overflow: hidden !important;
-                        }
-                        
-                        .table-responsive {
-                            height: 100% !important;
-                            overflow: auto !important;
-                            -webkit-overflow-scrolling: touch !important;
-                        }
-                        
-                        .webtrader-tabs {
-                            display: flex !important;
-                            flex-direction: row !important;
-                            flex-shrink: 0 !important;
-                        }
-                        
-                        .webtrader-tabs .nav-item {
-                            flex: 1 !important;
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                // Step 2: Direct DOM manipulation
-                setTimeout(() => {
-                    const tradesSection = document.querySelector('.trades-section');
-                    if (tradesSection) {
-                        tradesSection.style.height = '50vh';
-                        tradesSection.style.minHeight = '300px';
-                        tradesSection.style.overflow = 'hidden';
-                        tradesSection.style.display = 'flex';
-                        tradesSection.style.flexDirection = 'column';
-                        tradesSection.style.background = '#1a1a1f';
-                        tradesSection.style.border = '1px solid #333';
-                    }
-                    
-                    const tabContent = document.querySelector('.tab-content');
-                    if (tabContent) {
-                        tabContent.style.flex = '1';
-                        tabContent.style.overflow = 'hidden';
-                        tabContent.style.position = 'relative';
-                    }
-                    
-                    const tabPanes = document.querySelectorAll('.tab-pane');
-                    tabPanes.forEach(pane => {
-                        pane.style.position = 'absolute';
-                        pane.style.top = '0';
-                        pane.style.left = '0';
-                        pane.style.right = '0';
-                        pane.style.bottom = '0';
-                        pane.style.overflow = 'hidden';
-                    });
-                    
-                    const tableResponsive = document.querySelectorAll('.table-responsive');
-                    tableResponsive.forEach(table => {
-                        table.style.height = '100%';
-                        table.style.overflow = 'auto';
-                        table.style.webkitOverflowScrolling = 'touch';
-                        
-                        // FORCE scrolling to work
-                        table.addEventListener('touchstart', function(e) {
-                            this.style.webkitOverflowScrolling = 'touch';
-                        }, { passive: true });
-                    });
-                    
-                    const tabs = document.querySelector('.webtrader-tabs');
-                    if (tabs) {
-                        tabs.style.display = 'flex';
-                        tabs.style.flexDirection = 'row';
-                        tabs.style.flexShrink = '0';
-                        
-                        const navItems = tabs.querySelectorAll('.nav-item');
-                        navItems.forEach(item => {
-                            item.style.flex = '1';
-                            item.style.textAlign = 'center';
-                        });
-                    }
-                    
-                    console.log("✅ EMERGENCY FIX APPLIED - SCROLLING SHOULD WORK NOW!");
-                }, 1000);
-            }
-        }
-
-        // Apply fix immediately and on every possible event
-        document.addEventListener('DOMContentLoaded', emergencyMobileFix);
-        window.addEventListener('load', emergencyMobileFix);
-        window.addEventListener('resize', emergencyMobileFix);
-        
-        // Apply fix multiple times to ensure it works
-        setTimeout(emergencyMobileFix, 500);
-        setTimeout(emergencyMobileFix, 1500);
-        setTimeout(emergencyMobileFix, 3000);
-
-        // NUCLEAR OPTION - COMPLETELY OVERRIDE ALL TOUCH HANDLING
-        function nuclearMobileScrollFix() {
-            console.log("☢️ NUCLEAR MOBILE SCROLL FIX ACTIVATED");
-            
-            if (window.innerWidth <= 992) {
-                // Step 1: Disable ALL existing touch event listeners
-                const originalAddEventListener = EventTarget.prototype.addEventListener;
-                const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
-                
-                // Override to block non-passive touch events
-                EventTarget.prototype.addEventListener = function(type, listener, options) {
-                    if (type === 'touchstart' || type === 'touchmove' || type === 'wheel' || type === 'mousewheel') {
-                        // Force all touch events to be passive
-                        if (typeof options === 'boolean') {
-                            options = { passive: true, capture: options };
-                        } else if (typeof options === 'object' && options !== null) {
-                            options = { ...options, passive: true };
-                        } else {
-                            options = { passive: true };
-                        }
-                    }
-                    return originalAddEventListener.call(this, type, listener, options);
-                };
-                
-                // Step 2: Remove all existing problematic event listeners
-                const elements = document.querySelectorAll('*');
-                elements.forEach(el => {
-                    // Clone element to remove all event listeners
-                    if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
-                        const events = ['touchstart', 'touchmove', 'touchend', 'wheel', 'mousewheel'];
-                        events.forEach(event => {
-                            try {
-                                el.removeEventListener(event, function(){}, false);
-                                el.removeEventListener(event, function(){}, true);
-                            } catch(e) {}
-                        });
-                    }
-                });
-                
-                // Step 3: Force proper CSS with extreme specificity
-                const nuclearStyle = document.createElement('style');
-                nuclearStyle.textContent = `
-                    /* NUCLEAR CSS - OVERRIDE EVERYTHING */
-                    @media (max-width: 992px) {
-                        * {
-                            touch-action: auto !important;
-                            -webkit-touch-callout: default !important;
-                            -webkit-user-select: auto !important;
-                            user-select: auto !important;
-                        }
-                        
-                        html, body {
-                            overflow: visible !important;
-                            -webkit-overflow-scrolling: touch !important;
-                            touch-action: pan-x pan-y !important;
-                        }
-                        
-                        .trades-section {
-                            height: 50vh !important;
-                            min-height: 300px !important;
-                            max-height: 80vh !important;
-                            overflow: hidden !important;
-                            display: flex !important;
-                            flex-direction: column !important;
-                            background: #1a1a1f !important;
-                            border: 1px solid #333 !important;
-                            touch-action: pan-x pan-y !important;
-                            -webkit-overflow-scrolling: touch !important;
-                            position: relative !important;
-                        }
-                        
-                        .tab-content {
-                            flex: 1 !important;
-                            overflow: hidden !important;
-                            position: relative !important;
-                            touch-action: pan-x pan-y !important;
-                            -webkit-overflow-scrolling: touch !important;
-                        }
-                        
-                        .tab-pane {
-                            position: absolute !important;
-                            top: 0 !important;
-                            left: 0 !important;
-                            right: 0 !important;
-                            bottom: 0 !important;
-                            overflow: hidden !important;
-                            touch-action: pan-x pan-y !important;
-                            -webkit-overflow-scrolling: touch !important;
-                        }
-                        
-                        .table-responsive {
-                            height: 100% !important;
-                            overflow: auto !important;
-                            -webkit-overflow-scrolling: touch !important;
-                            touch-action: pan-x pan-y !important;
-                            overscroll-behavior: contain !important;
-                            scroll-behavior: smooth !important;
-                            position: relative !important;
-                        }
-                        
-                        .trades-table {
-                            touch-action: pan-x pan-y !important;
-                            -webkit-overflow-scrolling: touch !important;
-                        }
-                        
-                        .webtrader-tabs {
-                            display: flex !important;
-                            flex-direction: row !important;
-                            flex-shrink: 0 !important;
-                            touch-action: manipulation !important;
-                        }
-                        
-                        .webtrader-tabs .nav-item {
-                            flex: 1 !important;
-                            touch-action: manipulation !important;
-                        }
-                    }
-                `;
-                document.head.appendChild(nuclearStyle);
-                
-                // Step 4: Force DOM manipulation after delay
-                setTimeout(() => {
-                    console.log("☢️ Applying direct DOM manipulation...");
-                    
-                    // Force scroll containers
-                    const tableResponsive = document.querySelectorAll('.table-responsive');
-                    tableResponsive.forEach((table, index) => {
-                        console.log(`Fixing table ${index + 1}`);
-                        
-                        // Set all necessary properties
-                        table.style.cssText = `
-                            height: 100% !important;
-                            overflow: auto !important;
-                            -webkit-overflow-scrolling: touch !important;
-                            touch-action: pan-x pan-y !important;
-                            overscroll-behavior: contain !important;
-                            scroll-behavior: smooth !important;
-                            position: relative !important;
-                            background: #1a1a1f !important;
-                        `;
-                        
-                        // Force reflow
-                        table.offsetHeight;
-                        
-                        // Add test content to ensure scrolling
-                        if (table.scrollHeight <= table.clientHeight) {
-                            console.log(`Table ${index + 1} needs more content for scrolling`);
-                        }
-                    });
-                    
-                    // Test scrolling programmatically
-                    const firstTable = document.querySelector('.table-responsive');
-                    if (firstTable) {
-                        console.log("Testing programmatic scroll...");
-                        firstTable.scrollTop = 10;
-                        setTimeout(() => {
-                            firstTable.scrollTop = 0;
-                            console.log("✅ Programmatic scroll test completed");
-                        }, 100);
-                    }
-                    
-                    console.log("☢️ NUCLEAR FIX COMPLETE - TOUCH SCROLLING SHOULD WORK!");
-                }, 2000);
-            }
-        }
-
-        // Apply nuclear fix immediately and repeatedly
-        document.addEventListener('DOMContentLoaded', nuclearMobileScrollFix);
-        window.addEventListener('load', nuclearMobileScrollFix);
-        
-        // Apply multiple times to override any late-loading scripts
-        setTimeout(nuclearMobileScrollFix, 1000);
-        setTimeout(nuclearMobileScrollFix, 3000);
-        setTimeout(nuclearMobileScrollFix, 5000);
-
-        // Dynamic Trading Panel Layout - FIXED
-        function adjustTradingPanelLayout() {
-            // Better detection of trades
-            const openTradesTable = document.querySelector('#open-trades .trades-table tbody');
-            const pendingOrdersTable = document.querySelector('#pending-orders .trades-table tbody');
-            const closedTradesTable = document.querySelector('#closed-trades .trades-table tbody');
-            
-            let hasOpenTrades = false;
-            let hasPendingOrders = false;
-            let hasClosedTrades = false;
-            
-            // Check for actual trade rows (not "No trades" messages)
-            if (openTradesTable) {
-                const openRows = openTradesTable.querySelectorAll('tr:not(.no-trades)');
-                hasOpenTrades = openRows.length > 0 && !openRows[0].textContent.includes('No open trades');
-            }
-            
-            if (pendingOrdersTable) {
-                const pendingRows = pendingOrdersTable.querySelectorAll('tr:not(.no-orders)');
-                hasPendingOrders = pendingRows.length > 0 && !pendingRows[0].textContent.includes('No pending orders');
-            }
-            
-            if (closedTradesTable) {
-                const closedRows = closedTradesTable.querySelectorAll('tr:not(.no-closed)');
-                hasClosedTrades = closedRows.length > 0 && !closedRows[0].textContent.includes('No closed trades');
-            }
-            
-            const tradingPanel = document.querySelector('.trading-panel-pro');
-            const tradingForm = document.querySelector('.trading-form-pro');
-            const tradesSection = document.querySelector('.trades-section');
-            
-            const hasAnyTrades = hasOpenTrades || hasPendingOrders || hasClosedTrades;
-            
-            console.log(`📊 Trades Status: Open=${hasOpenTrades}, Pending=${hasPendingOrders}, Closed=${hasClosedTrades}, HasAny=${hasAnyTrades}`);
-            
-            if (!hasAnyTrades) {
-                // No trades - expand trading panel
-                console.log("🎯 NO TRADES - Expanding trading panel");
-                tradingPanel.classList.add('expanded');
-                tradingForm.classList.add('no-trades');
-                
-                // Only reduce on mobile, keep desktop normal
-                if (window.innerWidth <= 992 && tradesSection) {
-                    tradesSection.style.height = '30vh';
-                    tradesSection.style.minHeight = '200px';
-                }
-            } else {
-                // Has trades - normal layout
-                console.log("📈 HAS TRADES - Normal layout");
-                tradingPanel.classList.remove('expanded');
-                tradingForm.classList.remove('no-trades');
-                
-                // Restore normal height
-                if (tradesSection) {
-                    if (window.innerWidth <= 992) {
-                        tradesSection.style.height = '50vh';
-                        tradesSection.style.minHeight = '300px';
-                    } else {
-                        // Desktop - keep original height
-                        tradesSection.style.height = '';
-                        tradesSection.style.minHeight = '';
-                    }
-                }
-            }
-        }
-
-        // Enhanced trade type switching
-        function setTradeType(type) {
-            document.getElementById('trade_type').value = type;
-            
-            // Update button states
-            document.querySelectorAll('.btn-price').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.btn-${type}-price`).classList.add('active');
-            
-            // Update execute button
-            const executeBtn = document.querySelector('.btn-execute');
-            if (executeBtn) {
-                if (type === 'sell') {
-                    executeBtn.className = 'btn-execute sell-mode';
-                    executeBtn.innerHTML = '<i class="fas fa-arrow-down"></i> EXECUTE SELL';
-                } else {
-                    executeBtn.className = 'btn-execute';
-                    executeBtn.innerHTML = '<i class="fas fa-arrow-up"></i> EXECUTE BUY';
-                }
-            }
-            
-            console.log(`🔄 Trade type switched to: ${type.toUpperCase()}`);
-        }
-
-        // Initialize layout on page load and update on tab changes
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initial layout adjustment
-            setTimeout(adjustTradingPanelLayout, 1000);
-            
-            // Monitor tab changes to re-adjust layout
-            const tabLinks = document.querySelectorAll('.webtrader-tab-link');
-            tabLinks.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    setTimeout(adjustTradingPanelLayout, 300);
-                });
-            });
-            
-            // Re-adjust on window resize
-            window.addEventListener('resize', function() {
-                setTimeout(adjustTradingPanelLayout, 100);
-            });
-            
-            // Set initial trade type
-            setTradeType('buy');
-        });
     </script>
     
     <!-- Direct price display fix for buy/sell buttons -->
@@ -5172,6 +4167,119 @@
             });
         });
 
+    </script>
+
+    <!-- NUCLEAR MOBILE SCROLLING FIX - TOUCH SCROLLING ONLY -->
+    <script>
+        // NUCLEAR MOBILE SCROLLING FIX - TOUCH SCROLLING ONLY
+        function nuclearMobileScrollFix() {
+            console.log("☢️ NUCLEAR MOBILE SCROLL FIX ACTIVATED");
+            
+            if (window.innerWidth <= 992) {
+                // Step 1: Force all touch events to be passive
+                const originalAddEventListener = EventTarget.prototype.addEventListener;
+                EventTarget.prototype.addEventListener = function(type, listener, options) {
+                    if (type === 'touchstart' || type === 'touchmove' || type === 'touchend' || type === 'wheel') {
+                        if (typeof options === 'boolean') {
+                            options = { passive: true, capture: options };
+                        } else if (typeof options === 'object' && options !== null) {
+                            options = { ...options, passive: true };
+                        } else {
+                            options = { passive: true };
+                        }
+                    }
+                    return originalAddEventListener.call(this, type, listener, options);
+                };
+                
+                // Step 2: Apply critical touch scrolling CSS
+                const nuclearStyle = document.createElement('style');
+                nuclearStyle.textContent = `
+                    @media (max-width: 992px) {
+                        /* Enable touch scrolling everywhere */
+                        * {
+                            touch-action: auto !important;
+                        }
+                        
+                        html, body {
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-x pan-y !important;
+                        }
+                        
+                        .trades-section {
+                            height: 50vh !important;
+                            min-height: 300px !important;
+                            overflow: hidden !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            touch-action: pan-x pan-y !important;
+                            -webkit-overflow-scrolling: touch !important;
+                        }
+                        
+                        .tab-content {
+                            flex: 1 !important;
+                            overflow: hidden !important;
+                            position: relative !important;
+                            touch-action: pan-x pan-y !important;
+                        }
+                        
+                        .tab-pane {
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            right: 0 !important;
+                            bottom: 0 !important;
+                            overflow: hidden !important;
+                            touch-action: pan-x pan-y !important;
+                        }
+                        
+                        .table-responsive {
+                            height: 100% !important;
+                            overflow: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-x pan-y !important;
+                            overscroll-behavior: contain !important;
+                        }
+                        
+                        .webtrader-tabs {
+                            display: flex !important;
+                            flex-direction: row !important;
+                            flex-shrink: 0 !important;
+                        }
+                        
+                        .webtrader-tabs .nav-item {
+                            flex: 1 !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(nuclearStyle);
+                
+                // Step 3: Force DOM properties for scrolling containers
+                setTimeout(() => {
+                    console.log("☢️ Applying DOM touch fixes...");
+                    
+                    const tableResponsive = document.querySelectorAll('.table-responsive');
+                    tableResponsive.forEach((table, index) => {
+                        table.style.height = '100%';
+                        table.style.overflow = 'auto';
+                        table.style.webkitOverflowScrolling = 'touch';
+                        table.style.touchAction = 'pan-x pan-y';
+                        table.style.overscrollBehavior = 'contain';
+                        
+                        console.log(`✅ Fixed table ${index + 1} for touch scrolling`);
+                    });
+                    
+                    console.log("☢️ NUCLEAR TOUCH SCROLLING FIX COMPLETE!");
+                }, 1000);
+            }
+        }
+
+        // Apply nuclear fix multiple times to ensure it works
+        document.addEventListener('DOMContentLoaded', nuclearMobileScrollFix);
+        window.addEventListener('load', nuclearMobileScrollFix);
+        
+        setTimeout(nuclearMobileScrollFix, 500);
+        setTimeout(nuclearMobileScrollFix, 2000);
+        setTimeout(nuclearMobileScrollFix, 5000);
     </script>
 </body>
 </html>
