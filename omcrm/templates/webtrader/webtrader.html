@@ -1292,6 +1292,51 @@
                 order: 2 !important;
             }
         }
+
+        /* HORIZONTAL TABS ON MOBILE - FIX STACKING */
+        .webtrader-tabs {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            justify-content: space-around !important;
+            background: var(--medium-bg) !important;
+            padding: 0 5px !important;
+            margin: 0 !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        
+        .webtrader-tabs .nav-item {
+            flex: 1 !important;
+            min-width: 80px !important;
+            text-align: center !important;
+            margin: 0 !important;
+        }
+        
+        .webtrader-tab-link {
+            padding: 8px 6px !important;
+            font-size: 0.75rem !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            display: block !important;
+            border: none !important;
+            border-radius: 0 !important;
+            background: none !important;
+            color: var(--text-secondary) !important;
+        }
+        
+        .webtrader-tab-link.active {
+            border-bottom: 2px solid var(--success-color) !important;
+            background: rgba(0, 212, 170, 0.1) !important;
+            color: var(--success-color) !important;
+        }
+        
+        .webtrader-tab-link .badge {
+            font-size: 0.6rem !important;
+            margin-left: 2px !important;
+            padding: 1px 4px !important;
+        }
     </style>
 </head>
 <body>

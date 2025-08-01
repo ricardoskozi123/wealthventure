@@ -84,10 +84,10 @@
                 <div class="card-body text-center">
                     <h5 class="card-title text-muted mb-3">Monthly Performance</h5>
                     <div id="monthlyPerformanceChart" style="width: 400px; height: 250px; margin: 0 auto;"></div>
-                </div>
             </div>
         </div>
-        
+    </div>
+
         <!-- Chart 3: Performance by Instrument -->
         <div class="col-lg-6">
             <div class="card h-100 shadow-sm border-0" style="background: white;">
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create real charts immediately
             createRealCharts();
             
-        } else {
+                } else {
             console.error('❌ Plotly not loaded');
         }
     }, 1000);
