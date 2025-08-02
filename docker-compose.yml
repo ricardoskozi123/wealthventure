@@ -44,7 +44,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # 🔧 DEDICATED PRICE WORKER - Updates prices without affecting main app
+  # 🔧 DEDICATED PRICE WORKER - Updates prices using Twelve Data API only
   price_worker:
     build: .
     container_name: omcrm_price_worker
@@ -56,9 +56,9 @@ services:
       - ./logs:/app/logs
     depends_on:
       - db
-    command: ["python", "price_updater.py"]
+    command: ["python", "twelve_data_price_worker.py"]
     healthcheck:
-      test: ["CMD", "ps", "aux", "|", "grep", "price_updater.py"]
+      test: ["CMD", "ps", "aux", "|", "grep", "twelve_data_price_worker.py"]
       interval: 30s
       timeout: 10s
       retries: 3
