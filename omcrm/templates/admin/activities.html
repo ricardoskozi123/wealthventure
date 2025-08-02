@@ -58,34 +58,50 @@
                         <tr>
                             <td>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             <td>
-                                {% if activity.user_id and activity.user_id in users %}
-                                <a href="{{ url_for('activities.user_activities', user_id=activity.user_id) }}">
-                                    {{ users[activity.user_id].username }}
-                                </a>
+                                {% if activity.user_id %}
+                                    {% if activity.user_id in users %}
+                                        <a href="{{ url_for('activities.user_activities', user_id=activity.user_id) }}" class="text-primary">
+                                            <i class="fas fa-user me-1"></i>{{ users[activity.user_id].username }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-user-slash me-1"></i>User ID: {{ activity.user_id }} (Not Found)
+                                        </span>
+                                    {% endif %}
                                 {% else %}
-                                System
+                                    <span class="text-info">
+                                        <i class="fas fa-cog me-1"></i>System
+                                    </span>
                                 {% endif %}
                             </td>
                             <td>
-                                {% if activity.lead_id and activity.lead_id in leads %}
-                                <a href="{{ url_for('activities.lead_activities', lead_id=activity.lead_id) }}">
-                                    {{ leads[activity.lead_id].first_name }} {{ leads[activity.lead_id].last_name }}
-                                </a>
+                                {% if activity.lead_id %}
+                                    {% if activity.lead_id in leads %}
+                                        <a href="{{ url_for('activities.lead_activities', lead_id=activity.lead_id) }}" class="text-primary">
+                                            <i class="fas fa-user-circle me-1"></i>{{ leads[activity.lead_id].first_name }} {{ leads[activity.lead_id].last_name }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-user-times me-1"></i>Lead ID: {{ activity.lead_id }} (Not Found)
+                                        </span>
+                                    {% endif %}
                                 {% else %}
-                                -
+                                    <span class="text-muted">
+                                        <i class="fas fa-minus me-1"></i>No Client/Lead
+                                    </span>
                                 {% endif %}
                             </td>
                             <td>
                                 <span class="badge 
-                                    {% if 'created' in activity.action_type %}badge-success
-                                    {% elif 'deleted' in activity.action_type %}badge-danger
-                                    {% elif 'updated' in activity.action_type %}badge-info
-                                    {% elif 'approved' in activity.action_type %}badge-success
-                                    {% elif 'rejected' in activity.action_type %}badge-danger
-                                    {% elif 'comment' in activity.action_type %}badge-primary
-                                    {% elif 'deposit' in activity.action_type %}badge-success
-                                    {% elif 'withdrawal' in activity.action_type %}badge-warning
-                                    {% else %}badge-secondary
+                                    {% if 'created' in activity.action_type %}bg-success
+                                    {% elif 'deleted' in activity.action_type %}bg-danger
+                                    {% elif 'updated' in activity.action_type %}bg-info
+                                    {% elif 'approved' in activity.action_type %}bg-success
+                                    {% elif 'rejected' in activity.action_type %}bg-danger
+                                    {% elif 'comment' in activity.action_type %}bg-primary
+                                    {% elif 'deposit' in activity.action_type %}bg-success
+                                    {% elif 'withdrawal' in activity.action_type %}bg-warning text-dark
+                                    {% else %}bg-secondary
                                     {% endif %}">
                                     {{ activity.action_type|replace('_', ' ')|title }}
                                 </span>

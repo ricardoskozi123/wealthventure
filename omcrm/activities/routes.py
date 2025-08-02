@@ -16,17 +16,34 @@ def activities_list():
     """Display all activities for admins"""
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 50, type=int)
+    action_type = request.args.get('action_type', None)
+    
+    # Build query with optional filtering
+    query = Activity.query
+    if action_type:
+        query = query.filter_by(action_type=action_type)
     
     # Get all activities
-    activities_pagination = Activity.query.order_by(Activity.timestamp.desc()).paginate(
+    activities_pagination = query.order_by(Activity.timestamp.desc()).paginate(
         page=page, per_page=per_page, error_out=False)
     
-    # Get related users and leads for display
+    # Get related users and leads for display - improved data fetching
     user_ids = [a.user_id for a in activities_pagination.items if a.user_id is not None]
     lead_ids = [a.lead_id for a in activities_pagination.items if a.lead_id is not None]
     
-    users = {user.id: user for user in User.query.filter(User.id.in_(user_ids)).all()}
-    leads = {lead.id: lead for lead in Lead.query.filter(Lead.id.in_(lead_ids)).all()}
+    # Fetch users and leads more robustly
+    users = {}
+    if user_ids:
+        users = {user.id: user for user in User.query.filter(User.id.in_(user_ids)).all()}
+    
+    leads = {}
+    if lead_ids:
+        leads = {lead.id: lead for lead in Lead.query.filter(Lead.id.in_(lead_ids)).all()}
+    
+    # Debug info for missing users
+    missing_users = [uid for uid in user_ids if uid not in users]
+    if missing_users:
+        print(f"⚠️  Missing users: {missing_users}")
     
     return render_template("admin/activities.html",
                           title="Activity Log",
