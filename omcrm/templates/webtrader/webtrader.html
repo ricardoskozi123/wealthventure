@@ -566,11 +566,95 @@
         }
         
         .trade-header {
-            padding: 15px;
-            background-color: var(--medium-bg);
-            border-bottom: 1px solid var(--border-color);
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .trade-header span {
             font-size: 1.2rem;
             font-weight: 600;
+        }
+
+        /* Market Status Indicator */
+        .market-status {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-indicator {
+            font-size: 0.7rem;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.market-open {
+            color: #00ff88;
+        }
+
+        .status-indicator.market-closed {
+            color: #ff4757;
+        }
+
+        .status-indicator.always-open {
+            color: #3742fa;
+        }
+
+        .status-text {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Trading button states */
+        .btn-submit-trade:disabled {
+            background: #666 !important;
+            border-color: #666 !important;
+            cursor: not-allowed !important;
+            opacity: 0.6;
+        }
+
+        .trading-disabled-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border-radius: 12px;
+            z-index: 10;
+        }
+
+        .market-closed-notice {
+            background: linear-gradient(135deg, #ff4757, #ff3838);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .market-closed-notice.show {
+            display: block;
         }
         
         .trading-form-pro {
@@ -1691,6 +1775,10 @@
          <div class="trading-panel-pro">
              <div class="trade-header">
                  <span id="trade-panel-symbol">--/--</span>
+                 <div class="market-status" id="market-status">
+                     <span class="status-indicator" id="status-indicator">●</span>
+                     <span class="status-text" id="status-text">Market Status</span>
+                 </div>
              </div>
              <form class="trading-form-pro" method="POST" action="{{ url_for('webtrader.execute_trade') }}">
                  {{ form.hidden_tag() }}
@@ -1772,6 +1860,11 @@
                              </div>
                          </div>
                      </div>
+                 </div>
+
+                 <!-- Market Closed Notice -->
+                 <div class="market-closed-notice" id="market-closed-notice">
+                     ⚠️ Stock market is currently closed. Trading will resume during market hours.
                  </div>
 
                  <button type="submit" class="btn btn-submit-trade btn-buy" id="submit-trade-button">BUY</button>
@@ -3683,6 +3776,115 @@
             }
         `;
         document.head.appendChild(styleEl);
+
+        // Market status checking functions
+        function checkMarketStatus(instrumentId) {
+            if (!instrumentId) return;
+            
+            fetch(`/webtrader/market_status/${instrumentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateMarketStatusDisplay(data);
+                    updateTradingAvailability(data);
+                })
+                .catch(error => {
+                    console.error('Error checking market status:', error);
+                });
+        }
+
+        function updateMarketStatusDisplay(data) {
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            if (statusIndicator && statusText) {
+                const marketStatus = data.market_status;
+                
+                if (data.type === 'stock') {
+                    if (marketStatus.is_open) {
+                        statusIndicator.className = 'status-indicator market-open';
+                        statusText.textContent = 'Market Open';
+                    } else {
+                        statusIndicator.className = 'status-indicator market-closed';
+                        statusText.textContent = 'Market Closed';
+                    }
+                } else {
+                    statusIndicator.className = 'status-indicator always-open';
+                    statusText.textContent = 'Always Open';
+                }
+            }
+        }
+
+        function updateTradingAvailability(data) {
+            const submitButton = document.getElementById('submit-trade-button');
+            const marketNotice = document.getElementById('market-closed-notice');
+            const tradingForm = document.querySelector('.trading-form-pro');
+            
+            if (data.type === 'stock' && !data.market_status.is_open) {
+                // Market is closed for stocks - disable trading
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'MARKET CLOSED';
+                }
+                
+                if (marketNotice) {
+                    marketNotice.classList.add('show');
+                }
+                
+                // Add overlay to trading form
+                if (tradingForm && !tradingForm.querySelector('.trading-disabled-overlay')) {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'trading-disabled-overlay';
+                    overlay.innerHTML = '<div>Stock Market Closed<br><small>Trading unavailable</small></div>';
+                    tradingForm.style.position = 'relative';
+                    tradingForm.appendChild(overlay);
+                }
+            } else {
+                // Market is open or it's not a stock - enable trading
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = currentTradeType.toUpperCase();
+                }
+                
+                if (marketNotice) {
+                    marketNotice.classList.remove('show');
+                }
+                
+                // Remove overlay
+                const overlay = tradingForm?.querySelector('.trading-disabled-overlay');
+                if (overlay) {
+                    overlay.remove();
+                }
+            }
+        }
+
+        // Check market status when instrument changes
+        function selectInstrument(instrumentId) {
+            currentInstrument = instrumentsData[instrumentId];
+            if (currentInstrument) {
+                // Update UI elements
+                updateInstrumentPriceAndUI();
+                
+                // Check market status for the new instrument
+                checkMarketStatus(instrumentId);
+                
+                // Update form fields
+                document.getElementById('instrument_id').value = instrumentId;
+                document.getElementById('trade-panel-symbol').textContent = currentInstrument.symbol;
+                
+                // Update chart if TradingView is available
+                updateTradingViewChart(currentInstrument.symbol);
+            }
+        }
+
+        // Check market status every 5 minutes
+        setInterval(() => {
+            const currentInstrumentId = document.getElementById('instrument_id').value;
+            if (currentInstrumentId) {
+                checkMarketStatus(currentInstrumentId);
+            }
+        }, 5 * 60 * 1000); // 5 minutes
+
+        // ... existing code ...
     </script>
     
     <!-- Direct price display fix for buy/sell buttons -->

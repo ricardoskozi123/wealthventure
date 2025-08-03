@@ -950,3 +950,35 @@ def test_twelve_data_api():
         'total_tests': len(test_symbols),
         'successful': len([r for r in test_results if r['status'] == 'SUCCESS'])
     })
+
+@webtrader.route("/market_status/<int:instrument_id>")
+@login_required
+def get_market_status(instrument_id):
+    """Get market status for a specific instrument"""
+    instrument = TradingInstrument.query.get_or_404(instrument_id)
+    market_status = instrument.get_market_status()
+    
+    return jsonify({
+        'instrument_id': instrument_id,
+        'symbol': instrument.symbol,
+        'type': instrument.type,
+        'exchange': instrument.get_exchange(),
+        'market_status': market_status
+    })
+
+@webtrader.route("/market_status_all")
+@login_required  
+def get_all_market_status():
+    """Get market status for all instruments"""
+    instruments = TradingInstrument.query.all()
+    statuses = {}
+    
+    for instrument in instruments:
+        statuses[instrument.id] = {
+            'symbol': instrument.symbol,
+            'type': instrument.type,
+            'exchange': instrument.get_exchange(),
+            'market_status': instrument.get_market_status()
+        }
+    
+    return jsonify(statuses)
