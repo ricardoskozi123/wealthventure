@@ -62,7 +62,7 @@ def get_price():
     current_price = instrument.current_price if instrument.current_price else 0.0
     change = instrument.change if instrument.change else 0.0
     
-    return jsonify({
+            return jsonify({
         'current_price': current_price,
         'change': change
     })
@@ -114,9 +114,9 @@ def webtrader_dashboard():
         if instrument.current_price is None:
             # Set default price if None - background worker will update it
             instrument.current_price = 100.0  # Default placeholder
-            instrument.change = 0.0
-            instrument.last_updated = datetime.utcnow()
-            db.session.commit()
+                instrument.change = 0.0
+                instrument.last_updated = datetime.utcnow()
+                db.session.commit()
         # Ensure change is not None
         if instrument.change is None:
             instrument.change = 0.0
@@ -173,11 +173,7 @@ def webtrader_dashboard():
     if hasattr(current_user, 'available_to_trade'):
         available_to_trade = current_user.available_to_trade
 
-    # Convert instruments to dictionaries for JSON serialization in JavaScript
-    instruments_data = [instrument.to_dict() for instrument in instruments]
-
-    return render_template('webtrader/webtrader.html', title='Webtrader', form=form, 
-                          instruments=instruments, instruments_data=instruments_data,
+    return render_template('webtrader/webtrader.html', title='Webtrader', form=form, instruments=instruments,
                           open_trades=open_trades, closed_trades=closed_trades, pending_orders=pending_orders,
                           available_to_trade=available_to_trade)
 
@@ -315,7 +311,7 @@ def execute_market_order(user, instrument, amount, current_price, trade_type):
     if hasattr(user, 'available_to_trade') and not user.available_to_trade:
         flash('Your account is currently not allowed to open new trades. Please contact support.', 'danger')
         return False
-    
+        
     # 🚀 PERFORMANCE: Use the passed current_price (from DB) directly, no API calls
     if not current_price or current_price <= 0:
         flash('Invalid price. Please try again.', 'danger')
@@ -363,7 +359,7 @@ def store_order(user, instrument, amount, order_type, target_price, trade_type):
     if user.current_balance < usd_cost:
         flash(f'Insufficient balance. Need ${usd_cost:.2f} for {units} units at ${target_price:.2f}.', 'danger')
         return False
-        
+    
     # Create the pending trade
     trade = Trade(
         lead_id=user.id,
@@ -391,11 +387,11 @@ def start_realtime_feeds():
     """🚫 WEBSOCKET DISABLED - Background worker handles all price updates"""
     logging.info("🚫 WebSocket feeds disabled - using dedicated background price worker")
     
-    return jsonify({
-        'success': False,
+            return jsonify({
+                'success': False,
         'message': 'WebSocket feeds disabled for performance. Background worker handles price updates.',
         'status': 'disabled'
-    })
+        })
 
 # Add remaining routes here - keeping this short to avoid file being too long
 @webtrader.route("/instruments")
@@ -411,17 +407,17 @@ def new_instrument():
     if form.validate_on_submit():
         current_price = get_twelve_data_price(form.symbol.data.upper(), form.type.data)
         if current_price:
-            instrument = TradingInstrument(
-                symbol=form.symbol.data.upper(),
-                name=form.name.data,
-                type=form.type.data,
-                current_price=current_price,
-                last_updated=datetime.utcnow()
-            )
-            db.session.add(instrument)
-            db.session.commit()
-            flash('Instrument has been created!', 'success')
-            return redirect(url_for('webtrader.list_instruments'))
+        instrument = TradingInstrument(
+            symbol=form.symbol.data.upper(),
+            name=form.name.data,
+            type=form.type.data,
+            current_price=current_price,
+            last_updated=datetime.utcnow()
+        )
+        db.session.add(instrument)
+        db.session.commit()
+        flash('Instrument has been created!', 'success')
+        return redirect(url_for('webtrader.list_instruments'))
         else:
             flash('Could not fetch price from Twelve Data API. Please check the symbol.', 'danger')
     return render_template("add_instrument.html", form=form, title="New Instrument")
@@ -583,7 +579,7 @@ def cancel_order():
     if not order:
         flash('Order not found or already processed', 'error')
         return redirect(url_for('webtrader.webtrader_dashboard'))
-    
+
     try:
         # 🔧 CRITICAL FIX: Calculate the reserved amount to refund
         reserved_amount = order.amount * order.target_price
@@ -858,7 +854,7 @@ def liquidate_account():
         for trade in open_trades:
             try:
                 # 🚀 PERFORMANCE: Get current price from database only (no API calls)
-                current_price = trade.instrument.current_price
+                    current_price = trade.instrument.current_price
                 
                 if current_price and current_price > 0:
                     # Calculate profit/loss
@@ -955,34 +951,91 @@ def test_twelve_data_api():
         'successful': len([r for r in test_results if r['status'] == 'SUCCESS'])
     })
 
-@webtrader.route("/market_status/<int:instrument_id>")
+@webtrader.route("/market_status")
 @login_required
-def get_market_status(instrument_id):
-    """Get market status for a specific instrument"""
-    instrument = TradingInstrument.query.get_or_404(instrument_id)
-    market_status = instrument.get_market_status()
+def market_status():
+    """Check if stock markets are open - for overlay display"""
+    from datetime import datetime, time
+    import pytz
+    
+    # Market definitions
+    markets = {
+        'US': {
+            'timezone': 'US/Eastern',
+            'open_time': time(9, 30),
+            'close_time': time(16, 0),
+            'weekdays_only': True
+        },
+        'London': {
+            'timezone': 'Europe/London', 
+            'open_time': time(8, 0),
+            'close_time': time(16, 30),
+            'weekdays_only': True
+        },
+        'Frankfurt': {
+            'timezone': 'Europe/Berlin',
+            'open_time': time(8, 0), 
+            'close_time': time(22, 0),
+            'weekdays_only': True
+        },
+        'Tokyo': {
+            'timezone': 'Asia/Tokyo',
+            'open_time': time(9, 0),
+            'close_time': time(15, 0),  # 3:00 PM (simplified - ignoring lunch break)
+            'weekdays_only': True
+        },
+        'Hong_Kong': {
+            'timezone': 'Asia/Hong_Kong',
+            'open_time': time(9, 30),
+            'close_time': time(16, 0),  # 4:00 PM (simplified - ignoring lunch break)
+            'weekdays_only': True
+        },
+        'Australia': {
+            'timezone': 'Australia/Sydney',
+            'open_time': time(10, 0),
+            'close_time': time(16, 0),
+            'weekdays_only': True
+        }
+    }
+    
+    market_status = {}
+    
+    for market_name, market_info in markets.items():
+        try:
+            tz = pytz.timezone(market_info['timezone'])
+            market_time = datetime.now(tz)
+            
+            # Check if it's a weekday (Monday=0, Sunday=6)
+            is_weekday = market_time.weekday() < 5
+            
+            # Check if current time is within market hours
+            current_time = market_time.time()
+            is_open = (current_time >= market_info['open_time'] and 
+                      current_time <= market_info['close_time'])
+            
+            # Market is open if it's a weekday and within hours
+            market_open = is_weekday and is_open if market_info['weekdays_only'] else is_open
+            
+            market_status[market_name] = {
+                'open': market_open,
+                'local_time': market_time.strftime('%H:%M %Z'),
+                'next_open': 'Monday 09:30' if not is_weekday else 'Today' if not is_open else 'Now'
+            }
+            
+        except Exception as e:
+            # Fallback - assume market is closed if timezone fails
+            market_status[market_name] = {
+                'open': False,
+                'local_time': 'Unknown',
+                'next_open': 'Unknown'
+            }
+    
+    # Determine overall stock market status (any major market open = trading allowed)
+    major_markets = ['US', 'London', 'Tokyo', 'Frankfurt']
+    any_major_open = any(market_status.get(market, {}).get('open', False) for market in major_markets)
     
     return jsonify({
-        'instrument_id': instrument_id,
-        'symbol': instrument.symbol,
-        'type': instrument.type,
-        'exchange': instrument.get_exchange(),
-        'market_status': market_status
+        'stocks_trading_allowed': any_major_open,
+        'markets': market_status,
+        'message': 'Stock trading is available' if any_major_open else 'Stock markets are currently closed'
     })
-
-@webtrader.route("/market_status_all")
-@login_required  
-def get_all_market_status():
-    """Get market status for all instruments"""
-    instruments = TradingInstrument.query.all()
-    statuses = {}
-    
-    for instrument in instruments:
-        statuses[instrument.id] = {
-            'symbol': instrument.symbol,
-            'type': instrument.type,
-            'exchange': instrument.get_exchange(),
-            'market_status': instrument.get_market_status()
-        }
-    
-    return jsonify(statuses)

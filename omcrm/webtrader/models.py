@@ -1,126 +1,23 @@
 # omcrm/webtrader/models.py
 
-from datetime import datetime, time
+from datetime import datetime
+
 from omcrm import db
-import pytz
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
 class TradingInstrument(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    symbol = db.Column(db.String(20), unique=True, nullable=False)
+    symbol = db.Column(db.String(20), unique=True, nullable=False)  # Increased length for commodity symbols
     name = db.Column(db.String(100), nullable=False)
-    type = db.Column(db.String(20), nullable=False)  # forex, crypto, stock, commodity
-    current_price = db.Column(db.Float, nullable=True)
-    change = db.Column(db.Float, nullable=True, default=0.0)
+    current_price = db.Column(db.Float, nullable=False)
+    previous_price = db.Column(db.Float, nullable=True, default=None)  # Added for change calculation
+    change = db.Column(db.Float, nullable=True, default=0.0)  # Percentage change
+    type = db.Column(db.String(20), nullable=False)  # Updated: 'forex', 'crypto', 'commodity', 'stock'
     last_updated = db.Column(db.DateTime, nullable=True)
-    
+
     # Valid instrument types
-    VALID_TYPES = ['forex', 'crypto', 'stock', 'commodity']
-    
-    # Market hours configuration for different exchanges
-    MARKET_HOURS = {
-        # US Markets (NYSE, NASDAQ)
-        'US': {
-            'timezone': 'America/New_York',
-            'trading_days': [0, 1, 2, 3, 4],  # Monday to Friday
-            'sessions': [{'start': time(9, 30), 'end': time(16, 0)}]
-        },
-        # European Markets
-        'LSE': {  # London Stock Exchange
-            'timezone': 'Europe/London',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(8, 0), 'end': time(16, 30)}]
-        },
-        'FSE': {  # Frankfurt Stock Exchange
-            'timezone': 'Europe/Berlin',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(8, 0), 'end': time(22, 0)}]
-        },
-        'SIX': {  # SIX Swiss Exchange
-            'timezone': 'Europe/Zurich',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(9, 0), 'end': time(17, 20)}]
-        },
-        'AEX': {  # Euronext Amsterdam
-            'timezone': 'Europe/Amsterdam',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(9, 0), 'end': time(17, 30)}]
-        },
-        'SSE': {  # Stockholm Stock Exchange
-            'timezone': 'Europe/Stockholm',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(9, 0), 'end': time(17, 25)}]
-        },
-        # Asian Markets
-        'TSE': {  # Tokyo Stock Exchange
-            'timezone': 'Asia/Tokyo',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [
-                {'start': time(9, 0), 'end': time(11, 30)},
-                {'start': time(12, 30), 'end': time(15, 0)}
-            ]
-        },
-        'SSE_CN': {  # Shanghai Stock Exchange
-            'timezone': 'Asia/Shanghai',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [
-                {'start': time(9, 30), 'end': time(11, 30)},
-                {'start': time(13, 0), 'end': time(14, 57)}
-            ]
-        },
-        'SZSE': {  # Shenzhen Stock Exchange
-            'timezone': 'Asia/Shanghai',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [
-                {'start': time(9, 30), 'end': time(11, 30)},
-                {'start': time(13, 0), 'end': time(14, 57)}
-            ]
-        },
-        'SEHK': {  # Stock Exchange of Hong Kong
-            'timezone': 'Asia/Hong_Kong',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [
-                {'start': time(9, 30), 'end': time(12, 0)},
-                {'start': time(13, 0), 'end': time(16, 0)}
-            ]
-        },
-        'NSE': {  # National Stock Exchange of India
-            'timezone': 'Asia/Kolkata',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(9, 15), 'end': time(15, 30)}]
-        },
-        'TADAWUL': {  # Saudi Stock Exchange
-            'timezone': 'Asia/Riyadh',
-            'trading_days': [6, 0, 1, 2, 3],  # Sunday to Thursday
-            'sessions': [{'start': time(10, 0), 'end': time(15, 0)}]
-        },
-        'KRX': {  # Korea Exchange
-            'timezone': 'Asia/Seoul',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(9, 0), 'end': time(15, 30)}]
-        },
-        'TWSE': {  # Taiwan Stock Exchange
-            'timezone': 'Asia/Taipei',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(9, 15), 'end': time(13, 30)}]
-        },
-        # Oceania Markets
-        'ASX': {  # Australian Securities Exchange
-            'timezone': 'Australia/Sydney',
-            'trading_days': [0, 1, 2, 3, 4],
-            'sessions': [{'start': time(10, 0), 'end': time(16, 0)}]
-        }
-    }
-    
-    # Symbol to exchange mapping for stocks
-    STOCK_EXCHANGES = {
-        # US Stocks (default)
-        'AAPL': 'US', 'MSFT': 'US', 'GOOGL': 'US', 'AMZN': 'US', 'TSLA': 'US',
-        'META': 'US', 'NVDA': 'US', 'NFLX': 'US', 'DIS': 'US', 'PYPL': 'US',
-        'ADBE': 'US', 'CRM': 'US', 'ZOOM': 'US', 'UBER': 'US', 'SPOT': 'US',
-        # Add more symbols as needed
-    }
+    VALID_TYPES = ['forex', 'crypto', 'commodity', 'stock']
 
     def __init__(self, **kwargs):
         # Validate instrument type
@@ -128,140 +25,80 @@ class TradingInstrument(db.Model):
             raise ValueError(f"Invalid instrument type. Must be one of: {', '.join(self.VALID_TYPES)}")
         super().__init__(**kwargs)
 
-    def __repr__(self):
-        return f'<TradingInstrument {self.symbol}>'
-
     @property
     def precision(self):
-        """Get the appropriate decimal precision for this instrument"""
-        if self.type == 'crypto':
-            return 6
-        elif self.type == 'forex':
-            return 5
-        elif self.type == 'commodity':
-            return 2
-        else:  # stocks
-            return 2
+        """Get decimal precision based on instrument type"""
+        precision_map = {
+            'forex': 5,      # Most forex pairs have 5 decimal places
+            'crypto': 6,     # Crypto needs high precision
+            'commodity': 2,  # Commodities typically 2 decimal places
+            'stock': 2       # Stocks typically 2 decimal places
+        }
+        return precision_map.get(self.type, 2)
 
     @property
     def formatted_price(self):
-        """Get formatted price with appropriate precision"""
+        """Get price formatted according to instrument type precision"""
         if self.current_price is None:
-            return "N/A"
-        return f"${self.current_price:.{self.precision}f}"
+            return "0.00"
+        return f"{self.current_price:.{self.precision}f}"
 
     @property
     def price_change_color(self):
-        """Get CSS color class based on price change"""
-        if self.change is None:
+        """Get CSS class for price change color"""
+        if self.change is None or self.change == 0:
             return 'text-muted'
-        elif self.change > 0:
-            return 'text-success'
-        elif self.change < 0:
-            return 'text-danger'
-        else:
-            return 'text-muted'
+        return 'text-success' if self.change > 0 else 'text-danger'
 
     @property
     def change_direction(self):
         """Get direction indicator for price change"""
         if self.change is None or self.change == 0:
-            return '➡️'
-        elif self.change > 0:
-            return '⬆️'
-        else:
-            return '⬇️'
-
-    def get_exchange(self):
-        """Get the exchange for this instrument"""
-        if self.type == 'stock':
-            return self.STOCK_EXCHANGES.get(self.symbol, 'US')  # Default to US
-        return None
-    
-    def is_market_open(self):
-        """Check if the market is currently open for this instrument"""
-        # Forex and crypto markets are always open
-        if self.type in ['forex', 'crypto', 'commodity']:
-            return True
-        
-        # For stocks, check market hours
-        if self.type == 'stock':
-            exchange = self.get_exchange()
-            if not exchange or exchange not in self.MARKET_HOURS:
-                return True  # Default to open if no market hours defined
-            
-            market_config = self.MARKET_HOURS[exchange]
-            
-            try:
-                # Get current time in the market's timezone
-                market_tz = pytz.timezone(market_config['timezone'])
-                current_time = datetime.now(market_tz)
-                current_weekday = current_time.weekday()
-                current_time_only = current_time.time()
-                
-                # Check if it's a trading day
-                if current_weekday not in market_config['trading_days']:
-                    return False
-                
-                # Check if current time is within trading sessions
-                for session in market_config['sessions']:
-                    if session['start'] <= current_time_only <= session['end']:
-                        return True
-                
-                return False
-                
-            except Exception as e:
-                # If timezone conversion fails, default to open
-                print(f"Error checking market hours for {self.symbol}: {e}")
-                return True
-        
-        return True  # Default to open for unknown types
-    
-    def get_market_status(self):
-        """Get detailed market status information"""
-        if self.type in ['forex', 'crypto', 'commodity']:
-            return {
-                'is_open': True,
-                'status': 'Always Open',
-                'next_open': None,
-                'next_close': None
-            }
-        
-        if self.type == 'stock':
-            exchange = self.get_exchange()
-            is_open = self.is_market_open()
-            
-            return {
-                'is_open': is_open,
-                'status': 'Market Open' if is_open else 'Market Closed',
-                'exchange': exchange,
-                'timezone': self.MARKET_HOURS.get(exchange, {}).get('timezone', 'UTC')
-            }
-        
-        return {'is_open': True, 'status': 'Unknown', 'exchange': None}
+            return ''
+        return '↑' if self.change > 0 else '↓'
 
     def update_price(self, new_price):
-        """Update price and calculate change"""
-        if self.current_price is not None and new_price is not None:
-            self.change = new_price - self.current_price
+        """Update the price and calculate the change percentage"""
+        try:
+            if self.current_price is not None:
+                # Store current price as previous price
+                self.previous_price = self.current_price
+                
+                # Calculate percentage change
+                percentage_change = ((new_price - self.current_price) / self.current_price) * 100
+                self.change = round(percentage_change, 2)
+            else:
+                # If this is the first price update, there's no change to calculate
+                self.previous_price = new_price  # Set both to the same value
+                self.change = 0.0  # No change for first update
+        except Exception as e:
+            # If any error occurs, just update price without change
+            logging.warning(f"Error calculating price change: {str(e)}")
+            self.change = 0.0
+        
+        # Always update the current price
         self.current_price = new_price
         self.last_updated = datetime.utcnow()
 
     def to_dict(self):
-        """Convert instrument to dictionary for JSON serialization"""
+        """Convert instrument to dictionary for JSON responses"""
         return {
             'id': self.id,
             'symbol': self.symbol,
             'name': self.name,
             'type': self.type,
             'current_price': self.current_price,
+            'previous_price': self.previous_price,
             'change': self.change,
             'formatted_price': self.formatted_price,
-            'price_change_color': self.price_change_color,
+            'precision': self.precision,
             'change_direction': self.change_direction,
-            'market_status': self.get_market_status(),
+            'price_change_color': self.price_change_color,
             'last_updated': self.last_updated.isoformat() if self.last_updated else None
         }
+
+    def __repr__(self):
+        return f'<TradingInstrument {self.symbol}: {self.formatted_price} ({self.type})>'
 
 class Trade(db.Model):
     id = db.Column(db.Integer, primary_key=True)
