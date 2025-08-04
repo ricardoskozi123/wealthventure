@@ -173,7 +173,11 @@ def webtrader_dashboard():
     if hasattr(current_user, 'available_to_trade'):
         available_to_trade = current_user.available_to_trade
 
-    return render_template('webtrader/webtrader.html', title='Webtrader', form=form, instruments=instruments,
+    # Convert instruments to dictionaries for JSON serialization in JavaScript
+    instruments_data = [instrument.to_dict() for instrument in instruments]
+
+    return render_template('webtrader/webtrader.html', title='Webtrader', form=form, 
+                          instruments=instruments, instruments_data=instruments_data,
                           open_trades=open_trades, closed_trades=closed_trades, pending_orders=pending_orders,
                           available_to_trade=available_to_trade)
 

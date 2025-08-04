@@ -1880,7 +1880,7 @@
         const instrumentsData = {};
 
         // Load instrument data from server using proper JSON encoding
-        const serverInstrumentsData = {{ instruments | tojson | safe }};
+        const serverInstrumentsData = {{ instruments_data | tojson | safe }};
         
         // Process server data into JavaScript objects
         if (serverInstrumentsData && serverInstrumentsData.length > 0) {
