@@ -1875,37 +1875,48 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-        // Initialize empty values
-        let currentInstrument = { id: "", symbol: "BTC/USD", name: "Bitcoin", type: "crypto", price: null, precision: 2 };
+        // Global variables for instrument data
+        let currentInstrument = {};
         const instrumentsData = {};
 
-        // Load initial instrument data if available
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load the first instrument if it exists
-            {% if instruments and instruments|length > 0 %}
+        // Load instrument data from server using proper JSON encoding
+        const serverInstrumentsData = {{ instruments | tojson | safe }};
+        
+        // Process server data into JavaScript objects
+        if (serverInstrumentsData && serverInstrumentsData.length > 0) {
+            // Set first instrument as current
+            const firstInstrument = serverInstrumentsData[0];
             currentInstrument = {
-                id: "{{ instruments[0].id }}",
-                symbol: "{{ instruments[0].symbol }}",
-                name: "{{ instruments[0].name }}",
-                type: "{{ instruments[0].type }}",
-                price: {{ instruments[0].current_price or 'null' }},
-                precision: {{ 6 if instruments[0].type == 'crypto' else 2 }}
+                id: firstInstrument.id,
+                symbol: firstInstrument.symbol,
+                name: firstInstrument.name,
+                type: firstInstrument.type,
+                price: firstInstrument.current_price || null,
+                precision: firstInstrument.type === 'crypto' ? 6 : 2
             };
-            {% endif %}
             
             // Load all instruments data
-            {% for instrument in instruments %}
-            instrumentsData["{{ instrument.id }}"] = {
-                symbol: "{{ instrument.symbol }}",
-                name: "{{ instrument.name }}",
-                type: "{{ instrument.type }}",
-                price: {{ instrument.current_price or 0 }},
-                precision: {{ 6 if instrument.type == 'crypto' else 2 }}
-            };
-            {% endfor %}
+            serverInstrumentsData.forEach(instrument => {
+                instrumentsData[instrument.id] = {
+                    symbol: instrument.symbol,
+                    name: instrument.name,
+                    type: instrument.type,
+                    price: instrument.current_price || 0,
+                    precision: instrument.type === 'crypto' ? 6 : 2
+                };
+            });
             
-            // Load the initial price
-            updateInstrumentPriceAndUI();
+            console.log('📊 Loaded instruments data:', instrumentsData);
+            console.log('🎯 Current instrument:', currentInstrument);
+        }
+
+        // Load initial instrument data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentInstrument.id) {
+                // Load the initial price and UI
+                updateInstrumentPriceAndUI();
+                console.log('✅ Initial instrument loaded:', currentInstrument.symbol);
+            }
         });
 
         // --- TradingView Widget Initialization ---
@@ -2085,88 +2096,28 @@
          }
         
         function selectInstrument(instrumentId) {
-            instrumentId = parseInt(instrumentId);
-            console.log(`⚡ FAST SWITCH to instrument ID: ${instrumentId}`);
+            console.log(`🎯 selectInstrument called with ID: ${instrumentId}`);
             
-            if (!instrumentId || !instrumentsData[instrumentId]) {
-                console.error("Invalid instrument ID or data not found");
-                return;
+            // Update current instrument data
+            if (instrumentsData[instrumentId]) {
+                currentInstrument.id = instrumentId;
+                currentInstrument.symbol = instrumentsData[instrumentId].symbol;
+                currentInstrument.type = instrumentsData[instrumentId].type;
+                currentInstrument.precision = instrumentsData[instrumentId].precision;
+                currentInstrument.price = instrumentsData[instrumentId].price;
+                
+                console.log(`🔄 Switching to instrument: ${currentInstrument.symbol} (${currentInstrument.type})`);
+                
+                // Update UI elements immediately
+                updateInstrumentPriceAndUI();
+                
+                // Check market status for the new instrument
+                checkMarketStatus(instrumentId);
+                
+                console.log(`✅ Instrument switch completed: ${currentInstrument.symbol}`);
+            } else {
+                console.error(`❌ Instrument ID ${instrumentId} not found in instrumentsData`);
             }
-            
-            // 🚀 IMMEDIATE UI UPDATES - Don't wait for API calls
-            const startTime = performance.now();
-            
-            // Update global state instantly
-            const oldSymbol = currentInstrument.symbol;
-            currentInstrument.id = instrumentId;
-            currentInstrument.symbol = instrumentsData[instrumentId].symbol;
-            currentInstrument.type = instrumentsData[instrumentId].type;
-            currentInstrument.precision = instrumentsData[instrumentId].precision;
-            
-            document.getElementById('instrument_id').value = instrumentId;
-            
-            // 🚀 INSTANT UI UPDATES - No delays
-            document.getElementById('trade-panel-symbol').textContent = currentInstrument.symbol;
-            let unit = currentInstrument.symbol;
-            if (unit.includes('/')) {
-                unit = unit.split('/')[0];
-            }
-            document.getElementById('amount-unit').textContent = unit;
-            
-            // Update Symbol Text Above Chart instantly
-            if (document.getElementById('current-symbol-text')) {
-                document.getElementById('current-symbol-text').textContent = currentInstrument.symbol;
-            }
-            
-            // 🚀 IMMEDIATE ROW HIGHLIGHTING
-            const rows = document.querySelectorAll('.instruments-table tbody tr');
-            rows.forEach(row => {
-                row.classList.remove('active');
-                if (parseInt(row.getAttribute('data-instrument-id')) === instrumentId) {
-                    row.classList.add('active');
-                }
-            });
-            
-            // 🚀 IMMEDIATE CHART REFRESH - Don't wait for price updates
-            console.log(`📊 IMMEDIATE chart refresh: ${oldSymbol} → ${currentInstrument.symbol}`);
-            refreshTradingViewChart();
-            
-            // 🚀 PARALLEL PRICE UPDATE - Run in background while chart loads
-            setTimeout(() => {
-                fetch(`/webtrader/get_price?instrument_id=${currentInstrument.id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.current_price !== null) {
-                            const price = parseFloat(data.current_price);
-                            currentInstrument.price = price;
-                            
-                            // Update trading panel prices
-                            const spread = price * 0.0005;
-                            const sellPrice = (price - spread / 2);
-                            const buyPrice = (price + spread / 2);
-                            
-                            document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
-                            document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
-                            
-                            // Update trade info
-                            updateTradeInfo();
-                            
-                            const endTime = performance.now();
-                            console.log(`✅ FAST SWITCH completed in ${(endTime - startTime).toFixed(0)}ms: ${currentInstrument.symbol}`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching price:', error);
-                        // Don't let price errors block the UI
-                        const endTime = performance.now();
-                        console.log(`⚠️ SWITCH completed (price failed) in ${(endTime - startTime).toFixed(0)}ms: ${currentInstrument.symbol}`);
-                    });
-            }, 10); // Tiny delay to let chart start loading
-            
-            // Reset amount immediately
-            document.getElementById('trade_amount').value = '';
-            
-            console.log(`🚀 UI updated instantly for ${currentInstrument.symbol}, price loading in background...`);
         }
         
         // 🔄 NEW: Dedicated chart refresh function with proper loading
@@ -2244,44 +2195,84 @@
         function updateInstrumentPriceAndUI() {
             if (!currentInstrument.id) return;
             
-            fetch(`/webtrader/get_price?instrument_id=${currentInstrument.id}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.current_price !== null) {
-                        const price = parseFloat(data.current_price);
-                        currentInstrument.price = price;
-                        
-                        // Update Bid/Ask in the trading panel (simulate small spread)
-                        const spread = price * 0.0005; // Example: 0.05% spread
-                        const sellPrice = (price - spread / 2);
-                        const buyPrice = (price + spread / 2);
-                        
-                        // Format prices for display with only 2 decimal places
-                        document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
-                        document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
-                        
-                        // Update price in the instrument list table
-                        const row = document.querySelector(`.instruments-table tbody tr[data-instrument-id="${currentInstrument.id}"]`);
-                        if (row) {
-                            const priceCell = row.querySelector('td:nth-child(2)');
-                            let priceHtml;
+            const startTime = performance.now();
+            const instrumentId = parseInt(currentInstrument.id);
+            
+            // 🚀 CRITICAL: Add market status check FIRST
+            checkMarketStatus(instrumentId);
+            
+            const oldSymbol = currentInstrument.symbol;
+            
+            // Ensure all required values are set
+            currentInstrument.id = instrumentId;
+            currentInstrument.symbol = instrumentsData[instrumentId].symbol;
+            currentInstrument.type = instrumentsData[instrumentId].type;
+            currentInstrument.precision = instrumentsData[instrumentId].precision;
+            
+            document.getElementById('instrument_id').value = instrumentId;
+            
+            // 🚀 INSTANT UI UPDATES - No delays
+            document.getElementById('trade-panel-symbol').textContent = currentInstrument.symbol;
+            let unit = currentInstrument.symbol;
+            if (unit.includes('/')) {
+                unit = unit.split('/')[0];
+            }
+            document.getElementById('amount-unit').textContent = unit;
+            
+            // Update Symbol Text Above Chart instantly
+            if (document.getElementById('current-symbol-text')) {
+                document.getElementById('current-symbol-text').textContent = currentInstrument.symbol;
+            }
+            
+            // 🚀 IMMEDIATE ROW HIGHLIGHTING
+            const rows = document.querySelectorAll('.instruments-table tbody tr');
+            rows.forEach(row => {
+                row.classList.remove('active');
+                if (parseInt(row.getAttribute('data-instrument-id')) === instrumentId) {
+                    row.classList.add('active');
+                }
+            });
+            
+            // 🚀 IMMEDIATE CHART REFRESH - Don't wait for price updates
+            console.log(`📊 IMMEDIATE chart refresh: ${oldSymbol} → ${currentInstrument.symbol}`);
+            refreshTradingViewChart();
+            
+            // 🚀 PARALLEL PRICE UPDATE - Run in background while chart loads
+            setTimeout(() => {
+                fetch(`/webtrader/get_price?instrument_id=${currentInstrument.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.current_price !== null) {
+                            const price = parseFloat(data.current_price);
+                            currentInstrument.price = price;
                             
-                            if (currentInstrument.type === 'forex') {
-                                priceHtml = price.toFixed(4); // No $ for forex
-                            } else if (currentInstrument.type === 'crypto') {
-                                priceHtml = `$${price.toFixed(2)}`;
-                            } else {
-                                priceHtml = `$${price.toFixed(2)}`;
-                            }
+                            // Update trading panel prices
+                            const spread = price * 0.0005;
+                            const sellPrice = (price - spread / 2);
+                            const buyPrice = (price + spread / 2);
                             
-                            priceCell.innerHTML = priceHtml;
+                            document.getElementById('sell-price-display').textContent = sellPrice.toFixed(2);
+                            document.getElementById('buy-price-display').textContent = buyPrice.toFixed(2);
+                            
+                            // Update trade info
+                            updateTradeInfo();
+                            
+                            const endTime = performance.now();
+                            console.log(`✅ FAST SWITCH completed in ${(endTime - startTime).toFixed(0)}ms: ${currentInstrument.symbol}`);
                         }
-                        
-                        // Update trade info based on new price
-                        updateTradeInfo();
-                    }
-                })
-                .catch(error => console.error('Error fetching instrument price:', error));
+                    })
+                    .catch(error => {
+                        console.error('Error fetching price:', error);
+                        // Don't let price errors block the UI
+                        const endTime = performance.now();
+                        console.log(`⚠️ SWITCH completed (price failed) in ${(endTime - startTime).toFixed(0)}ms: ${currentInstrument.symbol}`);
+                    });
+            }, 10); // Tiny delay to let chart start loading
+            
+            // Reset amount immediately
+            document.getElementById('trade_amount').value = '';
+            
+            console.log(`🚀 UI updated instantly for ${currentInstrument.symbol}, price loading in background...`);
         }
 
         // Auto-refresh prices every 60 seconds (1 minute)
@@ -3819,8 +3810,28 @@
             const marketNotice = document.getElementById('market-closed-notice');
             const tradingForm = document.querySelector('.trading-form-pro');
             
+            // Determine current trade type (default to 'buy' if not set)
+            const buyButtons = document.querySelectorAll('.btn-buy');
+            const sellButtons = document.querySelectorAll('.btn-sell');
+            let currentTradeType = 'buy'; // default
+            
+            // Check which button is active
+            buyButtons.forEach(btn => {
+                if (btn.classList.contains('active')) {
+                    currentTradeType = 'buy';
+                }
+            });
+            sellButtons.forEach(btn => {
+                if (btn.classList.contains('active')) {
+                    currentTradeType = 'sell';
+                }
+            });
+            
+            console.log(`🔍 Market check for ${data.type}: ${data.market_status.is_open ? 'OPEN' : 'CLOSED'}`);
+            
             if (data.type === 'stock' && !data.market_status.is_open) {
                 // Market is closed for stocks - disable trading
+                console.log('🔒 Disabling trading for closed stock market');
                 if (submitButton) {
                     submitButton.disabled = true;
                     submitButton.textContent = 'MARKET CLOSED';
@@ -3840,6 +3851,7 @@
                 }
             } else {
                 // Market is open or it's not a stock - enable trading
+                console.log('✅ Enabling trading - market is open or instrument is crypto/forex');
                 if (submitButton) {
                     submitButton.disabled = false;
                     submitButton.textContent = currentTradeType.toUpperCase();
@@ -3849,9 +3861,10 @@
                     marketNotice.classList.remove('show');
                 }
                 
-                // Remove overlay
+                // ALWAYS remove overlay for crypto/forex or open stocks
                 const overlay = tradingForm?.querySelector('.trading-disabled-overlay');
                 if (overlay) {
+                    console.log('🗑️ Removing trading overlay');
                     overlay.remove();
                 }
             }
@@ -3859,20 +3872,27 @@
 
         // Check market status when instrument changes
         function selectInstrument(instrumentId) {
-            currentInstrument = instrumentsData[instrumentId];
-            if (currentInstrument) {
-                // Update UI elements
+            console.log(`🎯 selectInstrument called with ID: ${instrumentId}`);
+            
+            // Update current instrument data
+            if (instrumentsData[instrumentId]) {
+                currentInstrument.id = instrumentId;
+                currentInstrument.symbol = instrumentsData[instrumentId].symbol;
+                currentInstrument.type = instrumentsData[instrumentId].type;
+                currentInstrument.precision = instrumentsData[instrumentId].precision;
+                currentInstrument.price = instrumentsData[instrumentId].price;
+                
+                console.log(`🔄 Switching to instrument: ${currentInstrument.symbol} (${currentInstrument.type})`);
+                
+                // Update UI elements immediately
                 updateInstrumentPriceAndUI();
                 
                 // Check market status for the new instrument
                 checkMarketStatus(instrumentId);
                 
-                // Update form fields
-                document.getElementById('instrument_id').value = instrumentId;
-                document.getElementById('trade-panel-symbol').textContent = currentInstrument.symbol;
-                
-                // Update chart if TradingView is available
-                updateTradingViewChart(currentInstrument.symbol);
+                console.log(`✅ Instrument switch completed: ${currentInstrument.symbol}`);
+            } else {
+                console.error(`❌ Instrument ID ${instrumentId} not found in instrumentsData`);
             }
         }
 
