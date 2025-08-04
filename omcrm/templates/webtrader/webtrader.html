@@ -4729,19 +4729,20 @@
                             const priceCell = row.querySelector('td:nth-child(2)');
                             const changeCell = row.querySelector('td:nth-child(3)');
                             
-                            // Get baseline price (set 1 minute ago) for percentage calculation
-                            let baselinePrice = parseFloat(priceCell.getAttribute('data-baseline-price'));
-                            const baselineTime = parseInt(priceCell.getAttribute('data-baseline-time') || '0');
+                            // Get 24-hour baseline price for percentage calculation
+                            let baselinePrice = parseFloat(priceCell.getAttribute('data-24h-baseline-price'));
+                            const baselineTime = parseInt(priceCell.getAttribute('data-24h-baseline-time') || '0');
                             const currentTime = Date.now();
                             
-                            // Initialize baseline price if not set or if older than 2 minutes
-                            if (!baselinePrice || (currentTime - baselineTime) > 120000) {
+                            // Initialize or reset 24-hour baseline price every 24 hours
+                            if (!baselinePrice || (currentTime - baselineTime) > 86400000) { // 86400000ms = 24 hours
                                 baselinePrice = currentPrice;
-                                priceCell.setAttribute('data-baseline-price', currentPrice.toString());
-                                priceCell.setAttribute('data-baseline-time', currentTime.toString());
+                                priceCell.setAttribute('data-24h-baseline-price', currentPrice.toString());
+                                priceCell.setAttribute('data-24h-baseline-time', currentTime.toString());
+                                console.log(`📅 Reset 24h baseline for ${symbol}: $${currentPrice}`);
                             }
                             
-                            // Get immediate previous price for blinking animation
+                            // Get immediate previous price for blinking animation only
                             const previousPrice = parseFloat(priceCell.getAttribute('data-last-price') || currentPrice);
                             
                             // Store current price for next comparison
@@ -4757,7 +4758,7 @@
                                 formattedPrice = `$${currentPrice.toFixed(2)}`;
                             }
                             
-                            // Calculate percentage change from baseline (over time)
+                            // Calculate 24-hour percentage change from baseline
                             const changePercent = baselinePrice > 0 ? ((currentPrice - baselinePrice) / baselinePrice) * 100 : 0;
                             
                             // Determine if price just went up/down for blinking (immediate comparison)
@@ -4779,7 +4780,7 @@
                             // Update price text
                             priceCell.textContent = formattedPrice;
                             
-                            // Update change percentage and arrow based on OVERALL change from baseline
+                            // Update change percentage and arrow based on 24-HOUR change from baseline
                             if (changeCell) {
                                 const changeIcon = changeCell.querySelector('i');
                                 const changeText = changeCell.querySelector('span');
@@ -4811,7 +4812,11 @@
                                 }
                             }
                             
-                            console.log(`📊 Updated ${symbol}: ${formattedPrice} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}% from baseline)`);
+                            // Show time remaining until next 24h reset
+                            const timeUntilReset = 86400000 - (currentTime - baselineTime);
+                            const hoursUntilReset = Math.floor(timeUntilReset / 3600000);
+                            
+                            console.log(`📊 ${symbol}: ${formattedPrice} (24h: ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%, reset in ${hoursUntilReset}h)`);
                         }
                     })
                     .catch(error => {
