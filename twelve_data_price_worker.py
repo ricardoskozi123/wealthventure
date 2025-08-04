@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Twelve Data Price Worker
-Independent price update worker using Twelve Data API
+🚀 INSTANT Twelve Data WebSocket Price Worker
+Real-time price updates using Twelve Data WebSocket API
 Your API Key: 902d8585e8c040f591a3293d1b79ab88
 Pro Plan: 610 API credits/minute, 500 WebSocket credits
 """
@@ -11,9 +11,11 @@ import sys
 import time
 import logging
 import requests
+import json
+import websocket
+import threading
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
-import schedule
 
 # Add the project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -26,20 +28,20 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('twelve_data_price_worker.log'),
+        logging.FileHandler('twelve_data_websocket_worker.log'),
         logging.StreamHandler()
     ]
 )
 
-class TwelveDataPriceWorker:
+class TwelveDataWebSocketWorker:
     def __init__(self):
         self.api_key = '902d8585e8c040f591a3293d1b79ab88'
-        self.base_url = 'https://api.twelvedata.com'
-        self.credits_per_minute = 610  # Pro plan limit
-        self.request_count = 0
-        self.minute_start = time.time()
+        self.websocket_url = 'wss://ws.twelvedata.com/v1/quotes/price'
+        self.ws = None
+        self.app = create_app()
+        self.running = False
         
-        # Symbol mapping for Twelve Data API
+        # Symbol mapping for Twelve Data WebSocket
         self.symbol_mapping = {
             # Forex pairs
             'EUR/USD': 'EUR/USD', 'GBP/USD': 'GBP/USD', 'USD/JPY': 'USD/JPY',
@@ -71,198 +73,241 @@ class TwelveDataPriceWorker:
             'DIS': 'DIS', 'PYPL': 'PYPL', 'ADBE': 'ADBE', 'CRM': 'CRM'
         }
 
-    def check_rate_limit(self):
-        """Check if we're within the rate limit"""
-        current_time = time.time()
-        
-        # Reset counter every minute
-        if current_time - self.minute_start >= 60:
-            self.request_count = 0
-            self.minute_start = current_time
-            
-        if self.request_count >= self.credits_per_minute:
-            sleep_time = 60 - (current_time - self.minute_start)
-            if sleep_time > 0:
-                logging.warning(f"Rate limit reached. Sleeping for {sleep_time:.1f} seconds...")
-                time.sleep(sleep_time)
-                self.request_count = 0
-                self.minute_start = time.time()
-
-    def get_price(self, symbol):
-        """Get price for a single symbol from Twelve Data API"""
+    def on_message(self, ws, message):
+        """Handle incoming WebSocket messages with real-time price updates"""
         try:
-            self.check_rate_limit()
+            data = json.loads(message)
             
-            # Map symbol to Twelve Data format
-            twelve_data_symbol = self.symbol_mapping.get(symbol, symbol)
+            if data.get('event') == 'price':
+                symbol = data.get('symbol')
+                price = float(data.get('price', 0))
+                
+                if symbol and price > 0:
+                    # Find the original symbol (reverse mapping)
+                    original_symbol = None
+                    for orig, mapped in self.symbol_mapping.items():
+                        if mapped == symbol:
+                            original_symbol = orig
+                            break
+                    
+                    if original_symbol:
+                        # Update database with new price instantly
+                        with self.app.app_context():
+                            instrument = TradingInstrument.query.filter_by(symbol=original_symbol).first()
+                            if instrument:
+                                instrument.update_price(price)
+                                db.session.commit()
+                                logging.info(f"⚡ INSTANT UPDATE: {original_symbol} = ${price}")
+                            else:
+                                logging.warning(f"⚠️  Instrument {original_symbol} not found in database")
+                    else:
+                        logging.warning(f"⚠️  Symbol mapping not found for {symbol}")
             
-            url = f'{self.base_url}/price'
+            elif data.get('event') == 'subscribe-status':
+                if data.get('status') == 'ok':
+                    logging.info(f"✅ Subscribed to {data.get('symbol')}")
+                else:
+                    logging.error(f"❌ Subscription failed for {data.get('symbol')}: {data.get('message')}")
+                    
+        except json.JSONDecodeError:
+            logging.error(f"❌ Invalid JSON received: {message}")
+        except Exception as e:
+            logging.error(f"❌ Error processing message: {str(e)}")
+
+    def on_error(self, ws, error):
+        """Handle WebSocket errors"""
+        logging.error(f"❌ WebSocket error: {error}")
+
+    def on_close(self, ws, close_status_code, close_msg):
+        """Handle WebSocket close"""
+        logging.warning("🔌 WebSocket connection closed")
+        if self.running:
+            logging.info("🔄 Attempting to reconnect in 5 seconds...")
+            time.sleep(5)
+            self.connect()
+
+    def on_open(self, ws):
+        """Handle WebSocket connection open"""
+        logging.info("🎉 WebSocket connected to Twelve Data!")
+        
+        # Get all instruments from database and subscribe to them
+        with self.app.app_context():
+            instruments = TradingInstrument.query.all()
+            
+            if not instruments:
+                logging.warning("⚠️  No instruments found in database")
+                return
+            
+            logging.info(f"📡 Subscribing to {len(instruments)} instruments...")
+            
+            # Subscribe to all instruments
+            for instrument in instruments:
+                mapped_symbol = self.symbol_mapping.get(instrument.symbol, instrument.symbol)
+                
+                subscribe_message = {
+                    "action": "subscribe",
+                    "params": {
+                        "symbols": mapped_symbol
+                    }
+                }
+                
+                ws.send(json.dumps(subscribe_message))
+                logging.info(f"📡 Subscribed to {instrument.symbol} ({mapped_symbol})")
+                time.sleep(0.1)  # Small delay between subscriptions
+
+    def connect(self):
+        """Connect to Twelve Data WebSocket"""
+        if not self.running:
+            return
+            
+        websocket_url_with_key = f"{self.websocket_url}?apikey={self.api_key}"
+        
+        logging.info(f"🔌 Connecting to Twelve Data WebSocket...")
+        
+        self.ws = websocket.WebSocketApp(
+            websocket_url_with_key,
+            on_message=self.on_message,
+            on_error=self.on_error,
+            on_close=self.on_close,
+            on_open=self.on_open
+        )
+        
+        # Run forever (blocking)
+        self.ws.run_forever()
+
+    def start_websocket(self):
+        """Start the WebSocket connection in a separate thread"""
+        self.running = True
+        
+        logging.info("🚀 Starting Twelve Data WebSocket Price Worker...")
+        logging.info(f"🔑 API Key: {self.api_key[:8]}...")
+        logging.info("⚡ INSTANT price updates via WebSocket!")
+        
+        # Start WebSocket in a separate thread
+        websocket_thread = threading.Thread(target=self.connect, daemon=True)
+        websocket_thread.start()
+        
+        try:
+            # Keep main thread alive
+            while self.running:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            logging.info("🛑 Stopping WebSocket worker...")
+            self.running = False
+            if self.ws:
+                self.ws.close()
+
+    def run_hybrid(self):
+        """Run hybrid mode: WebSocket for real-time + API fallback every 30 seconds"""
+        self.running = True
+        
+        logging.info("🚀 Starting HYBRID Twelve Data Price Worker...")
+        logging.info("⚡ WebSocket for instant updates + API fallback every 30s")
+        
+        # Start WebSocket in background
+        websocket_thread = threading.Thread(target=self.connect, daemon=True)
+        websocket_thread.start()
+        
+        # Fallback API updates every 30 seconds for missed symbols
+        def api_fallback():
+            while self.running:
+                try:
+                    time.sleep(30)  # Wait 30 seconds
+                    if self.running:
+                        self.update_all_prices_api()
+                except Exception as e:
+                    logging.error(f"❌ API fallback error: {str(e)}")
+        
+        api_thread = threading.Thread(target=api_fallback, daemon=True)
+        api_thread.start()
+        
+        try:
+            # Keep main thread alive
+            while self.running:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            logging.info("🛑 Stopping hybrid worker...")
+            self.running = False
+            if self.ws:
+                self.ws.close()
+
+    def update_all_prices_api(self):
+        """Fallback API method (same as original but faster)"""
+        with self.app.app_context():
+            instruments = TradingInstrument.query.all()
+            
+            if not instruments:
+                return
+            
+            logging.info(f"🔄 API fallback check for {len(instruments)} instruments...")
+            
+            updated_count = 0
+            for instrument in instruments:
+                try:
+                    # Check if price is older than 1 minute
+                    if instrument.last_updated:
+                        seconds_old = (datetime.utcnow() - instrument.last_updated).total_seconds()
+                        if seconds_old < 60:
+                            continue  # Skip if recently updated
+                    
+                    # Get price via API
+                    price = self.get_price_api(instrument.symbol)
+                    if price:
+                        instrument.update_price(price)
+                        updated_count += 1
+                        logging.info(f"🔄 API fallback: {instrument.symbol} = ${price}")
+                
+                except Exception as e:
+                    logging.error(f"❌ API fallback error for {instrument.symbol}: {str(e)}")
+            
+            if updated_count > 0:
+                db.session.commit()
+                logging.info(f"✅ API fallback updated {updated_count} instruments")
+
+    def get_price_api(self, symbol):
+        """Get price via API (fallback method)"""
+        try:
+            mapped_symbol = self.symbol_mapping.get(symbol, symbol)
+            
+            url = 'https://api.twelvedata.com/price'
             params = {
-                'symbol': twelve_data_symbol,
+                'symbol': mapped_symbol,
                 'apikey': self.api_key
             }
             
-            response = requests.get(url, params=params, timeout=10)
-            self.request_count += 1
+            response = requests.get(url, params=params, timeout=5)
             
             if response.status_code == 200:
                 data = response.json()
                 if 'price' in data:
-                    price = float(data['price'])
-                    logging.info(f"✅ {symbol}: ${price}")
-                    return price
-                elif 'message' in data:
-                    logging.warning(f"⚠️  {symbol}: {data['message']}")
-                else:
-                    logging.error(f"❌ {symbol}: Unexpected response format")
-            else:
-                logging.error(f"❌ {symbol}: HTTP {response.status_code}")
-                
+                    return float(data['price'])
+                    
         except Exception as e:
-            logging.error(f"❌ Error getting price for {symbol}: {str(e)}")
+            logging.error(f"❌ API fallback error for {symbol}: {str(e)}")
             
         return None
 
-    def get_batch_prices(self, symbols):
-        """Get prices for multiple symbols using batch API"""
-        try:
-            self.check_rate_limit()
-            
-            # Map symbols to Twelve Data format
-            mapped_symbols = []
-            for symbol in symbols:
-                mapped_symbol = self.symbol_mapping.get(symbol, symbol)
-                mapped_symbols.append(mapped_symbol)
-            
-            # Twelve Data batch API (uses more credits but faster)
-            url = f'{self.base_url}/price'
-            params = {
-                'symbol': ','.join(mapped_symbols[:8]),  # Max 8 symbols per batch
-                'apikey': self.api_key
-            }
-            
-            response = requests.get(url, params=params, timeout=15)
-            self.request_count += len(mapped_symbols[:8])  # Each symbol counts as 1 credit
-            
-            if response.status_code == 200:
-                data = response.json()
-                prices = {}
-                
-                if isinstance(data, dict):
-                    # Single symbol response
-                    if 'price' in data:
-                        prices[symbols[0]] = float(data['price'])
-                elif isinstance(data, list):
-                    # Multiple symbols response
-                    for i, item in enumerate(data):
-                        if i < len(symbols) and 'price' in item:
-                            prices[symbols[i]] = float(item['price'])
-                
-                return prices
-                
-        except Exception as e:
-            logging.error(f"❌ Error getting batch prices: {str(e)}")
-            
-        return {}
-
-    def update_instrument_price(self, instrument):
-        """Update price for a single instrument"""
-        try:
-            price = self.get_price(instrument.symbol)
-            if price:
-                instrument.update_price(price)
-                return True
-        except Exception as e:
-            logging.error(f"❌ Error updating {instrument.symbol}: {str(e)}")
-        return False
-
-    def update_all_prices(self):
-        """Update prices for all instruments"""
-        app = create_app()
-        
-        with app.app_context():
-            instruments = TradingInstrument.query.all()
-            
-            if not instruments:
-                logging.info("No instruments found in database")
-                return
-            
-            logging.info(f"🚀 Starting price update for {len(instruments)} instruments...")
-            
-            updated_count = 0
-            start_time = time.time()
-            
-            # Use ThreadPoolExecutor for concurrent updates
-            with ThreadPoolExecutor(max_workers=5) as executor:
-                futures = []
-                
-                for instrument in instruments:
-                    future = executor.submit(self.update_instrument_price, instrument)
-                    futures.append((future, instrument))
-                    
-                    # Small delay to avoid overwhelming the API
-                    time.sleep(0.1)
-                
-                # Collect results
-                for future, instrument in futures:
-                    try:
-                        if future.result():
-                            updated_count += 1
-                    except Exception as e:
-                        logging.error(f"❌ Future error for {instrument.symbol}: {str(e)}")
-            
-            # Commit all changes
-            try:
-                db.session.commit()
-                duration = time.time() - start_time
-                logging.info(f"✅ Updated {updated_count}/{len(instruments)} instruments in {duration:.1f}s")
-                logging.info(f"📊 API requests used: {self.request_count}/610 this minute")
-            except Exception as e:
-                db.session.rollback()
-                logging.error(f"❌ Database commit error: {str(e)}")
-
-    def run_continuous(self):
-        """Run the price worker continuously"""
-        logging.info("🚀 Starting Twelve Data Price Worker...")
-        logging.info(f"🔑 API Key: {self.api_key[:8]}...")
-        logging.info(f"📊 Credits per minute: {self.credits_per_minute}")
-        
-        # Schedule price updates every 2 minutes (conservative to stay within limits)
-        schedule.every(2).minutes.do(self.update_all_prices)
-        
-        # Initial price update
-        self.update_all_prices()
-        
-        logging.info("⏰ Scheduled updates every 2 minutes")
-        logging.info("🔄 Running continuous price worker... (Ctrl+C to stop)")
-        
-        try:
-            while True:
-                schedule.run_pending()
-                time.sleep(10)  # Check every 10 seconds
-        except KeyboardInterrupt:
-            logging.info("🛑 Price worker stopped by user")
-        except Exception as e:
-            logging.error(f"❌ Price worker error: {str(e)}")
-
 def main():
     """Main function"""
-    worker = TwelveDataPriceWorker()
+    worker = TwelveDataWebSocketWorker()
     
     if len(sys.argv) > 1:
-        if sys.argv[1] == '--once':
-            # Run once and exit
-            worker.update_all_prices()
+        if sys.argv[1] == '--websocket':
+            # Pure WebSocket mode
+            worker.start_websocket()
+        elif sys.argv[1] == '--hybrid':
+            # Hybrid mode (WebSocket + API fallback)
+            worker.run_hybrid()
         elif sys.argv[1] == '--test':
-            # Test a single symbol
+            # Test API connection
             test_symbol = sys.argv[2] if len(sys.argv) > 2 else 'EUR/USD'
-            price = worker.get_price(test_symbol)
+            price = worker.get_price_api(test_symbol)
             print(f"{test_symbol}: ${price}" if price else f"Failed to get price for {test_symbol}")
         else:
-            print("Usage: python twelve_data_price_worker.py [--once|--test SYMBOL]")
+            print("Usage: python twelve_data_price_worker.py [--websocket|--hybrid|--test SYMBOL]")
     else:
-        # Run continuously
-        worker.run_continuous()
+        # Default: Run hybrid mode (recommended)
+        worker.run_hybrid()
 
 if __name__ == '__main__':
     main() 
