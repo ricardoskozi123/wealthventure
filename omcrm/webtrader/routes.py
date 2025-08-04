@@ -62,7 +62,7 @@ def get_price():
     current_price = instrument.current_price if instrument.current_price else 0.0
     change = instrument.change if instrument.change else 0.0
     
-            return jsonify({
+    return jsonify({
         'current_price': current_price,
         'change': change
     })
@@ -114,9 +114,9 @@ def webtrader_dashboard():
         if instrument.current_price is None:
             # Set default price if None - background worker will update it
             instrument.current_price = 100.0  # Default placeholder
-                instrument.change = 0.0
-                instrument.last_updated = datetime.utcnow()
-                db.session.commit()
+            instrument.change = 0.0
+            instrument.last_updated = datetime.utcnow()
+            db.session.commit()
         # Ensure change is not None
         if instrument.change is None:
             instrument.change = 0.0
@@ -387,11 +387,11 @@ def start_realtime_feeds():
     """🚫 WEBSOCKET DISABLED - Background worker handles all price updates"""
     logging.info("🚫 WebSocket feeds disabled - using dedicated background price worker")
     
-            return jsonify({
-                'success': False,
+    return jsonify({
+        'success': False,
         'message': 'WebSocket feeds disabled for performance. Background worker handles price updates.',
         'status': 'disabled'
-        })
+    })
 
 # Add remaining routes here - keeping this short to avoid file being too long
 @webtrader.route("/instruments")
@@ -407,17 +407,17 @@ def new_instrument():
     if form.validate_on_submit():
         current_price = get_twelve_data_price(form.symbol.data.upper(), form.type.data)
         if current_price:
-        instrument = TradingInstrument(
-            symbol=form.symbol.data.upper(),
-            name=form.name.data,
-            type=form.type.data,
-            current_price=current_price,
-            last_updated=datetime.utcnow()
-        )
-        db.session.add(instrument)
-        db.session.commit()
-        flash('Instrument has been created!', 'success')
-        return redirect(url_for('webtrader.list_instruments'))
+            instrument = TradingInstrument(
+                symbol=form.symbol.data.upper(),
+                name=form.name.data,
+                type=form.type.data,
+                current_price=current_price,
+                last_updated=datetime.utcnow()
+            )
+            db.session.add(instrument)
+            db.session.commit()
+            flash('Instrument has been created!', 'success')
+            return redirect(url_for('webtrader.list_instruments'))
         else:
             flash('Could not fetch price from Twelve Data API. Please check the symbol.', 'danger')
     return render_template("add_instrument.html", form=form, title="New Instrument")
@@ -854,7 +854,7 @@ def liquidate_account():
         for trade in open_trades:
             try:
                 # 🚀 PERFORMANCE: Get current price from database only (no API calls)
-                    current_price = trade.instrument.current_price
+                current_price = trade.instrument.current_price
                 
                 if current_price and current_price > 0:
                     # Calculate profit/loss
