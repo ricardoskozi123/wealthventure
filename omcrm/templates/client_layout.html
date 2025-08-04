@@ -101,6 +101,35 @@
         letter-spacing: 1px;
         margin-bottom: 15px;
       }
+      
+      /* 🚀 FIX: Remove dropdown arrows and improve user button */
+      .btn-user.dropdown-toggle::after {
+        display: none !important; /* Remove Bootstrap dropdown arrow */
+      }
+      
+      .navbar-user .dropdown-toggle {
+        display: flex !important;
+        align-items: center !important;
+        text-decoration: none !important;
+      }
+      
+      .navbar-user .dropdown-toggle:focus {
+        box-shadow: none !important;
+        outline: none !important;
+      }
+      
+      /* 🚀 FIX: Center the account section better */
+      .navbar-right {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+      }
+      
+      .section-divider {
+        margin: 25px 0 !important;
+        text-align: center;
+      }
     </style>
   </head>
   <body class="webtrader-page">
@@ -254,10 +283,11 @@
               </div>
             </div>
             <div class="navbar-user dropdown">
-              <button class="btn-user dropdown-toggle" data-bs-toggle="dropdown">
+              <button class="btn-user dropdown-toggle" data-bs-toggle="dropdown" style="border: none; background: none; padding: 8px;">
                 <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #4361ee, #3f51b5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px;">
                   {{ current_user.first_name[0] if current_user.first_name else 'U' }}{{ current_user.last_name[0] if current_user.last_name else '' }}
                 </div>
+                <span style="margin-left: 8px; color: #333; font-weight: 500;">{{ current_user.first_name }} {{ current_user.last_name }}</span>
               </button>
               <div class="dropdown-menu dropdown-menu-end">
                 <a class="dropdown-item" href="{{ url_for('client.profile') }}">

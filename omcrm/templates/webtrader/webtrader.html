@@ -4707,3 +4707,122 @@
             }
         });
     </script>
+
+    <!-- 🚀 NEW: Update all instruments table prices with blinking animations -->
+    <script>
+        // 🚀 NEW: Update all instruments table prices with blinking animations
+        function updateAllInstrumentPrices() {
+            const instrumentRows = document.querySelectorAll('.instruments-table tbody tr');
+            
+            instrumentRows.forEach(row => {
+                const instrumentId = row.getAttribute('data-instrument-id');
+                const symbol = row.getAttribute('data-symbol');
+                const type = row.getAttribute('data-type');
+                
+                if (!instrumentId) return;
+                
+                fetch(`/webtrader/get_price?instrument_id=${instrumentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.current_price !== null && data.current_price > 0) {
+                            const currentPrice = parseFloat(data.current_price);
+                            const priceCell = row.querySelector('td:nth-child(2)');
+                            const changeCell = row.querySelector('td:nth-child(3)');
+                            
+                            // Get baseline price (set 1 minute ago) for percentage calculation
+                            let baselinePrice = parseFloat(priceCell.getAttribute('data-baseline-price'));
+                            const baselineTime = parseInt(priceCell.getAttribute('data-baseline-time') || '0');
+                            const currentTime = Date.now();
+                            
+                            // Initialize baseline price if not set or if older than 2 minutes
+                            if (!baselinePrice || (currentTime - baselineTime) > 120000) {
+                                baselinePrice = currentPrice;
+                                priceCell.setAttribute('data-baseline-price', currentPrice.toString());
+                                priceCell.setAttribute('data-baseline-time', currentTime.toString());
+                            }
+                            
+                            // Get immediate previous price for blinking animation
+                            const previousPrice = parseFloat(priceCell.getAttribute('data-last-price') || currentPrice);
+                            
+                            // Store current price for next comparison
+                            priceCell.setAttribute('data-last-price', currentPrice.toString());
+                            
+                            // Format price based on instrument type
+                            let formattedPrice;
+                            if (type === 'forex') {
+                                formattedPrice = currentPrice.toFixed(4);
+                            } else if (type === 'crypto') {
+                                formattedPrice = `$${currentPrice.toFixed(2)}`;
+                            } else {
+                                formattedPrice = `$${currentPrice.toFixed(2)}`;
+                            }
+                            
+                            // Calculate percentage change from baseline (over time)
+                            const changePercent = baselinePrice > 0 ? ((currentPrice - baselinePrice) / baselinePrice) * 100 : 0;
+                            
+                            // Determine if price just went up/down for blinking (immediate comparison)
+                            const justWentUp = currentPrice > previousPrice;
+                            const justWentDown = currentPrice < previousPrice;
+                            
+                            // Update price with blinking animation for immediate changes
+                            if (justWentUp || justWentDown) {
+                                // Apply blinking animation based on immediate price movement
+                                const blinkClass = justWentUp ? 'price-blink-green' : 'price-blink-red';
+                                priceCell.classList.add(blinkClass);
+                                
+                                // Remove animation class after animation completes
+                                setTimeout(() => {
+                                    priceCell.classList.remove(blinkClass);
+                                }, 600);
+                            }
+                            
+                            // Update price text
+                            priceCell.textContent = formattedPrice;
+                            
+                            // Update change percentage and arrow based on OVERALL change from baseline
+                            if (changeCell) {
+                                const changeIcon = changeCell.querySelector('i');
+                                const changeText = changeCell.querySelector('span');
+                                
+                                if (Math.abs(changePercent) >= 0.01) { // Show change if >= 0.01%
+                                    const isOverallUp = changePercent > 0;
+                                    const changeClass = isOverallUp ? 'price-up' : 'price-down';
+                                    const arrowDirection = isOverallUp ? 'up' : 'down';
+                                    const changeSign = isOverallUp ? '+' : '';
+                                    
+                                    changeCell.className = `price-change ${changeClass}`;
+                                    
+                                    if (changeIcon) {
+                                        changeIcon.className = `fas fa-caret-${arrowDirection}`;
+                                    }
+                                    
+                                    if (changeText) {
+                                        changeText.textContent = `${changeSign}${changePercent.toFixed(2)}%`;
+                                    }
+                                } else {
+                                    // No significant change
+                                    changeCell.className = 'price-change';
+                                    if (changeIcon) {
+                                        changeIcon.className = 'fas fa-minus';
+                                    }
+                                    if (changeText) {
+                                        changeText.textContent = '0.00%';
+                                    }
+                                }
+                            }
+                            
+                            console.log(`📊 Updated ${symbol}: ${formattedPrice} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}% from baseline)`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error updating instrument price for ${symbol}:`, error);
+                    });
+            });
+        }
+        
+        // Update open trades prices and P/L
+        updateAllOpenTradesPL();
+    </script>
+</body>
+</html>
+
