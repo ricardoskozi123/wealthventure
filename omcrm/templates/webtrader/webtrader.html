@@ -2191,16 +2191,17 @@
                 .catch(error => console.error('Error fetching instrument price:', error));
         }
 
-        // Auto-refresh prices every 60 seconds (1 minute)
+        // 🚀 INSTANT PRICE UPDATES - Every 1 second for real-time responsiveness
         setInterval(function() {
-            // Update the selected instrument price from API
-            if (currentInstrument.id) { // Only update if an instrument is selected
-                 updateInstrumentPriceAndUI();
+            // 🚀 AUTO-UPDATE PRICES - Update every 1 second for instant feel
+            if (currentInstrument.id) {
+                updateInstrumentPriceAndUI();
             }
-            // Update market data ticker for all visible instruments
+            // Update market data ticker for visible instruments
             updateMarketDataTicker();
-            // Note: P/L updates handled by a separate interval
-        }, 60000); // 60 seconds refresh
+            // Update P/L for open trades
+            updateAllOpenTradesPL();
+        }, 1000); // 1 second refresh for instant real-time feel
         
         // --- New Function for Real-time P/L ---
         function updateAllOpenTradesPL() {
@@ -2467,11 +2468,11 @@
             // Start the sliding ticker
             startSlidingTicker();
             
-            // Update market data ticker every 5 seconds
-            setInterval(updateMarketDataTicker, 5000);
+            // 🚀 INSTANT market data ticker updates - Every 1 second
+            setInterval(updateMarketDataTicker, 1000);
             
-            // Update open trades P/L every 3 seconds
-            setInterval(updateAllOpenTradesPL, 3000);
+            // 🚀 INSTANT open trades P/L updates - Every 1 second
+            setInterval(updateAllOpenTradesPL, 1000);
         });
 
         // --- Amount Slider functionality ---
