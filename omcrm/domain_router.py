@@ -57,35 +57,35 @@ class DomainRouter:
         if domain_type == 'dev':
             return None
         
-        # Admin/CRM routes should only be accessible on CRM subdomain
-        admin_routes = ['/login', '/register', '/admin', '/settings', '/users', 
-                       '/leads', '/deals', '/reports', '/activities', '/tasks',
-                       '/transactions']
-        
-        # Client routes should only be accessible on main domain
-        client_routes = ['/client', '/webtrader']
-        
-        is_admin_route = any(path.startswith(route) for route in admin_routes)
-        is_client_route = any(path.startswith(route) for route in client_routes)
-        
         # Handle domain routing
-        if domain_type == 'crm':
-            # On CRM subdomain - allow admin routes, redirect client routes
-            if is_client_route:
-                return redirect(f"https://{self.client_domain}{path}")
-            # Set session flag for admin interface
-            session['domain_type'] = 'crm'
+        if domain_type == 'client':
+            # On client domain (investmentprohub.com)
             
-        elif domain_type == 'client':
-            # On client domain - allow client routes, redirect admin routes to CRM
-            if is_admin_route and path != '/client/login':
+            # IMPORTANT: Redirect /login to /client/login
+            if path == '/login':
+                return redirect('/client/login')
+            
+            # Admin routes should redirect to CRM subdomain
+            admin_routes = ['/admin', '/settings', '/users', '/leads', '/deals', 
+                           '/reports', '/activities', '/tasks', '/transactions']
+            
+            if any(path.startswith(route) for route in admin_routes):
                 return redirect(f"https://{self.crm_subdomain}{path}")
+            
             # Set session flag for client interface
             session['domain_type'] = 'client'
             
-            # Redirect /login to /client/login on client domain
-            if path == '/login':
-                return redirect(url_for('users.client_login'))
+        elif domain_type == 'crm':
+            # On CRM subdomain (crm.investmentprohub.com)
+            
+            # Client routes should redirect to main domain
+            client_routes = ['/client', '/webtrader']
+            
+            if any(path.startswith(route) for route in client_routes):
+                return redirect(f"https://{self.client_domain}{path}")
+            
+            # Set session flag for admin interface
+            session['domain_type'] = 'crm'
         
         return None
 
@@ -118,4 +118,4 @@ def get_appropriate_domain_url(route_type='current'):
         if host.startswith('crm.'):
             return f"https://{crm_subdomain}"
         else:
-            return f"https://{client_domain}" 
+            return f"https://{client_domain}"
