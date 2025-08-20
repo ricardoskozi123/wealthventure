@@ -1,0 +1,43 @@
+{
+  "backup_sources": {
+    "digitalocean": {
+      "enabled": true,
+      "space": "omcrm-backups",
+      "region": "nyc3",
+      "access_key": "YOUR_DO_SPACES_ACCESS_KEY",
+      "secret_key": "YOUR_DO_SPACES_SECRET_KEY"
+    },
+    "aws_s3": {
+      "enabled": false,
+      "bucket": "omcrm-backups",
+      "region": "us-east-1",
+      "access_key": "YOUR_AWS_ACCESS_KEY",
+      "secret_key": "YOUR_AWS_SECRET_KEY"
+    }
+  },
+  "new_server": {
+    "hostname": "",
+    "username": "root",
+    "ssh_key_path": "~/.ssh/id_rsa",
+    "docker_compose_url": "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64"
+  },
+  "domains": {
+    "client_domain": "investmentprohub.com",
+    "crm_subdomain": "crm.investmentprohub.com",
+    "temp_ip": "NEW_SERVER_IP"
+  },
+  "ssl": {
+    "email": "admin@investmentprohub.com",
+    "use_staging": false
+  },
+  "notifications": {
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "your-email@gmail.com",
+      "password": "your-app-password",
+      "to_addresses": ["admin@investmentprohub.com"]
+    }
+  }
+} 

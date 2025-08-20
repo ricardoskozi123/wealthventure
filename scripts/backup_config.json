@@ -1,0 +1,61 @@
+{
+  "database": {
+    "type": "postgresql",
+    "host": "db",
+    "port": 5432,
+    "name": "omcrm_trading",
+    "user": "omcrm_user",
+    "password": "omcrm_password_2024"
+  },
+  "storage": {
+    "primary": "local",
+    "backup_location": "/app/backup",
+    "retention_days": 30,
+    "compress": true
+  },
+  "aws_s3": {
+    "enabled": false,
+    "bucket": "omcrm-backups-your-unique-name",
+    "region": "us-east-1",
+    "access_key": "",
+    "secret_key": ""
+  },
+  "google_cloud": {
+    "enabled": false,
+    "bucket": "omcrm-backups-your-unique-name",
+    "credentials_path": "/app/gcp-credentials.json"
+  },
+  "azure": {
+    "enabled": false,
+    "container": "omcrm-backups",
+    "connection_string": ""
+  },
+  "digitalocean": {
+    "enabled": true,
+    "space": "omcrm-backups",
+    "region": "nyc3",
+    "access_key": "YOUR_DO_SPACES_KEY",
+    "secret_key": "YOUR_DO_SPACES_SECRET"
+  },
+  "ftp": {
+    "enabled": false,
+    "host": "backup.example.com",
+    "username": "",
+    "password": "",
+    "directory": "/backups"
+  },
+  "notifications": {
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "your-email@gmail.com",
+      "password": "your-app-password",
+      "to_addresses": ["admin@investmentprohub.com"]
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    }
+  }
+} 

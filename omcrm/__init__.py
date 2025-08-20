@@ -49,6 +49,7 @@ def unauthorized_handler():
 
 def run_install(app_ctx):
     from omcrm.install.routes import install
+
     app_ctx.register_blueprint(install)
     return app_ctx
 
@@ -82,6 +83,11 @@ def create_app(config_class=DevelopmentConfig):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     
+    # Initialize domain routing for production
+    if os.getenv('FLASK_ENV') == 'production':
+        from omcrm.domain_router import DomainRouter
+        domain_router = DomainRouter(app)
+    
     # Initialize Socket.IO with the app (only if not disabled)
     if not os.getenv('DISABLE_SOCKETIO'):
         socketio.init_app(app, cors_allowed_origins="*", async_mode='threading')
@@ -98,125 +104,45 @@ def create_app(config_class=DevelopmentConfig):
 
     with app.app_context():
         try:
-           # # Ensure database directory exists
-            #db_path = app.config.get('SQLALCHEMY_DATABASE_URI', '').replace('sqlite:///', '')
-           # if db_path and not os.path.exists(os.path.dirname(db_path)) and os.path.dirname(db_path):
-           #     os.makedirs(os.path.dirname(db_path), exist_ok=True)
+            # Load all models to ensure they're registered with SQLAlchemy
+            from omcrm.users.models import User, Role, Resource, Team
+            from omcrm.leads.models import Lead, LeadSource, LeadStatus
+            from omcrm.deals.models import Deal, DealStage, Product
+            from omcrm.tasks.models import Task
+            from omcrm.settings.models import AppConfig
+            from omcrm.activities.models import Activity, ActivityType
+            from omcrm.webtrader.models import TradingInstrument, InstrumentPrice
+            from omcrm.transactions.models import Transaction
+            from omcrm.comments.models import Comment
             
-            # Create all tables first
+            # Create all tables
             db.create_all()
             
-            # check if the config table exists, otherwise run install
-            from sqlalchemy import inspect
-            inspector = inspect(db.engine)
-            if not inspector.has_table('app_config'):
+            # Check if we need to run the initial setup
+            app_config = AppConfig.query.first()
+            if not app_config:
+                # No app config found, run the installer
+                print("No app configuration found. Please run the installer first.")
+                print("Visit: http://your-domain/install")
                 return run_install(app)
-            else:
-                from omcrm.settings.models import AppConfig
-                row = AppConfig.query.first()
-                if not row:
-                    print("No AppConfig found - running installation...")
-                    return run_install(app)
+            
+            # Check if there are any users
+            user_count = User.query.count()
+            if user_count == 0:
+                print("No users found. Please run the installer first.")
+                print("Visit: http://your-domain/install")
+                return run_install(app)
+            
+            print(f"✅ Database initialized successfully with {user_count} users")
+            
         except Exception as e:
-            print(f"Database initialization error: {e}")
-            print("Running installation...")
+            print(f"❌ Database initialization error: {str(e)}")
+            print("Running installer to fix database issues...")
             return run_install(app)
 
-        # application is installed so extends the config
-        from omcrm.settings.models import AppConfig, Currency, TimeZone
-        app_cfg = AppConfig.query.first()
-        app.config['def_currency'] = Currency.get_currency_by_id(app_cfg.default_currency)
-        app.config['def_tz'] = TimeZone.get_tz_by_id(app_cfg.default_timezone)
-
-        # Import all models to ensure they are registered with SQLAlchemy
-        # Order is important to avoid circular imports
-        from omcrm.users.models import User, Team, Role, Resource
-        from omcrm.leads.models import Lead, LeadSource, LeadStatus, Comment
-        # from omcrm.accounts.models import Account - Removed
-        # from omcrm.contacts.models import Contact - Removed
-        from omcrm.deals.models import Deal, DealStage
-        from omcrm.tasks.models import Task, TaskStatus, TaskPriority
-        from omcrm.settings.models import Currency, TimeZone
-        from omcrm.webtrader.models import TradingInstrument, Trade
-        from omcrm.activities.models import Activity
-
-        # Create the database tables and perform automatic migrations
-        db.create_all()
-        
-        # Check if TradingInstrument table exists but last_updated column doesn't
-        inspector = db.inspect(db.engine)
-        if 'trading_instrument' in inspector.get_table_names():
-            columns = [c['name'] for c in inspector.get_columns('trading_instrument')]
-            if 'last_updated' not in columns:
-                # Add the column
-                db.engine.execute('ALTER TABLE trading_instrument ADD COLUMN last_updated DATETIME')
-                
-                # Update existing instruments with current timestamp
-                now = datetime.utcnow()
-                instruments = TradingInstrument.query.all()
-                for instrument in instruments:
-                    instrument.last_updated = now
-                db.session.commit()
-                app.logger.info("Added last_updated column to TradingInstrument table")
-
-        # Check and handle different domains/subdomains
-        # DISABLED FOR SINGLE SERVER DEPLOYMENT
-        # @app.before_request
-        # def handle_domains():
-        #     from flask import request, redirect, url_for
-        #     
-        #     # Extract the domain/host from the request
-        #     host = request.host.lower()
-        #     
-        #     # Skip for static file requests and special admin login route
-        #     if request.path.startswith('/static/') or request.path == '/admin_login':
-        #         return None
-        #         
-        #     # For local development (localhost/127.0.0.1)
-        #     if host == '127.0.0.1:5000' or host == 'localhost:5000':
-        #         # Special case to allow local development without domain routing
-        #         return None
-        #         
-        #     # If accessing the CRM subdomain (crm.example.com)
-        #     if host.startswith('crm.'):
-        #         # If trying to access client routes from CRM subdomain, redirect to main site
-        #         if request.path.startswith('/client/') and not request.path.startswith('/client/login'):
-        #             # Extract the main domain (remove 'crm.' prefix)
-        #             main_domain = host[4:]  # Skip 'crm.'
-        #             # Only redirect if this isn't a local development environment
-        #             if main_domain not in ['127.0.0.1:5000', 'localhost:5000']:
-        #                 return redirect(f"http://{main_domain}{request.path}")
-        #             
-        #         # If accessing client login from CRM subdomain, redirect to admin login
-        #         if request.path == '/client/login':
-        #             return redirect(url_for('users.login'))
-        #     
-        #     # If accessing the main domain (example.com)
-        #     elif not host.startswith('crm.'):
-        #         # If trying to access admin routes, redirect to CRM subdomain
-        #         if (request.path == '/login' or
-        #             request.path.startswith('/users/') or
-        #             request.path.startswith('/leads/') or
-        #             request.path.startswith('/deals/') or
-        #             request.path.startswith('/settings/') or
-        #             request.path.startswith('/reports/') or
-        #             request.path == '/'):
-        #             
-        #             # If not explicitly trying to access client login, redirect to client login
-        #             if request.path == '/login':
-        #                 return redirect(url_for('users.client_login'))
-        #             
-        #             # Only redirect to CRM subdomain if not in local development
-        #             if host not in ['127.0.0.1:5000', 'localhost:5000']:
-        #                 return redirect(f"http://crm.{host}{request.path}")
-        #     
-        #     # For all other cases, proceed normally
-        #     return None
-
-        # Add a route to clear problematic session
         @app.route('/clear_session')
         def clear_session():
-            from flask import session, redirect, url_for
+            from flask import session
             session.clear()
             return redirect(url_for('main.home'))
 
