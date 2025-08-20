@@ -106,14 +106,13 @@ def create_app(config_class=DevelopmentConfig):
         try:
             # Load all models to ensure they're registered with SQLAlchemy
             from omcrm.users.models import User, Role, Resource, Team
-            from omcrm.leads.models import Lead, LeadSource, LeadStatus
+            from omcrm.leads.models import Lead, LeadSource, LeadStatus, Comment
             from omcrm.deals.models import Deal, DealStage  # Removed Product - doesn't exist
             from omcrm.tasks.models import Task
             from omcrm.settings.models import AppConfig
-            from omcrm.activities.models import Activity, ActivityType
-            from omcrm.webtrader.models import TradingInstrument, InstrumentPrice
-            from omcrm.transactions.models import Transaction
-            from omcrm.comments.models import Comment
+            from omcrm.activities.models import Activity  # Removed ActivityType - doesn't exist
+            from omcrm.webtrader.models import TradingInstrument  # Trade imported via leads.models
+            from omcrm.transactions.models import Deposit, Withdrawal  # Fixed: Transaction doesn't exist
             
             # Create all tables
             db.create_all()
