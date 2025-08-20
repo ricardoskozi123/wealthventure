@@ -107,7 +107,7 @@ def create_app(config_class=DevelopmentConfig):
             # Load all models to ensure they're registered with SQLAlchemy
             from omcrm.users.models import User, Role, Resource, Team
             from omcrm.leads.models import Lead, LeadSource, LeadStatus
-            from omcrm.deals.models import Deal, DealStage, Product
+            from omcrm.deals.models import Deal, DealStage  # Removed Product - doesn't exist
             from omcrm.tasks.models import Task
             from omcrm.settings.models import AppConfig
             from omcrm.activities.models import Activity, ActivityType
@@ -205,7 +205,7 @@ def create_app(config_class=DevelopmentConfig):
         # # Catch AttributeError exceptions caused by user type mismatches
         # @app.errorhandler(AttributeError)
         # def handle_attribute_error(e):
-        #     # Return 500 error page for attribute errors
+        #     # Return 500error page for attribute errors
         #     return render_template('errors/500.html'), 500
       
         # # Handler for all HTTP exceptions
