@@ -1,41 +1,19 @@
 """
-Domain-based routing middleware for OMCRM Trading Platform
-Handles routing between client domain (investmentprohub.com) and CRM subdomain (crm.investmentprohub.com)
+SIMPLIFIED Domain routing for OMCRM Trading Platform
 """
 
-from flask import request, redirect, url_for, session, g
-from urllib.parse import urlparse
+from flask import request, redirect, session, g
 import os
 
 class DomainRouter:
     """
-    Middleware for handling domain-based routing between client and admin interfaces
+    SIMPLIFIED domain router - only handles basic login redirects
     """
     
     def __init__(self, app=None):
         self.app = app
         self.client_domain = os.environ.get('CLIENT_DOMAIN', 'investmentprohub.com')
         self.crm_subdomain = os.environ.get('CRM_SUBDOMAIN', 'crm.investmentprohub.com')
-        
-        # For development/testing
-        self.dev_domains = ['127.0.0.1', 'localhost', '84.32.188.252']
-        
-        # Define route permissions
-        self.admin_only_routes = [
-            '/admin', '/settings', '/users', '/leads', '/deals', 
-            '/reports', '/activities', '/tasks', '/transactions',
-            '/clients'  # Admin client management - should stay on CRM domain
-        ]
-        
-        self.client_only_routes = [
-            '/client/'  # Only /client/* routes (with trailing slash)
-        ]
-        
-        # Routes that are accessible on both domains but with different permissions
-        self.shared_routes = [
-            '/webtrader',  # Accessible to both admins and clients
-            '/api'  # API endpoints
-        ]
         
         if app:
             self.init_app(app)
@@ -44,91 +22,39 @@ class DomainRouter:
         """Initialize the domain router with Flask app"""
         app.before_request(self.route_request)
     
-    def is_dev_environment(self, host):
-        """Check if we're in development environment"""
-        return any(dev_host in host for dev_host in self.dev_domains)
-    
-    def get_domain_type(self, host):
-        """Determine if request is for CRM or client domain"""
-        if self.is_dev_environment(host):
-            return 'dev'
-        
-        if host.startswith('crm.') or host == self.crm_subdomain:
-            return 'crm'
-        elif host == self.client_domain or host.startswith('www.'):
-            return 'client'
-        else:
-            return 'unknown'
-    
-    def is_admin_route(self, path):
-        """Check if path is an admin-only route"""
-        return any(path.startswith(route) for route in self.admin_only_routes)
-    
-    def is_client_route(self, path):
-        """Check if path is a client-only route"""
-        return any(path.startswith(route.rstrip('/')) for route in self.client_only_routes)
-    
-    def is_shared_route(self, path):
-        """Check if path is a shared route (accessible on both domains)"""
-        return any(path.startswith(route) for route in self.shared_routes)
-    
     def route_request(self):
-        """Main routing logic executed before each request"""
+        """SIMPLIFIED routing - only handle login redirects"""
         host = request.host.lower()
         path = request.path
-        domain_type = self.get_domain_type(host)
         
         # Skip routing for static files and API endpoints
-        if path.startswith(('/static', '/socket.io')):
+        if path.startswith(('/static', '/socket.io', '/api')):
             return None
         
-        # Skip routing in development
-        if domain_type == 'dev':
-            return None
-        
-        # Set domain context for the application
-        g.domain_type = domain_type
-        g.is_client_domain = (domain_type == 'client')
-        g.is_crm_domain = (domain_type == 'crm')
-        
-        # Handle domain routing
-        if domain_type == 'client':
-            # On client domain (investmentprohub.com)
-            
-            # IMPORTANT: Redirect /login to /client/login
-            if path == '/login':
-                return redirect('/client/login')
-            
-            # Admin-only routes should redirect to CRM subdomain
-            if self.is_admin_route(path):
-                return redirect(f"https://{self.crm_subdomain}{path}")
-            
-            # Set session flag for client interface
-            session['domain_type'] = 'client'
-            session['allowed_routes'] = self.client_only_routes + self.shared_routes
-            
-        elif domain_type == 'crm':
-            # On CRM subdomain (crm.investmentprohub.com)
-            
-            # Only redirect pure client routes to main domain
-            if path.startswith('/client/'):  # Only /client/* routes, not /clients
-                return redirect(f"https://{self.client_domain}{path}")
-            
-            # Set session flag for admin interface
+        # Set domain context
+        if host.startswith('crm.'):
+            g.domain_type = 'crm'
             session['domain_type'] = 'crm'
-            session['allowed_routes'] = self.admin_only_routes + self.shared_routes
+        else:
+            g.domain_type = 'client'
+            session['domain_type'] = 'client'
         
+        # ONLY handle login redirects - nothing else!
+        if path == '/login':
+            if host.startswith('crm.'):
+                # On CRM domain - stay for admin login
+                return None
+            else:
+                # On client domain - redirect to client login
+                return redirect('/client/login')
+        
+        # Let everything else through - no more blocking!
         return None
 
+# Keep these for compatibility
 def get_login_redirect_url():
     """Get the appropriate login URL based on current domain"""
     host = request.host.lower()
-    
-    # Development environment
-    if any(dev_host in host for dev_host in ['127.0.0.1', 'localhost', '84.32.188.252']):
-        return '/login'  # Default admin login for dev
-    
-    # Production environment
     if host.startswith('crm.'):
         return '/login'  # Admin login
     else:
@@ -144,7 +70,6 @@ def get_appropriate_domain_url(route_type='current'):
     elif route_type == 'client':
         return f"https://{client_domain}"
     else:
-        # Return current domain
         host = request.host.lower()
         if host.startswith('crm.'):
             return f"https://{crm_subdomain}"
@@ -152,6 +77,5 @@ def get_appropriate_domain_url(route_type='current'):
             return f"https://{client_domain}"
 
 def is_route_allowed(path):
-    """Check if current route is allowed based on domain"""
-    allowed_routes = session.get('allowed_routes', [])
-    return any(path.startswith(route) for route in allowed_routes)
+    """Always allow routes - no more restrictions"""
+    return True
