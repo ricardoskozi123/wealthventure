@@ -181,7 +181,22 @@ def create_app(config_class=DevelopmentConfig):
         @app.context_processor
         def inject_now():
             from datetime import datetime
-            return {'now': datetime.utcnow()}
+            from omcrm.settings.models import AppConfig
+            
+            # Get app config for all templates
+            app_config = AppConfig.query.first()
+            
+            # Create a simple config object with def_currency for backward compatibility
+            class SimpleConfig:
+                def __init__(self, app_config):
+                    self.def_currency = app_config.currency if app_config and app_config.currency else None
+                    self.currency = app_config.currency if app_config and app_config.currency else None
+                    self.app_config = app_config
+            
+            return {
+                'now': datetime.utcnow(),
+                'config': SimpleConfig(app_config)
+            }
 
         # ERROR HANDLERS DISABLED FOR DEBUGGING - ENABLE AFTER FIXING ISSUES
         # @app.errorhandler(404)

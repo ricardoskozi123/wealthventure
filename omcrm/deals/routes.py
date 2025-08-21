@@ -74,7 +74,7 @@ def get_deals_view():
         stage_counts = {}
         for deal in all_deals:
             stage_id = deal.deal_stage_id
-            if stage_id in stage_counts:
+            if stage_counts.get(stage_id):
                 stage_counts[stage_id] += 1
             else:
                 stage_counts[stage_id] = 1
