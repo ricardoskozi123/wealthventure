@@ -23,19 +23,18 @@ class DomainRouter:
         # Define route permissions
         self.admin_only_routes = [
             '/admin', '/settings', '/users', '/leads', '/deals', 
-            '/reports', '/activities', '/tasks', '/transactions'
+            '/reports', '/activities', '/tasks', '/transactions',
+            '/clients'  # Admin client management - should stay on CRM domain
         ]
         
         self.client_only_routes = [
-            '/client', '/webtrader'
+            '/client/'  # Only /client/* routes (with trailing slash)
         ]
         
-        # Routes that admins can access on client domain (for managing clients)
-        self.admin_accessible_client_routes = [
-            '/clients',  # Admin can view client list
-            '/webtrader/instruments',  # Admin can manage instruments
-            '/webtrader/list_instruments',  # Admin can list instruments
-            '/api'  # Admin can use API endpoints
+        # Routes that are accessible on both domains but with different permissions
+        self.shared_routes = [
+            '/webtrader',  # Accessible to both admins and clients
+            '/api'  # API endpoints
         ]
         
         if app:
@@ -67,11 +66,11 @@ class DomainRouter:
     
     def is_client_route(self, path):
         """Check if path is a client-only route"""
-        return any(path.startswith(route) for route in self.client_only_routes)
+        return any(path.startswith(route.rstrip('/')) for route in self.client_only_routes)
     
-    def is_admin_accessible_client_route(self, path):
-        """Check if admin can access this client domain route"""
-        return any(path.startswith(route) for route in self.admin_accessible_client_routes)
+    def is_shared_route(self, path):
+        """Check if path is a shared route (accessible on both domains)"""
+        return any(path.startswith(route) for route in self.shared_routes)
     
     def route_request(self):
         """Main routing logic executed before each request"""
@@ -106,18 +105,18 @@ class DomainRouter:
             
             # Set session flag for client interface
             session['domain_type'] = 'client'
-            session['allowed_routes'] = self.client_only_routes + self.admin_accessible_client_routes
+            session['allowed_routes'] = self.client_only_routes + self.shared_routes
             
         elif domain_type == 'crm':
             # On CRM subdomain (crm.investmentprohub.com)
             
-            # Pure client routes should redirect to main domain
-            if self.is_client_route(path) and not self.is_admin_accessible_client_route(path):
+            # Only redirect pure client routes to main domain
+            if path.startswith('/client/'):  # Only /client/* routes, not /clients
                 return redirect(f"https://{self.client_domain}{path}")
             
             # Set session flag for admin interface
             session['domain_type'] = 'crm'
-            session['allowed_routes'] = self.admin_only_routes + self.admin_accessible_client_routes
+            session['allowed_routes'] = self.admin_only_routes + self.shared_routes
         
         return None
 
