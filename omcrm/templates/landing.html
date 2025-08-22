@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Professional Trading Platform - Trade crypto, stocks, and forex with advanced tools and real-time data">
     <meta name="author" content="Trading Platform">
-    <title>{{ platform_name or 'TradePro' }} - Professional Trading Platform</title>
+    <title>{{ platform_name or 'Stanford Capital' }} - Professional Trading Platform</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -27,6 +27,8 @@
             --neon-blue: #00f5ff;
             --neon-purple: #bf00ff;
             --neon-green: #39ff14;
+            --stanford-gold: #B1810B;
+            --stanford-red: #8C1515;
             --dark-bg: #0a0a0f;
             --card-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.2);
@@ -49,6 +51,19 @@
             line-height: 1.6;
         }
 
+        /* Stanford Lion Logo Styles */
+        .stanford-logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+            filter: brightness(0) invert(1);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover .stanford-logo {
+            filter: brightness(0) invert(1) drop-shadow(0 0 10px var(--stanford-gold));
+        }
+
         /* Animated Background */
         .animated-bg {
             position: fixed;
@@ -58,8 +73,8 @@
             height: 100%;
             z-index: -1;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(191, 0, 255, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 20% 50%, rgba(177, 129, 11, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(140, 21, 21, 0.4) 0%, transparent 50%),
                 radial-gradient(circle at 40% 80%, rgba(0, 245, 255, 0.4) 0%, transparent 50%),
                 linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
             animation: backgroundShift 20s ease-in-out infinite;
@@ -68,15 +83,15 @@
         @keyframes backgroundShift {
             0%, 100% { 
                 background: 
-                    radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(191, 0, 255, 0.4) 0%, transparent 50%),
+                    radial-gradient(circle at 20% 50%, rgba(177, 129, 11, 0.4) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(140, 21, 21, 0.4) 0%, transparent 50%),
                     radial-gradient(circle at 40% 80%, rgba(0, 245, 255, 0.4) 0%, transparent 50%),
                     linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
             }
             50% { 
                 background: 
-                    radial-gradient(circle at 80% 30%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
-                    radial-gradient(circle at 20% 80%, rgba(191, 0, 255, 0.4) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 30%, rgba(177, 129, 11, 0.4) 0%, transparent 50%),
+                    radial-gradient(circle at 20% 80%, rgba(140, 21, 21, 0.4) 0%, transparent 50%),
                     radial-gradient(circle at 60% 20%, rgba(0, 245, 255, 0.4) 0%, transparent 50%),
                     linear-gradient(135deg, #0a0a0f 0%, #2e1a1a 50%, #3e1624 100%);
             }
@@ -567,7 +582,15 @@
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-chart-line me-2"></i>{{ platform_name or 'OMCRM' }}
+                <svg class="stanford-logo" viewBox="0 0 550 550" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M281.5 40.5c-76.4 0-138.4 62-138.4 138.4 0 76.4 62 138.4 138.4 138.4 76.4 0 138.4-62 138.4-138.4 0-76.4-62-138.4-138.4-138.4zm0 251.8c-62.6 0-113.4-50.8-113.4-113.4S218.9 65.5 281.5 65.5 394.9 116.3 394.9 178.9s-50.8 113.4-113.4 113.4z"/>
+                    <path d="M281.5 89c-49.6 0-89.9 40.3-89.9 89.9s40.3 89.9 89.9 89.9 89.9-40.3 89.9-89.9-40.3-89.9-89.9-89.9zm0 154.8c-35.8 0-64.9-29.1-64.9-64.9s29.1-64.9 64.9-64.9 64.9 29.1 64.9 64.9-29.1 64.9-64.9 64.9z"/>
+                    <path d="M320.2 158.4c-4.5-8.9-11.2-16.4-19.5-21.8-8.3-5.4-18-8.4-28.2-8.4s-19.9 3-28.2 8.4c-8.3 5.4-15 12.9-19.5 21.8-4.5 8.9-6.8 18.8-6.8 28.9 0 10.1 2.3 20 6.8 28.9 4.5 8.9 11.2 16.4 19.5 21.8 8.3 5.4 18 8.4 28.2 8.4s19.9-3 28.2-8.4c8.3-5.4 15-12.9 19.5-21.8 4.5-8.9 6.8-18.8 6.8-28.9 0-10.1-2.3-20-6.8-28.9zm-47.7 69.7c-22.4 0-40.6-18.2-40.6-40.6s18.2-40.6 40.6-40.6 40.6 18.2 40.6 40.6-18.2 40.6-40.6 40.6z"/>
+                    <path d="M281.5 157.8c-11.6 0-21.1 9.5-21.1 21.1s9.5 21.1 21.1 21.1 21.1-9.5 21.1-21.1-9.5-21.1-21.1-21.1z"/>
+                    <path d="M320 340h-77c-13.8 0-25 11.2-25 25v140c0 13.8 11.2 25 25 25h77c13.8 0 25-11.2 25-25V365c0-13.8-11.2-25-25-25zm0 165h-77V365h77v140z"/>
+                    <path d="M281.5 390c-8.3 0-15 6.7-15 15v70c0 8.3 6.7 15 15 15s15-6.7 15-15v-70c0-8.3-6.7-15-15-15z"/>
+                </svg>
+                {{ platform_name or 'Stanford Capital' }}
             </a>
             
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -592,7 +615,7 @@
                         <a class="nav-link" href="{{ url_for('users.client_login') }}">Sign In</a>
                     </li>
                     <li class="nav-item ms-2">
-                        <a class="cta-button" href="{{ url_for('users.register') }}">Get Started</a>
+                        <a class="cta-button" href="{{ url_for('users.client_login') }}">Get Started</a>
                     </li>
                 </ul>
             </div>
@@ -616,8 +639,8 @@
                     </p>
                     
                     <div class="d-flex flex-wrap gap-4 align-items-center">
-                        <a href="{{ url_for('users.register') }}" class="cta-button">
-                            <i class="fas fa-rocket me-2"></i>Launch Trading
+                        <a href="{{ url_for('users.client_login') }}" class="cta-button">
+                            <i class="fas fa-rocket me-2"></i>Start Trading
                         </a>
                         <a href="#features" class="secondary-button">
                             <i class="fas fa-play me-2"></i>Explore Platform
@@ -799,15 +822,15 @@
     <section class="cta-section">
         <div class="container text-center">
             <div data-aos="zoom-in">
-                <h2 class="cta-title">Ready to Experience the Future?</h2>
+                <h2 class="cta-title">Ready to Experience Stanford Capital?</h2>
                 <p class="cta-subtitle">
-                    Join thousands of traders who've already discovered the power of next-generation trading. 
-                    Get started in under 60 seconds.
+                    Join our exclusive trading platform with institutional-grade tools and advanced analytics. 
+                    Sign in to access your trading account.
                 </p>
                 
                 <div class="d-flex flex-wrap justify-content-center gap-4">
-                    <a href="{{ url_for('users.register') }}" class="cta-button" style="background: white; color: var(--dark-bg);">
-                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    <a href="{{ url_for('users.client_login') }}" class="cta-button" style="background: white; color: var(--dark-bg);">
+                        <i class="fas fa-sign-in-alt me-2"></i>Access Platform
                     </a>
                     <a href="{{ url_for('users.client_login') }}" class="secondary-button" style="border-color: white; color: white;">
                         <i class="fas fa-sign-in-alt me-2"></i>Sign In
@@ -823,11 +846,17 @@
             <div class="row">
                 <div class="col-lg-4 mb-4">
                     <h5 class="fw-bold mb-3">
-                        <i class="fas fa-chart-line me-2" style="color: var(--neon-blue);"></i>{{ platform_name or 'OMCRM' }}
+                        <svg class="stanford-logo" style="width: 30px; height: 30px;" viewBox="0 0 550 550" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M281.5 40.5c-76.4 0-138.4 62-138.4 138.4 0 76.4 62 138.4 138.4 138.4 76.4 0 138.4-62 138.4-138.4 0-76.4-62-138.4-138.4-138.4zm0 251.8c-62.6 0-113.4-50.8-113.4-113.4S218.9 65.5 281.5 65.5 394.9 116.3 394.9 178.9s-50.8 113.4-113.4 113.4z"/>
+                            <path d="M281.5 89c-49.6 0-89.9 40.3-89.9 89.9s40.3 89.9 89.9 89.9 89.9-40.3 89.9-89.9-40.3-89.9-89.9-89.9zm0 154.8c-35.8 0-64.9-29.1-64.9-64.9s29.1-64.9 64.9-64.9 64.9 29.1 64.9 64.9-29.1 64.9-64.9 64.9z"/>
+                            <path d="M320.2 158.4c-4.5-8.9-11.2-16.4-19.5-21.8-8.3-5.4-18-8.4-28.2-8.4s-19.9 3-28.2 8.4c-8.3 5.4-15 12.9-19.5 21.8-4.5 8.9-6.8 18.8-6.8 28.9 0 10.1 2.3 20 6.8 28.9 4.5 8.9 11.2 16.4 19.5 21.8 8.3 5.4 18 8.4 28.2 8.4s19.9-3 28.2-8.4c8.3-5.4 15-12.9 19.5-21.8 4.5-8.9 6.8-18.8 6.8-28.9 0-10.1-2.3-20-6.8-28.9zm-47.7 69.7c-22.4 0-40.6-18.2-40.6-40.6s18.2-40.6 40.6-40.6 40.6 18.2 40.6 40.6-18.2 40.6-40.6 40.6z"/>
+                            <path d="M281.5 157.8c-11.6 0-21.1 9.5-21.1 21.1s9.5 21.1 21.1 21.1 21.1-9.5 21.1-21.1-9.5-21.1-21.1-21.1z"/>
+                        </svg>
+                        {{ platform_name or 'Stanford Capital' }}
                     </h5>
                     <p style="color: var(--text-secondary);">
-                        The world's most advanced trading platform, powered by artificial intelligence 
-                        and designed for the future of finance.
+                        Institutional-grade trading platform powered by advanced analytics 
+                        and designed for sophisticated investors and traders.
                     </p>
                 </div>
                 <div class="col-lg-2 col-md-6 mb-4">
@@ -873,7 +902,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p style="color: var(--text-secondary); margin-bottom: 0;">
-                        © 2024 {{ platform_name or 'OMCRM' }}. All rights reserved.
+                        © 2024 {{ platform_name or 'Stanford Capital' }}. All rights reserved.
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">
