@@ -24,9 +24,9 @@ def home():
     """
     # If user is not authenticated, show the public landing page
     if not current_user.is_authenticated:
-        return render_template("landing_enhanced.html", 
-                               title="Professional Trading Platform",
-                               platform_name="OMCRM")
+            return render_template("landing.html", 
+                           title="Professional Trading Platform",
+                           platform_name="Stanford Capital")
     
     # If user is a client, redirect to client dashboard
     if isinstance(current_user, Lead) and current_user.is_client:
