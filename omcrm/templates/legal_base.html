@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="{% block description %}Legal Information - {{ platform_name or 'OMCRM' }}{% endblock %}">
-    <meta name="author" content="Trading Platform">
-    <title>{% block title %}{{ title }} - {{ platform_name or 'OMCRM' }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}Legal Information - {{ platform_name or 'Stanford Capital' }}{% endblock %}">
+    <meta name="author" content="Stanford Capital">
+    <title>{% block title %}{{ title }} - {{ platform_name or 'Stanford Capital' }}{% endblock %}</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -31,13 +31,15 @@
             --neon-blue: #00f5ff;
             --neon-purple: #bf00ff;
             --neon-green: #39ff14;
+            --stanford-gold: #B1810B;
+            --stanford-red: #8C1515;
             --dark-bg: #0a0a0f;
             --darker-bg: #050507;
             --card-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-accent: #00f5ff;
+            --text-accent: #B1810B;
             --success: #00d4aa;
             --danger: #ff6b6b;
         }
@@ -69,13 +71,13 @@
 
         .particle {
             position: absolute;
-            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            background: linear-gradient(45deg, var(--stanford-gold), var(--stanford-red));
             border-radius: 50%;
             animation: float 6s ease-in-out infinite;
         }
 
         .particle:nth-child(odd) {
-            background: linear-gradient(45deg, var(--trading-green), var(--crypto-gold));
+            background: linear-gradient(45deg, var(--trading-green), var(--stanford-gold));
             animation-direction: reverse;
         }
 
@@ -410,7 +412,33 @@
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.home') }}">
-                <i class="fas fa-chart-line me-2"></i>{{ platform_name or 'OMCRM' }}
+                <!-- Stanford Capital Professional Lion Logo -->
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 0.5rem;">
+                    <!-- Outer circle with gradient -->
+                    <circle cx="50" cy="50" r="48" fill="url(#legalCircleGradient)" stroke="#B1810B" stroke-width="2"/>
+                    
+                    <!-- Lion head silhouette -->
+                    <path d="M50 15c-8 0-15 3-20 8-3 3-5 7-6 11-1 3-1 6 0 9 1 4 3 7 6 10 2 2 4 4 6 5 3 2 6 3 10 4 1 0 2 0 3 0 1 0 2 0 3 0 4-1 7-2 10-4 2-1 4-3 6-5 3-3 5-6 6-10 1-3 1-6 0-9-1-4-3-8-6-11-5-5-12-8-20-8z" fill="#B1810B"/>
+                    
+                    <!-- Crown elements -->
+                    <path d="M42 18l2-3 2 3 2-2 2 3 2-2 2 3v3H42v-3z" fill="#B1810B" stroke="#8C1515" stroke-width="0.5"/>
+                    
+                    <!-- Face features -->
+                    <ellipse cx="45" cy="35" rx="1.5" ry="2" fill="#2a2a2a"/>
+                    <ellipse cx="55" cy="35" rx="1.5" ry="2" fill="#2a2a2a"/>
+                    
+                    <!-- Nose -->
+                    <path d="M50 40l-2 2h4l-2-2z" fill="#2a2a2a"/>
+                    
+                    <!-- Gradient definition -->
+                    <defs>
+                        <radialGradient id="legalCircleGradient" cx="50%" cy="30%" r="70%">
+                            <stop offset="0%" style="stop-color:#2a2a2a;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
+                        </radialGradient>
+                    </defs>
+                </svg>
+                {{ platform_name or 'Stanford Capital' }}
             </a>
             
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="color: var(--text-primary);">
@@ -462,11 +490,11 @@
                 
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('users.login') }}">Sign In</a>
+                        <a class="nav-link" href="{{ url_for('users.client_login') }}">Sign In</a>
                     </li>
                     <li class="nav-item ms-2">
-                        <a class="cta-button" href="{{ url_for('users.register') }}">
-                            <i class="fas fa-rocket me-2"></i>Start Trading
+                        <a class="cta-button" href="{{ url_for('users.client_login') }}">
+                            <i class="fas fa-rocket me-2"></i>Get Started
                         </a>
                     </li>
                 </ul>
