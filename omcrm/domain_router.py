@@ -12,18 +12,20 @@ class DomainRouter:
     
     def __init__(self, app=None):
         self.app = app
-        self.client_domain = os.environ.get('CLIENT_DOMAIN', 'investmentprohub.com')
-        self.crm_subdomain = os.environ.get('CRM_SUBDOMAIN', 'crm.investmentprohub.com')
+        self.client_domain = os.environ.get('CLIENT_DOMAIN', 'stanford-capital.com')
+        self.crm_subdomain = os.environ.get('CRM_SUBDOMAIN', 'crm.stanford-capital.com')
         
-        # Admin IP Whitelist - Add your trusted IPs here
+        # 🔐 ADMIN IP WHITELIST - Only these IPs can access admin login
         self.admin_whitelist_ips = [
-            '127.0.0.1',
-            'localhost',
-            '84.32.188.252',
-              '84.32.191.249',  # Your current VPS IP
-            # Add more trusted IPs below:
-            # '192.168.1.100',  # Your office IP
-            # '203.0.113.0/24', # Your office network (CIDR notation)
+            '127.0.0.1',          # Localhost
+            'localhost',          # Localhost alias
+            '84.32.188.252',      # Original VPS IP
+            '84.32.185.133',      # Stanford Capital VPS IP
+            '84.32.191.249',      # Additional trusted IP
+            # Add your personal/office IPs below:
+            # '203.0.113.100',    # Your office IP
+            # '192.168.1.0/24',   # Your office network (CIDR)
+            # '10.0.0.0/8',       # Private network range
         ]
         
         if app:
@@ -82,18 +84,24 @@ class DomainRouter:
             g.domain_type = 'client'
             session['domain_type'] = 'client'
         
-        # Handle login redirects
+        # Handle login redirects with IP protection
         if path == '/login':
             if host.startswith('crm.'):
-                # On CRM domain - check IP whitelist first
+                # On CRM subdomain - check IP whitelist first
                 if not self.is_admin_ip_allowed():
-                    print(f"🚫 Admin login blocked for IP: {self.get_client_ip()}")
+                    print(f"🚫 CRM admin login blocked for IP: {self.get_client_ip()}")
                     abort(403)  # Forbidden
                 # IP is allowed - stay for admin login
                 return None
             else:
-                # On client domain - redirect to client login
-                return redirect('/client/login')
+                # 🔐 CRITICAL: Main domain /login is ADMIN ONLY - check IP whitelist
+                if not self.is_admin_ip_allowed():
+                    print(f"🚫 MAIN DOMAIN admin login blocked for IP: {self.get_client_ip()}")
+                    # Show 403 Forbidden instead of redirecting to prevent discovery
+                    abort(403)
+                # IP is whitelisted - allow admin login on main domain
+                print(f"✅ Admin login allowed for whitelisted IP: {self.get_client_ip()}")
+                return None
         
         # Let everything else through
         return None
