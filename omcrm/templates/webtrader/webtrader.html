@@ -4148,7 +4148,7 @@
 
     <!-- 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching -->
     <script>
-        // 🚀 ORIGINAL TRADINGVIEW CHART - Standard TradingView with live market data
+        // 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching
         function refreshTradingViewChart() {
             const symbol = currentInstrument.symbol;
             const type = currentInstrument.type;
@@ -4175,7 +4175,7 @@
                 else tvSymbol = symbol;
             }
             
-            console.log(`⚡ ORIGINAL TRADINGVIEW: ${symbol} → ${tvSymbol}`);
+            console.log(`⚡ FAST CHART: ${symbol} → ${tvSymbol}`);
             
             // 🚀 RAPID WIDGET DESTRUCTION - No delays
             try {
@@ -4188,42 +4188,44 @@
             }
             
             // 🚀 IMMEDIATE RECREATION - No delays
-            try {
-                // Clear container
-                chartContainer.innerHTML = '';
-                
-                // Create new TradingView widget immediately
-                window.tvWidget = new TradingView.widget({
-                    "autosize": true,
-                    "symbol": tvSymbol,
-                    "interval": "15",
-                    "container": "tradingview_chart",
-                    "library_path": "/static/js/charting_library/",
-                    "locale": "en",
-                    "disabled_features": [
-                        "use_localstorage_for_settings",
-                        "volume_force_overlay",
-                        "create_volume_indicator_by_default"
-                    ],
-                    "enabled_features": [
-                        "study_templates"
-                    ],
-                    "charts_storage_url": "",
-                    "charts_storage_api_version": "1.1",
-                    "client_id": "tradingview.com",
-                    "user_id": "public_user_id",
-                    "fullscreen": false,
-                    "studies_overrides": {},
-                    "theme": "dark",
-                    "custom_css_url": "/static/css/tradingview_custom.css"
-                });
-                
-                console.log(`✅ ORIGINAL TRADINGVIEW loaded: ${symbol} (${tvSymbol})`);
-                
-            } catch (error) {
-                console.error('❌ TradingView creation error:', error);
-                chartContainer.innerHTML = '<div style="height: 400px; display: flex; align-items: center; justify-content: center; color: #ff4757; font-size: 16px;">Chart loading failed</div>';
-            }
+            setTimeout(() => {
+                try {
+                    // Clear container
+                    chartContainer.innerHTML = '';
+                    
+                    // Create new TradingView widget immediately
+                    window.tvWidget = new TradingView.widget({
+                        "autosize": true,
+                        "symbol": tvSymbol,
+                        "interval": "15",
+                        "container": "tradingview_chart",
+                        "library_path": "/static/js/charting_library/",
+                        "locale": "en",
+                        "disabled_features": [
+                            "use_localstorage_for_settings",
+                            "volume_force_overlay",
+                            "create_volume_indicator_by_default"
+                        ],
+                        "enabled_features": [
+                            "study_templates"
+                        ],
+                        "charts_storage_url": "",
+                        "charts_storage_api_version": "1.1",
+                        "client_id": "tradingview.com",
+                        "user_id": "public_user_id",
+                        "fullscreen": false,
+                        "studies_overrides": {},
+                        "theme": "dark",
+                        "custom_css_url": "/static/css/tradingview_custom.css"
+                    });
+                    
+                    console.log(`✅ FAST CHART loaded: ${symbol} (${tvSymbol})`);
+                    
+                } catch (error) {
+                    console.error('❌ TradingView widget error:', error);
+                    chartContainer.innerHTML = '<div style="height: 400px; display: flex; align-items: center; justify-content: center; color: #ff4757; font-size: 16px;">Chart loading failed - TradingView library may be missing</div>';
+                }
+            }, 100);
         }
         
         // 🔄 SIMPLE PRICE FALLBACK (if TradingView fails)
