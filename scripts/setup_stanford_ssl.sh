@@ -55,7 +55,7 @@ certbot certonly --standalone \
     --email $EMAIL \
     --agree-tos \
     --no-eff-email \
-    --domains $DOMAIN,www.$DOMAIN
+    --domains $DOMAIN,www.$DOMAIN,crm.$DOMAIN
 
 if [ $? -eq 0 ]; then
     echo "✅ SSL certificates obtained successfully"

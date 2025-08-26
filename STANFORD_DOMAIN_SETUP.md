@@ -10,6 +10,7 @@ Make sure these DNS records are set up:
 ```
 A record: stanford-capital.com → 84.32.185.133
 A record: www.stanford-capital.com → 84.32.185.133
+A record: crm.stanford-capital.com → 84.32.185.133
 ```
 
 ## 🚀 Step-by-Step Setup
@@ -47,8 +48,9 @@ This script will:
 
 ### 5. Verify Everything Works
 After the script completes, test these URLs:
-- 🔗 https://stanford-capital.com
-- 🔗 https://www.stanford-capital.com
+- 🔗 https://stanford-capital.com (Client portal)
+- 🔗 https://www.stanford-capital.com (Client portal)
+- 🔗 https://crm.stanford-capital.com (Admin/CRM portal)
 - 🔗 http://stanford-capital.com (should redirect to HTTPS)
 
 ## 🔧 Manual SSL Setup (Alternative)
@@ -72,7 +74,7 @@ sudo apt install -y certbot
 sudo certbot certonly --standalone \
     --email admin@stanford-capital.com \
     --agree-tos \
-    --domains stanford-capital.com,www.stanford-capital.com
+    --domains stanford-capital.com,www.stanford-capital.com,crm.stanford-capital.com
 ```
 
 ### Start containers

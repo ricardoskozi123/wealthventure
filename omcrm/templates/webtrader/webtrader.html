@@ -4148,16 +4148,120 @@
 
     <!-- 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching -->
     <script>
-        // 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching
+        // 🎯 CUSTOM PLATFORM CHART - Uses YOUR database prices (matches trading exactly)
         function refreshTradingViewChart() {
             const symbol = currentInstrument.symbol;
             const type = currentInstrument.type;
             
+            console.log(`🎯 CUSTOM CHART: ${symbol} using platform prices`);
+            
             // Show immediate loading state
             const chartContainer = document.getElementById('tradingview_chart');
-            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a; font-size: 16px;"><i class="fas fa-chart-line fa-spin" style="margin-right: 10px;"></i>Loading ' + symbol + ' chart...</div>';
+            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a; font-size: 16px;"><i class="fas fa-chart-line fa-spin" style="margin-right: 10px;"></i>Loading ' + symbol + ' chart (Platform Prices)...</div>';
             
-            // Determine TradingView symbol immediately
+            // 🎯 CUSTOM APPROACH: Use platform prices instead of TradingView live data
+            fetch(`/webtrader/realtime_price/${symbol}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    const price = parseFloat(data.price);
+                    const change = parseFloat(data.change || 0);
+                    const changePercent = price > 0 ? (change / price * 100) : 0;
+                    
+                    // 🎯 CREATE SIMPLE PRICE DISPLAY (matches your trading prices exactly)
+                    const chartHtml = `
+                        <div style="height: 400px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%); 
+                                    border-radius: 8px; padding: 20px; color: white; 
+                                    display: flex; flex-direction: column; justify-content: center; align-items: center;
+                                    border: 1px solid #333;">
+                            
+                            <!-- Platform Price Display -->
+                            <div style="text-align: center; margin-bottom: 30px;">
+                                <div style="font-size: 14px; color: #888; margin-bottom: 10px;">
+                                    📊 PLATFORM PRICE (Trading Price)
+                                </div>
+                                <div data-price-display style="font-size: 48px; font-weight: bold; color: #00ff88; margin-bottom: 10px;">
+                                    $${price.toFixed(2)}
+                                </div>
+                                <div data-change-display style="font-size: 18px; color: ${change >= 0 ? '#00ff88' : '#ff4757'};">
+                                    ${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)
+                                </div>
+                            </div>
+                            
+                            <!-- Chart Placeholder -->
+                            <div style="width: 100%; height: 200px; background: #2d2d30; border-radius: 8px; 
+                                        display: flex; align-items: center; justify-content: center; border: 1px solid #444;">
+                                <div style="text-align: center; color: #888;">
+                                    <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 15px; color: #555;"></i>
+                                    <div style="font-size: 16px;">Historical Chart Coming Soon</div>
+                                    <div style="font-size: 12px; margin-top: 5px;">Platform-synced price data</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Platform Sync Status -->
+                            <div style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">
+                                ✅ Chart synchronized with trading platform<br>
+                                🎯 Price shown = Price you trade at
+                            </div>
+                        </div>
+                    `;
+                    
+                    chartContainer.innerHTML = chartHtml;
+                    
+                    console.log(`✅ PLATFORM CHART: ${symbol} = $${price} (matches trading price)`);
+                    
+                    // 🔄 AUTO-UPDATE: Refresh platform price every 5 seconds
+                    if (window.platformChartInterval) {
+                        clearInterval(window.platformChartInterval);
+                    }
+                    
+                    window.platformChartInterval = setInterval(() => {
+                        if (currentInstrument && currentInstrument.symbol === symbol) {
+                            // Update price silently in background
+                            fetch(`/webtrader/realtime_price/${symbol}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.error) {
+                                        const newPrice = parseFloat(data.price);
+                                        const newChange = parseFloat(data.change || 0);
+                                        const newChangePercent = newPrice > 0 ? (newChange / newPrice * 100) : 0;
+                                        
+                                        // Update only the price display (not the whole chart)
+                                        const priceElement = chartContainer.querySelector('[data-price-display]');
+                                        const changeElement = chartContainer.querySelector('[data-change-display]');
+                                        
+                                        if (priceElement) {
+                                            priceElement.textContent = `$${newPrice.toFixed(2)}`;
+                                        }
+                                        if (changeElement) {
+                                            changeElement.innerHTML = `${newChange >= 0 ? '+' : ''}${newChange.toFixed(2)} (${newChangePercent >= 0 ? '+' : ''}${newChangePercent.toFixed(2)}%)`;
+                                            changeElement.style.color = newChange >= 0 ? '#00ff88' : '#ff4757';
+                                        }
+                                        
+                                        console.log(`🔄 Price updated: ${symbol} = $${newPrice}`);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.warn('Price update failed:', error);
+                                });
+                        }
+                    }, 5000); // Update every 5 seconds
+                })
+                .catch(error => {
+                    console.error('❌ Platform chart error:', error);
+                    
+                    // Fallback to TradingView if platform price fails
+                    console.log(`🔄 Falling back to TradingView for ${symbol}`);
+                    loadTradingViewFallback(symbol, type, chartContainer);
+                });
+        }
+        
+        // 🔄 FALLBACK: TradingView chart (only if platform price fails)
+        function loadTradingViewFallback(symbol, type, chartContainer) {
+            // Determine TradingView symbol
             let tvSymbol = '';
             if (type === 'crypto') {
                 const base = symbol.split('/')[0];
@@ -4174,8 +4278,6 @@
                 else if (symbol === 'NATGAS') tvSymbol = 'NYMEX:NG1!';
                 else tvSymbol = symbol;
             }
-            
-            console.log(`⚡ FAST CHART: ${symbol} → ${tvSymbol}`);
             
             // 🚀 RAPID WIDGET DESTRUCTION - No delays
             try {

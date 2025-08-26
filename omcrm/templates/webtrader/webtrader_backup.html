@@ -1221,6 +1221,152 @@
         .tab-pane .table-responsive {
             margin: 0;
         }
+
+        /* Small logout button next to username */
+        .logout-btn-small {
+            padding: 4px 8px !important;
+            font-size: 0.8rem !important;
+            border-radius: 4px !important;
+            background: #dc3545 !important;
+            border: 1px solid #dc3545 !important;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn-small:hover {
+            background: #c82333 !important;
+            border-color: #bd2130 !important;
+            color: white !important;
+            transform: scale(1.05);
+        }
+
+        /* Mobile Trading Panel - Full Width */
+        @media (max-width: 992px) {
+            .content-wrapper {
+                flex-direction: column !important;
+            }
+            
+            .trading-panel-pro {
+                width: 100% !important;
+                order: 3 !important;
+                border-left: none !important;
+                border-top: 1px solid var(--border-color) !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .trading-form-pro {
+                padding: 20px !important;
+                background: var(--darker-bg) !important;
+            }
+            
+            /* Make execute section full width on mobile */
+            .price-buttons {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 15px !important;
+                margin-bottom: 20px !important;
+            }
+            
+            .btn-price {
+                padding: 20px 15px !important;
+                font-size: 1rem !important;
+                border-radius: 12px !important;
+            }
+            
+            .btn-execute, .btn-group .btn {
+                width: 100% !important;
+                padding: 18px 20px !important;
+                font-size: 1.1rem !important;
+                margin: 0 !important;
+            }
+            
+            /* Adjust layout order */
+            .instruments-list {
+                order: 1 !important;
+                max-height: 300px !important;
+                overflow-y: auto !important;
+            }
+            
+            .chart-area {
+                order: 2 !important;
+            }
+        }
+
+        /* HORIZONTAL TABS ON MOBILE - FIX STACKING */
+        .webtrader-tabs {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            justify-content: space-around !important;
+            background: var(--medium-bg) !important;
+            padding: 0 5px !important;
+            margin: 0 !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        
+        .webtrader-tabs .nav-item {
+            flex: 1 !important;
+            min-width: 80px !important;
+            text-align: center !important;
+            margin: 0 !important;
+        }
+        
+        .webtrader-tab-link {
+            padding: 8px 6px !important;
+            font-size: 0.75rem !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            display: block !important;
+            border: none !important;
+            border-radius: 0 !important;
+            background: none !important;
+            color: var(--text-secondary) !important;
+        }
+        
+        .webtrader-tab-link.active {
+            border-bottom: 2px solid var(--success-color) !important;
+            background: rgba(0, 212, 170, 0.1) !important;
+            color: var(--success-color) !important;
+        }
+        
+        .webtrader-tab-link .badge {
+            font-size: 0.6rem !important;
+            margin-left: 2px !important;
+            padding: 1px 4px !important;
+        }
+        
+        .price-updated {
+            animation: priceFlash 0.5s ease-in-out;
+        }
+        
+        @keyframes priceFlash {
+            0% { background-color: var(--primary-color); }
+            100% { background-color: transparent; }
+        }
+        
+        /* 🚀 NEW: Green/Red blinking animations for price changes */
+        .price-blink-green {
+            animation: blinkGreen 0.6s ease-in-out;
+        }
+        
+        .price-blink-red {
+            animation: blinkRed 0.6s ease-in-out;
+        }
+        
+        @keyframes blinkGreen {
+            0% { background-color: #28a745; color: white; }
+            50% { background-color: #34ce57; color: white; }
+            100% { background-color: transparent; color: inherit; }
+        }
+        
+        @keyframes blinkRed {
+            0% { background-color: #dc3545; color: white; }
+            50% { background-color: #ff4757; color: white; }
+            100% { background-color: transparent; color: inherit; }
+        }
     </style>
 </head>
 <body>
@@ -1269,10 +1415,14 @@
                 </div>
                 
                 <!-- Replace the username span with a dropdown menu -->
-                <div class="dropdown">
+                <div class="dropdown d-flex align-items-center gap-2">
                     <a href="#" class="username dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                         {{ current_user.first_name }} {{ current_user.last_name }}
                         <i class="fas fa-caret-down ms-1"></i>
+                    </a>
+                    <!-- Small logout button next to username -->
+                    <a href="{{ url_for('users.logout') }}" class="btn btn-danger btn-sm logout-btn-small">
+                        <i class="fas fa-power-off"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark">
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#depositModal">
@@ -1294,10 +1444,6 @@
                         <i class="fas fa-sign-out-alt"></i> Return to Admin
                     </a>
                     {% endif %}
-                    
-                    <a href="{{ url_for('users.logout') }}" class="btn btn-danger logout-btn">
-                        <i class="fas fa-power-off"></i> Logout
-                    </a>
                 </div>
             </div>
         </div>
@@ -2075,16 +2221,19 @@
                 .catch(error => console.error('Error fetching instrument price:', error));
         }
 
-        // Auto-refresh prices every 60 seconds (1 minute)
+        // 🚀 INSTANT PRICE UPDATES - Every 1 second for real-time responsiveness
         setInterval(function() {
-            // Update the selected instrument price from API
-            if (currentInstrument.id) { // Only update if an instrument is selected
-                 updateInstrumentPriceAndUI();
+            // 🚀 AUTO-UPDATE PRICES - Update every 1 second for instant feel
+            if (currentInstrument.id) {
+                updateInstrumentPriceAndUI();
             }
-            // Update market data ticker for all visible instruments
+            // Update market data ticker for visible instruments
             updateMarketDataTicker();
-            // Note: P/L updates handled by a separate interval
-        }, 60000); // 60 seconds refresh
+            // Update P/L for open trades
+            updateAllOpenTradesPL();
+            // 🚀 NEW: Update all instrument prices in sidebar with blinking
+            updateAllInstrumentPrices();
+        }, 1000); // 1 second refresh for instant real-time feel
         
         // --- New Function for Real-time P/L ---
         function updateAllOpenTradesPL() {
@@ -2351,11 +2500,14 @@
             // Start the sliding ticker
             startSlidingTicker();
             
-            // Update market data ticker every 5 seconds
-            setInterval(updateMarketDataTicker, 5000);
+            // 🚀 INSTANT market data ticker updates - Every 1 second
+            setInterval(updateMarketDataTicker, 1000);
             
-            // Update open trades P/L every 3 seconds
-            setInterval(updateAllOpenTradesPL, 3000);
+            // 🚀 INSTANT open trades P/L updates - Every 1 second
+            setInterval(updateAllOpenTradesPL, 1000);
+            
+            // 🚀 INSTANT instrument sidebar updates - Every 1 second  
+            setInterval(updateAllInstrumentPrices, 1000);
         });
 
         // --- Amount Slider functionality ---
@@ -3996,16 +4148,120 @@
 
     <!-- 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching -->
     <script>
-        // 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching
+        // 🎯 CUSTOM PLATFORM CHART - Uses YOUR database prices (matches trading exactly)
         function refreshTradingViewChart() {
             const symbol = currentInstrument.symbol;
             const type = currentInstrument.type;
             
+            console.log(`🎯 CUSTOM CHART: ${symbol} using platform prices`);
+            
             // Show immediate loading state
             const chartContainer = document.getElementById('tradingview_chart');
-            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a; font-size: 16px;"><i class="fas fa-chart-line fa-spin" style="margin-right: 10px;"></i>Loading ' + symbol + ' chart...</div>';
+            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a; font-size: 16px;"><i class="fas fa-chart-line fa-spin" style="margin-right: 10px;"></i>Loading ' + symbol + ' chart (Platform Prices)...</div>';
             
-            // Determine TradingView symbol immediately
+            // 🎯 CUSTOM APPROACH: Use platform prices instead of TradingView live data
+            fetch(`/webtrader/realtime_price/${symbol}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    const price = parseFloat(data.price);
+                    const change = parseFloat(data.change || 0);
+                    const changePercent = price > 0 ? (change / price * 100) : 0;
+                    
+                    // 🎯 CREATE SIMPLE PRICE DISPLAY (matches your trading prices exactly)
+                    const chartHtml = `
+                        <div style="height: 400px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%); 
+                                    border-radius: 8px; padding: 20px; color: white; 
+                                    display: flex; flex-direction: column; justify-content: center; align-items: center;
+                                    border: 1px solid #333;">
+                            
+                            <!-- Platform Price Display -->
+                            <div style="text-align: center; margin-bottom: 30px;">
+                                <div style="font-size: 14px; color: #888; margin-bottom: 10px;">
+                                    📊 PLATFORM PRICE (Trading Price)
+                                </div>
+                                <div data-price-display style="font-size: 48px; font-weight: bold; color: #00ff88; margin-bottom: 10px;">
+                                    $${price.toFixed(2)}
+                                </div>
+                                <div data-change-display style="font-size: 18px; color: ${change >= 0 ? '#00ff88' : '#ff4757'};">
+                                    ${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)
+                                </div>
+                            </div>
+                            
+                            <!-- Chart Placeholder -->
+                            <div style="width: 100%; height: 200px; background: #2d2d30; border-radius: 8px; 
+                                        display: flex; align-items: center; justify-content: center; border: 1px solid #444;">
+                                <div style="text-align: center; color: #888;">
+                                    <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 15px; color: #555;"></i>
+                                    <div style="font-size: 16px;">Historical Chart Coming Soon</div>
+                                    <div style="font-size: 12px; margin-top: 5px;">Platform-synced price data</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Platform Sync Status -->
+                            <div style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">
+                                ✅ Chart synchronized with trading platform<br>
+                                🎯 Price shown = Price you trade at
+                            </div>
+                        </div>
+                    `;
+                    
+                    chartContainer.innerHTML = chartHtml;
+                    
+                    console.log(`✅ PLATFORM CHART: ${symbol} = $${price} (matches trading price)`);
+                    
+                    // 🔄 AUTO-UPDATE: Refresh platform price every 5 seconds
+                    if (window.platformChartInterval) {
+                        clearInterval(window.platformChartInterval);
+                    }
+                    
+                    window.platformChartInterval = setInterval(() => {
+                        if (currentInstrument && currentInstrument.symbol === symbol) {
+                            // Update price silently in background
+                            fetch(`/webtrader/realtime_price/${symbol}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.error) {
+                                        const newPrice = parseFloat(data.price);
+                                        const newChange = parseFloat(data.change || 0);
+                                        const newChangePercent = newPrice > 0 ? (newChange / newPrice * 100) : 0;
+                                        
+                                        // Update only the price display (not the whole chart)
+                                        const priceElement = chartContainer.querySelector('[data-price-display]');
+                                        const changeElement = chartContainer.querySelector('[data-change-display]');
+                                        
+                                        if (priceElement) {
+                                            priceElement.textContent = `$${newPrice.toFixed(2)}`;
+                                        }
+                                        if (changeElement) {
+                                            changeElement.innerHTML = `${newChange >= 0 ? '+' : ''}${newChange.toFixed(2)} (${newChangePercent >= 0 ? '+' : ''}${newChangePercent.toFixed(2)}%)`;
+                                            changeElement.style.color = newChange >= 0 ? '#00ff88' : '#ff4757';
+                                        }
+                                        
+                                        console.log(`🔄 Price updated: ${symbol} = $${newPrice}`);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.warn('Price update failed:', error);
+                                });
+                        }
+                    }, 5000); // Update every 5 seconds
+                })
+                .catch(error => {
+                    console.error('❌ Platform chart error:', error);
+                    
+                    // Fallback to TradingView if platform price fails
+                    console.log(`🔄 Falling back to TradingView for ${symbol}`);
+                    loadTradingViewFallback(symbol, type, chartContainer);
+                });
+        }
+        
+        // 🔄 FALLBACK: TradingView chart (only if platform price fails)
+        function loadTradingViewFallback(symbol, type, chartContainer) {
+            // Determine TradingView symbol
             let tvSymbol = '';
             if (type === 'crypto') {
                 const base = symbol.split('/')[0];
@@ -4022,8 +4278,6 @@
                 else if (symbol === 'NATGAS') tvSymbol = 'NYMEX:NG1!';
                 else tvSymbol = symbol;
             }
-            
-            console.log(`⚡ FAST CHART: ${symbol} → ${tvSymbol}`);
             
             // 🚀 RAPID WIDGET DESTRUCTION - No delays
             try {
@@ -4167,6 +4421,514 @@
             });
         });
 
+    </script>
+
+    <!-- NUCLEAR MOBILE SCROLLING FIX - TOUCH SCROLLING ONLY -->
+    <script>
+        // NUCLEAR MOBILE SCROLLING FIX - TOUCH SCROLLING ONLY
+        function nuclearMobileScrollFix() {
+            console.log("☢️ NUCLEAR MOBILE SCROLL FIX ACTIVATED");
+            
+            if (window.innerWidth <= 992) {
+                // Step 1: Force all touch events to be passive
+                const originalAddEventListener = EventTarget.prototype.addEventListener;
+                EventTarget.prototype.addEventListener = function(type, listener, options) {
+                    if (type === 'touchstart' || type === 'touchmove' || type === 'touchend' || type === 'wheel') {
+                        if (typeof options === 'boolean') {
+                            options = { passive: true, capture: options };
+                        } else if (typeof options === 'object' && options !== null) {
+                            options = { ...options, passive: true };
+                        } else {
+                            options = { passive: true };
+                        }
+                    }
+                    return originalAddEventListener.call(this, type, listener, options);
+                };
+                
+                // Step 2: Apply critical touch scrolling CSS
+                const nuclearStyle = document.createElement('style');
+                nuclearStyle.textContent = `
+                    @media (max-width: 992px) {
+                        /* Enable touch scrolling everywhere */
+                        * {
+                            touch-action: auto !important;
+                        }
+                        
+                        html, body {
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-x pan-y !important;
+                        }
+                        
+                        .trades-section {
+                            height: 50vh !important;
+                            min-height: 300px !important;
+                            overflow: hidden !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            touch-action: pan-x pan-y !important;
+                            -webkit-overflow-scrolling: touch !important;
+                        }
+                        
+                        .tab-content {
+                            flex: 1 !important;
+                            overflow: hidden !important;
+                            position: relative !important;
+                            touch-action: pan-x pan-y !important;
+                        }
+                        
+                        .tab-pane {
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            right: 0 !important;
+                            bottom: 0 !important;
+                            overflow: hidden !important;
+                            touch-action: pan-x pan-y !important;
+                        }
+                        
+                        .table-responsive {
+                            height: 100% !important;
+                            overflow: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-x pan-y !important;
+                            overscroll-behavior: contain !important;
+                        }
+                        
+                        .webtrader-tabs {
+                            display: flex !important;
+                            flex-direction: row !important;
+                            flex-shrink: 0 !important;
+                        }
+                        
+                        .webtrader-tabs .nav-item {
+                            flex: 1 !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(nuclearStyle);
+                
+                // Step 3: Force DOM properties for scrolling containers
+                setTimeout(() => {
+                    console.log("☢️ Applying DOM touch fixes...");
+                    
+                    const tableResponsive = document.querySelectorAll('.table-responsive');
+                    tableResponsive.forEach((table, index) => {
+                        table.style.height = '100%';
+                        table.style.overflow = 'auto';
+                        table.style.webkitOverflowScrolling = 'touch';
+                        table.style.touchAction = 'pan-x pan-y';
+                        table.style.overscrollBehavior = 'contain';
+                        
+                        console.log(`✅ Fixed table ${index + 1} for touch scrolling`);
+                    });
+                    
+                    console.log("☢️ NUCLEAR TOUCH SCROLLING FIX COMPLETE!");
+                }, 1000);
+            }
+        }
+
+        // Apply nuclear fix multiple times to ensure it works
+        document.addEventListener('DOMContentLoaded', nuclearMobileScrollFix);
+        window.addEventListener('load', nuclearMobileScrollFix);
+        
+        setTimeout(nuclearMobileScrollFix, 500);
+        setTimeout(nuclearMobileScrollFix, 2000);
+        setTimeout(nuclearMobileScrollFix, 5000);
+    </script>
+
+    <!-- ENHANCED MOBILE SCROLLING FIX - MAGIC SOLUTION -->
+    <script>
+        // ENHANCED MOBILE SCROLL MAGIC ACTIVATED
+        function enhancedMobileScrolling() {
+            console.log("🎯 ENHANCED MOBILE SCROLL MAGIC ACTIVATED");
+            
+            if (window.innerWidth <= 992) {
+                // Step 1: Force body and html to be scrollable
+                document.body.style.overflow = 'auto';
+                document.body.style.height = 'auto';
+                document.body.style.minHeight = '100vh';
+                document.body.style.webkitOverflowScrolling = 'touch';
+                document.body.style.touchAction = 'pan-y';
+                
+                document.documentElement.style.overflow = 'auto';
+                document.documentElement.style.height = 'auto';
+                document.documentElement.style.webkitOverflowScrolling = 'touch';
+                document.documentElement.style.touchAction = 'pan-y';
+                
+                // Step 2: Fix main containers
+                const appContainer = document.querySelector('.app-container');
+                if (appContainer) {
+                    appContainer.style.height = 'auto';
+                    appContainer.style.minHeight = '100vh';
+                    appContainer.style.overflow = 'visible';
+                    appContainer.style.flexDirection = 'column';
+                }
+                
+                const appContent = document.querySelector('.app-content');
+                if (appContent) {
+                    appContent.style.height = 'auto';
+                    appContent.style.overflow = 'visible';
+                    appContent.style.display = 'flex';
+                    appContent.style.flexDirection = 'column';
+                }
+                
+                const contentWrapper = document.querySelector('.content-wrapper');
+                if (contentWrapper) {
+                    contentWrapper.style.height = 'auto';
+                    contentWrapper.style.overflow = 'visible';
+                    contentWrapper.style.display = 'flex';
+                    contentWrapper.style.flexDirection = 'column';
+                    contentWrapper.style.gap = '10px';
+                }
+                
+                // Step 3: Make each section properly sized
+                const instrumentsList = document.querySelector('.instruments-list');
+                if (instrumentsList) {
+                    instrumentsList.style.height = '250px';
+                    instrumentsList.style.overflowY = 'auto';
+                    instrumentsList.style.webkitOverflowScrolling = 'touch';
+                    instrumentsList.style.flexShrink = '0';
+                }
+                
+                const chartArea = document.querySelector('.chart-area');
+                if (chartArea) {
+                    chartArea.style.height = 'auto';
+                    chartArea.style.minHeight = '400px';
+                    chartArea.style.overflow = 'visible';
+                    chartArea.style.display = 'flex';
+                    chartArea.style.flexDirection = 'column';
+                    chartArea.style.flexShrink = '0';
+                }
+                
+                const tradingPanel = document.querySelector('.trading-panel-pro');
+                if (tradingPanel) {
+                    tradingPanel.style.height = 'auto';
+                    tradingPanel.style.overflow = 'visible';
+                    tradingPanel.style.width = '100%';
+                    tradingPanel.style.flexShrink = '0';
+                }
+                
+                // Step 4: Apply CSS injection for mobile scrolling
+                const scrollStyle = document.createElement('style');
+                scrollStyle.id = 'mobile-scroll-fix';
+                scrollStyle.textContent = `
+                    @media (max-width: 992px) {
+                        /* Force page scrolling */
+                        html, body {
+                            overflow: auto !important;
+                            height: auto !important;
+                            min-height: 100vh !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            touch-action: pan-y !important;
+                        }
+                        
+                        .app-container {
+                            height: auto !important;
+                            min-height: 100vh !important;
+                            overflow: visible !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                        }
+                        
+                        .app-content {
+                            height: auto !important;
+                            overflow: visible !important;
+                            flex: 1 !important;
+                        }
+                        
+                        .content-wrapper {
+                            height: auto !important;
+                            overflow: visible !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            gap: 10px !important;
+                        }
+                        
+                        .instruments-list {
+                            height: 250px !important;
+                            flex-shrink: 0 !important;
+                            overflow-y: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                        }
+                        
+                        .chart-area {
+                            height: auto !important;
+                            min-height: 400px !important;
+                            flex-shrink: 0 !important;
+                            overflow: visible !important;
+                        }
+                        
+                        .trading-panel-pro {
+                            height: auto !important;
+                            flex-shrink: 0 !important;
+                            width: 100% !important;
+                            order: 999 !important;
+                        }
+                    }
+                `;
+                
+                // Remove any existing scroll fix
+                const existingStyle = document.getElementById('mobile-scroll-fix');
+                if (existingStyle) existingStyle.remove();
+                
+                document.head.appendChild(scrollStyle);
+                
+                console.log("🎯 ENHANCED MOBILE SCROLL MAGIC COMPLETE!");
+                console.log("📱 Page should now be fully scrollable");
+            }
+        }
+
+        // Apply enhanced mobile scrolling
+        document.addEventListener('DOMContentLoaded', enhancedMobileScrolling);
+        window.addEventListener('load', enhancedMobileScrolling);
+        window.addEventListener('resize', enhancedMobileScrolling);
+        
+        setTimeout(enhancedMobileScrolling, 1000);
+        setTimeout(enhancedMobileScrolling, 3000);
+        
+        // 🏛️ MARKET HOURS CHECKING - STOCK TRADING OVERLAY
+        function checkMarketHours() {
+            const now = new Date();
+            const day = now.getUTCDay(); // 0=Sunday, 1=Monday, etc.
+            const isWeekday = day >= 1 && day <= 5;
+            
+            // Get current time in different timezones (approximate)
+            const utcHour = now.getUTCHours();
+            const utcMinutes = now.getUTCMinutes();
+            const utcTotalMinutes = utcHour * 60 + utcMinutes;
+            
+            // Market hours in UTC (approximate)
+            // US: 14:30-21:00 UTC (9:30 AM - 4:00 PM ET)
+            // London: 8:00-16:30 UTC (8:00 AM - 4:30 PM GMT)
+            // Frankfurt: 7:00-21:00 UTC (8:00 AM - 10:00 PM CET, adjusted for DST)
+            
+            const usOpen = 14 * 60 + 30; // 14:30 UTC
+            const usClose = 21 * 60; // 21:00 UTC
+            const londonOpen = 8 * 60; // 08:00 UTC
+            const londonClose = 16 * 60 + 30; // 16:30 UTC
+            const frankfurtOpen = 7 * 60; // 07:00 UTC
+            const frankfurtClose = 21 * 60; // 21:00 UTC
+            
+            let anyMarketOpen = false;
+            
+            if (isWeekday) {
+                // Check if any major market is open
+                const usIsOpen = utcTotalMinutes >= usOpen && utcTotalMinutes <= usClose;
+                const londonIsOpen = utcTotalMinutes >= londonOpen && utcTotalMinutes <= londonClose;
+                const frankfurtIsOpen = utcTotalMinutes >= frankfurtOpen && utcTotalMinutes <= frankfurtClose;
+                
+                anyMarketOpen = usIsOpen || londonIsOpen || frankfurtIsOpen;
+            }
+            
+            // Show/hide stock trading overlay
+            toggleStockTradingOverlay(!anyMarketOpen);
+            
+            return anyMarketOpen;
+        }
+        
+        function toggleStockTradingOverlay(showOverlay) {
+            // Only show overlay for stock instruments
+            const selectedInstrument = document.querySelector('.instrument-card.selected');
+            const stockSymbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX', 'DIS', 'PYPL', 'ADBE', 'CRM', 'ZOOM', 'UBER', 'SPOT'];
+            
+            let isStockSelected = false;
+            if (selectedInstrument) {
+                const symbolText = selectedInstrument.textContent;
+                isStockSelected = stockSymbols.some(stock => symbolText.includes(stock));
+            }
+            
+            let overlay = document.getElementById('market-closed-overlay');
+            
+            if (showOverlay && isStockSelected) {
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'market-closed-overlay';
+                    
+                    const overlayHTML = '<div class="overlay-content">' +
+                        '<div class="overlay-icon"><i class="fas fa-clock"></i></div>' +
+                        '<h3>Stock Markets Closed</h3>' +
+                        '<p>Stock trading is currently unavailable as all major stock markets are closed.</p>' +
+                        '<div class="market-times">' +
+                        '<div class="market-time"><strong>🇺🇸 US (NYSE/NASDAQ)</strong><br>Open: Mon-Fri 9:30 AM - 4:00 PM ET</div>' +
+                        '<div class="market-time"><strong>🇬🇧 London (LSE)</strong><br>Open: Mon-Fri 8:00 AM - 4:30 PM GMT</div>' +
+                        '<div class="market-time"><strong>🇩🇪 Frankfurt (FSE)</strong><br>Open: Mon-Fri 8:00 AM - 10:00 PM CET</div>' +
+                        '</div>' +
+                        '<p class="note">💡 You can still trade Forex, Crypto, and Commodities 24/5</p>' +
+                        '</div>';
+                    
+                    overlay.innerHTML = overlayHTML;
+                    
+                    // Overlay styles
+                    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; ' +
+                        'background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 9999; ' +
+                        'display: flex; align-items: center; justify-content: center; color: white; ' +
+                        'font-family: Inter, sans-serif;';
+                    
+                    // Add styles for content
+                    if (!document.getElementById('market-overlay-styles')) {
+                        const styleSheet = document.createElement('style');
+                        styleSheet.id = 'market-overlay-styles';
+                        styleSheet.textContent = 
+                            '.overlay-content { text-align: center; max-width: 500px; padding: 30px; ' +
+                            'background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); ' +
+                            'border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); ' +
+                            'box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); } ' +
+                            '.overlay-icon { font-size: 48px; color: #ffd700; margin-bottom: 20px; } ' +
+                            '.overlay-content h3 { color: #ffffff; margin-bottom: 15px; font-size: 24px; } ' +
+                            '.overlay-content p { color: #cccccc; margin-bottom: 20px; line-height: 1.5; } ' +
+                            '.market-times { display: grid; gap: 10px; margin: 20px 0; } ' +
+                            '.market-time { background: rgba(255, 255, 255, 0.05); padding: 10px; ' +
+                            'border-radius: 8px; font-size: 14px; } ' +
+                            '.note { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); ' +
+                            'padding: 10px; border-radius: 8px; color: #00ff88 !important; font-size: 14px; }';
+                        document.head.appendChild(styleSheet);
+                    }
+                    
+                    document.body.appendChild(overlay);
+                    
+                    // Close overlay when clicking outside content
+                    overlay.addEventListener('click', function(e) {
+                        if (e.target === overlay) {
+                            overlay.remove();
+                        }
+                    });
+                }
+            } else if (overlay) {
+                overlay.remove();
+            }
+        }
+        
+        // Check market hours every 5 minutes
+        checkMarketHours();
+        setInterval(checkMarketHours, 5 * 60 * 1000);
+        
+        // Check when user selects a stock instrument
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.instrument-card')) {
+                setTimeout(checkMarketHours, 100); // Small delay to ensure selection updates
+            }
+        });
+    </script>
+
+    <!-- 🚀 NEW: Update all instruments table prices with blinking animations -->
+    <script>
+        // 🚀 NEW: Update all instruments table prices with blinking animations
+        function updateAllInstrumentPrices() {
+            const instrumentRows = document.querySelectorAll('.instruments-table tbody tr');
+            
+            instrumentRows.forEach(row => {
+                const instrumentId = row.getAttribute('data-instrument-id');
+                const symbol = row.getAttribute('data-symbol');
+                const type = row.getAttribute('data-type');
+                
+                if (!instrumentId) return;
+                
+                fetch(`/webtrader/get_price?instrument_id=${instrumentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.current_price !== null && data.current_price > 0) {
+                            const currentPrice = parseFloat(data.current_price);
+                            const priceCell = row.querySelector('td:nth-child(2)');
+                            const changeCell = row.querySelector('td:nth-child(3)');
+                            
+                            // Get 24-hour baseline price for percentage calculation
+                            let baselinePrice = parseFloat(priceCell.getAttribute('data-24h-baseline-price'));
+                            const baselineTime = parseInt(priceCell.getAttribute('data-24h-baseline-time') || '0');
+                            const currentTime = Date.now();
+                            
+                            // Initialize or reset 24-hour baseline price every 24 hours
+                            if (!baselinePrice || (currentTime - baselineTime) > 86400000) { // 86400000ms = 24 hours
+                                baselinePrice = currentPrice;
+                                priceCell.setAttribute('data-24h-baseline-price', currentPrice.toString());
+                                priceCell.setAttribute('data-24h-baseline-time', currentTime.toString());
+                                console.log(`📅 Reset 24h baseline for ${symbol}: $${currentPrice}`);
+                            }
+                            
+                            // Get immediate previous price for blinking animation only
+                            const previousPrice = parseFloat(priceCell.getAttribute('data-last-price') || currentPrice);
+                            
+                            // Store current price for next comparison
+                            priceCell.setAttribute('data-last-price', currentPrice.toString());
+                            
+                            // Format price based on instrument type
+                            let formattedPrice;
+                            if (type === 'forex') {
+                                formattedPrice = currentPrice.toFixed(4);
+                            } else if (type === 'crypto') {
+                                formattedPrice = `$${currentPrice.toFixed(2)}`;
+                            } else {
+                                formattedPrice = `$${currentPrice.toFixed(2)}`;
+                            }
+                            
+                            // Calculate 24-hour percentage change from baseline
+                            const changePercent = baselinePrice > 0 ? ((currentPrice - baselinePrice) / baselinePrice) * 100 : 0;
+                            
+                            // Determine if price just went up/down for blinking (immediate comparison)
+                            const justWentUp = currentPrice > previousPrice;
+                            const justWentDown = currentPrice < previousPrice;
+                            
+                            // Update price with blinking animation for immediate changes
+                            if (justWentUp || justWentDown) {
+                                // Apply blinking animation based on immediate price movement
+                                const blinkClass = justWentUp ? 'price-blink-green' : 'price-blink-red';
+                                priceCell.classList.add(blinkClass);
+                                
+                                // Remove animation class after animation completes
+                                setTimeout(() => {
+                                    priceCell.classList.remove(blinkClass);
+                                }, 600);
+                            }
+                            
+                            // Update price text
+                            priceCell.textContent = formattedPrice;
+                            
+                            // Update change percentage and arrow based on 24-HOUR change from baseline
+                            if (changeCell) {
+                                const changeIcon = changeCell.querySelector('i');
+                                const changeText = changeCell.querySelector('span');
+                                
+                                if (Math.abs(changePercent) >= 0.01) { // Show change if >= 0.01%
+                                    const isOverallUp = changePercent > 0;
+                                    const changeClass = isOverallUp ? 'price-up' : 'price-down';
+                                    const arrowDirection = isOverallUp ? 'up' : 'down';
+                                    const changeSign = isOverallUp ? '+' : '';
+                                    
+                                    changeCell.className = `price-change ${changeClass}`;
+                                    
+                                    if (changeIcon) {
+                                        changeIcon.className = `fas fa-caret-${arrowDirection}`;
+                                    }
+                                    
+                                    if (changeText) {
+                                        changeText.textContent = `${changeSign}${changePercent.toFixed(2)}%`;
+                                    }
+                                } else {
+                                    // No significant change
+                                    changeCell.className = 'price-change';
+                                    if (changeIcon) {
+                                        changeIcon.className = 'fas fa-minus';
+                                    }
+                                    if (changeText) {
+                                        changeText.textContent = '0.00%';
+                                    }
+                                }
+                            }
+                            
+                            // Show time remaining until next 24h reset
+                            const timeUntilReset = 86400000 - (currentTime - baselineTime);
+                            const hoursUntilReset = Math.floor(timeUntilReset / 3600000);
+                            
+                            console.log(`📊 ${symbol}: ${formattedPrice} (24h: ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%, reset in ${hoursUntilReset}h)`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error updating instrument price for ${symbol}:`, error);
+                    });
+            });
+        }
+        
+        // Update open trades prices and P/L
+        updateAllOpenTradesPL();
     </script>
 </body>
 </html>
