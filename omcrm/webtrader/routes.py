@@ -1,4 +1,4 @@
-from datetime import datetime
+pfrom datetime import datetime
 import requests
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
@@ -394,18 +394,16 @@ def new_instrument():
         current_price = 0.0  # Default price, will be updated by WebSocket price worker
         # Always create the instrument, price worker will handle pricing
         instrument = TradingInstrument(
-                symbol=form.symbol.data.upper(),
-                name=form.name.data,
-                type=form.type.data,
-                current_price=current_price,
-                last_updated=datetime.utcnow()
-            )
-            db.session.add(instrument)
-            db.session.commit()
-            flash('Instrument has been created!', 'success')
-            return redirect(url_for('webtrader.list_instruments'))
-        else:
-            flash('Could not fetch price from Twelve Data API. Please check the symbol.', 'danger')
+            symbol=form.symbol.data.upper(),
+            name=form.name.data,
+            type=form.type.data,
+            current_price=current_price,
+            last_updated=datetime.utcnow()
+        )
+        db.session.add(instrument)
+        db.session.commit()
+        flash('Instrument has been created!', 'success')
+        return redirect(url_for('webtrader.list_instruments'))
     return render_template("add_instrument.html", form=form, title="New Instrument")
 
 @webtrader.route("/instruments/edit/", methods=['GET', 'POST'])
