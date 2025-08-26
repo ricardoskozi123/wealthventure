@@ -71,6 +71,11 @@ class DomainRouter:
         # DEBUG: Log all requests for troubleshooting
         print(f"🔍 DOMAIN ROUTER: Host={host}, Path={path}, IP={client_ip}")
         
+        # 🌐 BARE DOMAIN REDIRECT: Redirect stanford-capital.com to www.stanford-capital.com
+        if host == 'stanford-capital.com':
+            print(f"🔀 Redirecting bare domain to www: {host}{path}")
+            return redirect(f'https://www.stanford-capital.com{path}', code=301)
+        
         # Skip routing for static files and API endpoints
         if path.startswith(('/static', '/socket.io', '/api')):
             return None
