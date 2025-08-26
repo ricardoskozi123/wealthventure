@@ -29,8 +29,8 @@ services:
     environment:
       - FLASK_ENV=production
       - DATABASE_URL=postgresql://omcrm_user:omcrm_password_2024@db:5432/omcrm_trading
-      - CLIENT_DOMAIN=investmentprohub.com
-      - CRM_SUBDOMAIN=crm.investmentprohub.com
+      - CLIENT_DOMAIN=stanford-capital.com
+      - CRM_SUBDOMAIN=admin.stanford-capital.com
     volumes:
       - ./logs:/app/logs
       - ./omcrm/static:/app/omcrm/static
@@ -66,7 +66,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/multi_domain.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/stanford_domain.conf:/etc/nginx/conf.d/default.conf
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./omcrm/static:/usr/share/nginx/html/static:ro
     depends_on:
