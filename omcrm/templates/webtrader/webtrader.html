@@ -4148,18 +4148,161 @@
 
     <!-- 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching -->
     <script>
-        // 🎯 CUSTOM PLATFORM CHART - Uses YOUR database prices (matches trading exactly)
+        // 🎯 FULL TRADINGVIEW CHART - Uses YOUR platform data with full chart functionality
         function refreshTradingViewChart() {
             const symbol = currentInstrument.symbol;
             const type = currentInstrument.type;
             
-            console.log(`🎯 CUSTOM CHART: ${symbol} using platform prices`);
+            console.log(`🎯 FULL TRADINGVIEW CHART: ${symbol} using platform datafeed`);
             
             // Show immediate loading state
             const chartContainer = document.getElementById('tradingview_chart');
-            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a; font-size: 16px;"><i class="fas fa-chart-line fa-spin" style="margin-right: 10px;"></i>Loading ' + symbol + ' chart (Platform Prices)...</div>';
+            chartContainer.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 400px; color: white; background: #1a1a1a; font-size: 16px;"><i class="fas fa-chart-line fa-spin" style="margin-right: 10px;"></i>Loading ' + symbol + ' chart with platform data...</div>';
             
-            // 🎯 CUSTOM APPROACH: Use platform prices instead of TradingView live data
+            // 🚀 DESTROY EXISTING WIDGET
+            try {
+                if (window.tvWidget && typeof window.tvWidget.remove === 'function') {
+                    window.tvWidget.remove();
+                    console.log("⚡ Previous widget destroyed");
+                }
+            } catch (error) {
+                console.warn("Widget destruction warning:", error);
+            }
+            
+            // 🎯 CREATE CUSTOM DATAFEED for platform data
+            const customDatafeed = {
+                onReady: function(callback) {
+                    console.log('📊 TradingView datafeed ready');
+                    fetch('/webtrader/datafeed/config')
+                        .then(response => response.json())
+                        .then(config => {
+                            callback(config);
+                        })
+                        .catch(error => {
+                            console.error('Datafeed config error:', error);
+                            callback({
+                                supported_resolutions: ['1D'],
+                                supports_group_request: false,
+                                supports_marks: false,
+                                supports_search: true,
+                                supports_timescale_marks: false
+                            });
+                        });
+                },
+                
+                searchSymbols: function(userInput, exchange, symbolType, onResultReadyCallback) {
+                    console.log('🔍 Searching symbols:', userInput);
+                    fetch(`/webtrader/datafeed/symbols?query=${userInput}`)
+                        .then(response => response.json())
+                        .then(symbols => {
+                            onResultReadyCallback(symbols);
+                        })
+                        .catch(error => {
+                            console.error('Symbol search error:', error);
+                            onResultReadyCallback([]);
+                        });
+                },
+                
+                resolveSymbol: function(symbolName, onSymbolResolvedCallback, onResolveErrorCallback) {
+                    console.log('🔍 Resolving symbol:', symbolName);
+                    const cleanSymbol = symbolName.replace('PLATFORM:', '');
+                    
+                    fetch(`/webtrader/datafeed/symbol_info?symbol=${cleanSymbol}`)
+                        .then(response => response.json())
+                        .then(symbolInfo => {
+                            onSymbolResolvedCallback(symbolInfo);
+                        })
+                        .catch(error => {
+                            console.error('Symbol resolve error:', error);
+                            onResolveErrorCallback('Symbol not found');
+                        });
+                },
+                
+                getBars: function(symbolInfo, resolution, from, to, onHistoryCallback, onErrorCallback, firstDataRequest) {
+                    console.log('📊 Getting bars for:', symbolInfo.name, 'from', from, 'to', to);
+                    
+                    fetch(`/webtrader/datafeed/history?symbol=${symbolInfo.name}&resolution=${resolution}&from=${from}&to=${to}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.s === 'ok') {
+                                const bars = [];
+                                for (let i = 0; i < data.t.length; i++) {
+                                    bars.push({
+                                        time: data.t[i],
+                                        open: data.o[i],
+                                        high: data.h[i],
+                                        low: data.l[i],
+                                        close: data.c[i],
+                                        volume: data.v[i]
+                                    });
+                                }
+                                onHistoryCallback(bars, { noData: false });
+                            } else {
+                                onHistoryCallback([], { noData: true });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('History data error:', error);
+                            onErrorCallback('Failed to get history data');
+                        });
+                },
+                
+                subscribeBars: function(symbolInfo, resolution, onRealtimeCallback, subscriberUID, onResetCacheNeededCallback) {
+                    console.log('📡 Subscribing to real-time data for:', symbolInfo.name);
+                    // Real-time updates would go here
+                    // For now, we'll update via polling in the background
+                },
+                
+                unsubscribeBars: function(subscriberUID) {
+                    console.log('📡 Unsubscribing from real-time data');
+                }
+            };
+            
+            // 🚀 CREATE FULL TRADINGVIEW WIDGET with platform datafeed
+            setTimeout(() => {
+                try {
+                    chartContainer.innerHTML = '';
+                    
+                    window.tvWidget = new TradingView.widget({
+                        "autosize": true,
+                        "symbol": `PLATFORM:${symbol}`,
+                        "interval": "1D",
+                        "container": "tradingview_chart",
+                        "datafeed": customDatafeed,  // 🎯 USE CUSTOM DATAFEED
+                        "library_path": "/static/js/charting_library/",
+                        "locale": "en",
+                        "disabled_features": [
+                            "use_localstorage_for_settings",
+                            "volume_force_overlay",
+                            "create_volume_indicator_by_default"
+                        ],
+                        "enabled_features": [
+                            "study_templates"
+                        ],
+                        "charts_storage_url": "",
+                        "charts_storage_api_version": "1.1",
+                        "client_id": "tradingview.com",
+                        "user_id": "public_user_id",
+                        "fullscreen": false,
+                        "studies_overrides": {},
+                        "theme": "dark",
+                        "custom_css_url": "/static/css/tradingview_custom.css"
+                    });
+                    
+                    console.log(`✅ FULL TRADINGVIEW CHART: ${symbol} with platform data loaded`);
+                    
+                } catch (error) {
+                    console.error('❌ TradingView widget error:', error);
+                    // Fallback to simple price display
+                    loadSimplePriceFallback(symbol, chartContainer);
+                }
+            }, 100);
+        }
+        
+        // 🔄 SIMPLE PRICE FALLBACK (if TradingView fails)
+        function loadSimplePriceFallback(symbol, chartContainer) {
+            console.log(`🔄 Loading simple price fallback for ${symbol}`);
+            
             fetch(`/webtrader/realtime_price/${symbol}`)
                 .then(response => response.json())
                 .then(data => {
@@ -4171,91 +4314,34 @@
                     const change = parseFloat(data.change || 0);
                     const changePercent = price > 0 ? (change / price * 100) : 0;
                     
-                    // 🎯 CREATE SIMPLE PRICE DISPLAY (matches your trading prices exactly)
                     const chartHtml = `
                         <div style="height: 400px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%); 
                                     border-radius: 8px; padding: 20px; color: white; 
                                     display: flex; flex-direction: column; justify-content: center; align-items: center;
                                     border: 1px solid #333;">
-                            
-                            <!-- Platform Price Display -->
                             <div style="text-align: center; margin-bottom: 30px;">
                                 <div style="font-size: 14px; color: #888; margin-bottom: 10px;">
                                     📊 PLATFORM PRICE (Trading Price)
                                 </div>
-                                <div data-price-display style="font-size: 48px; font-weight: bold; color: #00ff88; margin-bottom: 10px;">
+                                <div style="font-size: 48px; font-weight: bold; color: #00ff88; margin-bottom: 10px;">
                                     $${price.toFixed(2)}
                                 </div>
-                                <div data-change-display style="font-size: 18px; color: ${change >= 0 ? '#00ff88' : '#ff4757'};">
+                                <div style="font-size: 18px; color: ${change >= 0 ? '#00ff88' : '#ff4757'};">
                                     ${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)
                                 </div>
                             </div>
-                            
-                            <!-- Chart Placeholder -->
-                            <div style="width: 100%; height: 200px; background: #2d2d30; border-radius: 8px; 
-                                        display: flex; align-items: center; justify-content: center; border: 1px solid #444;">
-                                <div style="text-align: center; color: #888;">
-                                    <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 15px; color: #555;"></i>
-                                    <div style="font-size: 16px;">Historical Chart Coming Soon</div>
-                                    <div style="font-size: 12px; margin-top: 5px;">Platform-synced price data</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Platform Sync Status -->
                             <div style="margin-top: 20px; font-size: 12px; color: #888; text-align: center;">
-                                ✅ Chart synchronized with trading platform<br>
+                                ⚠️ TradingView chart unavailable - showing platform price<br>
                                 🎯 Price shown = Price you trade at
                             </div>
                         </div>
                     `;
                     
                     chartContainer.innerHTML = chartHtml;
-                    
-                    console.log(`✅ PLATFORM CHART: ${symbol} = $${price} (matches trading price)`);
-                    
-                    // 🔄 AUTO-UPDATE: Refresh platform price every 5 seconds
-                    if (window.platformChartInterval) {
-                        clearInterval(window.platformChartInterval);
-                    }
-                    
-                    window.platformChartInterval = setInterval(() => {
-                        if (currentInstrument && currentInstrument.symbol === symbol) {
-                            // Update price silently in background
-                            fetch(`/webtrader/realtime_price/${symbol}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (!data.error) {
-                                        const newPrice = parseFloat(data.price);
-                                        const newChange = parseFloat(data.change || 0);
-                                        const newChangePercent = newPrice > 0 ? (newChange / newPrice * 100) : 0;
-                                        
-                                        // Update only the price display (not the whole chart)
-                                        const priceElement = chartContainer.querySelector('[data-price-display]');
-                                        const changeElement = chartContainer.querySelector('[data-change-display]');
-                                        
-                                        if (priceElement) {
-                                            priceElement.textContent = `$${newPrice.toFixed(2)}`;
-                                        }
-                                        if (changeElement) {
-                                            changeElement.innerHTML = `${newChange >= 0 ? '+' : ''}${newChange.toFixed(2)} (${newChangePercent >= 0 ? '+' : ''}${newChangePercent.toFixed(2)}%)`;
-                                            changeElement.style.color = newChange >= 0 ? '#00ff88' : '#ff4757';
-                                        }
-                                        
-                                        console.log(`🔄 Price updated: ${symbol} = $${newPrice}`);
-                                    }
-                                })
-                                .catch(error => {
-                                    console.warn('Price update failed:', error);
-                                });
-                        }
-                    }, 5000); // Update every 5 seconds
                 })
                 .catch(error => {
-                    console.error('❌ Platform chart error:', error);
-                    
-                    // Fallback to TradingView if platform price fails
-                    console.log(`🔄 Falling back to TradingView for ${symbol}`);
-                    loadTradingViewFallback(symbol, type, chartContainer);
+                    console.error('❌ Fallback error:', error);
+                    chartContainer.innerHTML = '<div style="height: 400px; display: flex; align-items: center; justify-content: center; color: #ff4757;">Chart unavailable</div>';
                 });
         }
         
