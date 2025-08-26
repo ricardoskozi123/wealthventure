@@ -18,33 +18,21 @@ webtrader = Blueprint('webtrader', __name__)
 # 🎯 ONLY TWELVE DATA API - Old Binance WebSocket code removed
 
 def get_real_time_price(symbol, name, instrument_type):
-    """Get real-time price ONLY from Twelve Data API - NO MORE MIXED SOURCES"""
+    """Get price from DATABASE ONLY - WebSocket price worker handles all updates"""
     
-    # 🎯 TWELVE DATA API ONLY - Clean and Consistent
     try:
-        logging.info(f"🎯 Getting Twelve Data price for {symbol} ({instrument_type})")
-        price = get_twelve_data_price(symbol, instrument_type)
-        
-        if price:
-            # Format based on type with proper precision
-            if instrument_type == 'crypto':
-                return round(float(price), 6)
-            elif instrument_type == 'forex':
-                return round(float(price), 5)
-            elif instrument_type == 'commodity':
-                return round(float(price), 2)
-            else:  # stocks
-                return round(float(price), 2)
+        # 🎯 DATABASE ONLY - Never make API calls from webtrader
+        instrument = TradingInstrument.query.filter_by(symbol=symbol).first()
+        if instrument and instrument.current_price:
+            logging.info(f"📊 Got DB price for {symbol}: {instrument.current_price}")
+            return instrument.current_price
         else:
-            logging.warning(f"⚠️ Twelve Data API returned None for {symbol}")
+            logging.warning(f"⚠️ No price in database for {symbol} - price worker should handle this")
+            return None
             
     except Exception as e:
-        logging.error(f"❌ Twelve Data API error for {symbol}: {str(e)}")
-    
-    # 🚫 NO MORE FALLBACKS - Only use Twelve Data or return None
-    # This prevents price conflicts and ensures consistency
-    logging.error(f"❌ Could not get Twelve Data price for {symbol}")
-    return None
+        logging.error(f"❌ Error getting DB price for {symbol}: {str(e)}")
+        return None
 
 
 @webtrader.route("/get_price/")
@@ -296,13 +284,10 @@ def get_twelve_data_price(symbol, instrument_type='forex'):
     except Exception as e:
         logging.warning(f"Twelve Data API call for {symbol} failed: {str(e)}")
     
-    # Fallback to existing methods
-    if instrument_type == 'crypto':
-        return get_twelve_data_price(symbol.split('/')[0])  # Use base currency
-    elif instrument_type == 'commodity':
-        return get_twelve_data_price(symbol)
-    else:
-        return get_twelve_data_price(symbol)
+    # No fallback - return None if API fails
+    # The price worker should handle API calls, not the web interface
+    logging.warning(f"Failed to get price for {symbol} from Twelve Data API")
+    return None
 
 
 def execute_market_order(user, instrument, amount, current_price, trade_type):
@@ -405,9 +390,10 @@ def list_instruments():
 def new_instrument():
     form = InstrumentForm()
     if form.validate_on_submit():
-        current_price = get_twelve_data_price(form.symbol.data.upper(), form.type.data)
-        if current_price:
-            instrument = TradingInstrument(
+        # Create instrument without initial price - WebSocket price worker will update it
+        current_price = 0.0  # Default price, will be updated by WebSocket price worker
+        # Always create the instrument, price worker will handle pricing
+        instrument = TradingInstrument(
                 symbol=form.symbol.data.upper(),
                 name=form.name.data,
                 type=form.type.data,
@@ -432,7 +418,8 @@ def edit_instrument():
         instrument.symbol = form.symbol.data.upper()
         instrument.name = form.name.data
         instrument.type = form.type.data
-        instrument.current_price = get_twelve_data_price(form.symbol.data.upper(), form.name.data, form.type.data)
+        # Don't update price here - let price worker handle it
+        # instrument.current_price will be updated by WebSocket price worker
         instrument.last_updated = datetime.utcnow()
         db.session.commit()
         flash('Instrument has been updated!', 'success')
@@ -490,16 +477,15 @@ def update_all_prices():
         
         def update_instrument(instrument):
             try:
-                # Add slight delay to avoid hammering APIs simultaneously
-                time.sleep(0.1 * random.random())  # Random delay between 0-100ms
-                new_price = get_twelve_data_price(instrument.symbol, instrument.name, instrument.type)
-                if new_price:
-                    # Use the new update_price method instead of direct assignment
-                    instrument.update_price(new_price)
+                # Get price from database only - price worker handles updates
+                if instrument.current_price:
+                    logging.info(f"Price for {instrument.symbol} is {instrument.current_price} (from DB)")
                     return True
-                return False
+                else:
+                    logging.warning(f"No price in DB for {instrument.symbol} - price worker should handle this")
+                    return False
             except Exception as e:
-                logging.error(f"Error updating price for {instrument.symbol}: {str(e)}")
+                logging.error(f"Error checking price for {instrument.symbol}: {str(e)}")
                 return False
         
         # Use ThreadPoolExecutor for concurrent updates
@@ -516,13 +502,15 @@ def update_all_prices():
         
         for instrument in instruments:
             try:
-                new_price = get_twelve_data_price(instrument.symbol, instrument.name, instrument.type)
-                if new_price:
-                    instrument.current_price = new_price
+                # Just check if price exists in database (no API calls)
+                if instrument.current_price:
                     instrument.last_updated = now
                     updated_count += 1
+                    logging.info(f"Price exists for {instrument.symbol}: {instrument.current_price}")
+                else:
+                    logging.warning(f"No price in DB for {instrument.symbol} - price worker should handle this")
             except Exception as e:
-                logging.error(f"Error updating price for {instrument.symbol}: {str(e)}")
+                logging.error(f"Error checking price for {instrument.symbol}: {str(e)}")
         
         db.session.commit()
         flash(f'Updated prices for {updated_count} out of {len(instruments)} instruments', 'success')
@@ -918,7 +906,8 @@ def test_twelve_data_api():
     
     for symbol, asset_type in test_symbols:
         try:
-            price = get_twelve_data_price(symbol, asset_type)
+            # API calls disabled - using database only
+            price = None  # get_twelve_data_price(symbol, asset_type)
             if price:
                 test_results.append({
                     'symbol': symbol,
