@@ -83,10 +83,10 @@ def create_app(config_class=DevelopmentConfig):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     
-    # Initialize domain routing for production
-    if os.getenv('FLASK_ENV') == 'production':
-        from omcrm.domain_router import DomainRouter
-        domain_router = DomainRouter(app)
+    # Initialize domain routing for all environments (security is critical)
+    from omcrm.domain_router import DomainRouter
+    domain_router = DomainRouter(app)
+    print("🔐 Domain router initialized with IP whitelist protection")
     
     # Initialize Socket.IO with the app (only if not disabled)
     if not os.getenv('DISABLE_SOCKETIO'):

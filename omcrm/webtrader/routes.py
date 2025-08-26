@@ -863,6 +863,15 @@ def execute_trade():
     if not instrument:
         flash('Invalid instrument selected.', 'danger')
         return redirect(url_for('webtrader.webtrader_dashboard'))
+    
+    # 🕐 MARKET HOURS CHECK: Prevent stock trading when market is closed
+    if instrument.type.lower() == 'stock':
+        from omcrm.utils.market_hours import is_stock_market_open, get_market_status
+        
+        if not is_stock_market_open():
+            market_status = get_market_status()
+            flash(f'Stock trading is not available when the market is closed. {market_status["status"]}. {market_status["next_change"]} at {market_status["next_time"]}.', 'warning')
+            return redirect(url_for('webtrader.webtrader_dashboard'))
 
     # 🚀 PERFORMANCE: Get current price from database only (no API calls)
     current_price = instrument.current_price

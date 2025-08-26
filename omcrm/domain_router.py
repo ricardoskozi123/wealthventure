@@ -65,6 +65,10 @@ class DomainRouter:
         """SIMPLIFIED routing - handle login redirects and IP whitelist"""
         host = request.host.lower()
         path = request.path
+        client_ip = self.get_client_ip()
+        
+        # DEBUG: Log all requests for troubleshooting
+        print(f"🔍 DOMAIN ROUTER: Host={host}, Path={path}, IP={client_ip}")
         
         # Skip routing for static files and API endpoints
         if path.startswith(('/static', '/socket.io', '/api')):
