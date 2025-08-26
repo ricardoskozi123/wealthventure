@@ -4148,7 +4148,7 @@
 
     <!-- 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching -->
     <script>
-        // 🚀 OPTIMIZED CHART REFRESH - Much faster symbol switching
+        // 🚀 TRADINGVIEW EMBED WIDGET - Uses TradingView's hosted widget (no local library needed)
         function refreshTradingViewChart() {
             const symbol = currentInstrument.symbol;
             const type = currentInstrument.type;
@@ -4175,55 +4175,33 @@
                 else tvSymbol = symbol;
             }
             
-            console.log(`⚡ FAST CHART: ${symbol} → ${tvSymbol}`);
+            console.log(`⚡ TRADINGVIEW EMBED: ${symbol} → ${tvSymbol}`);
             
-            // 🚀 RAPID WIDGET DESTRUCTION - No delays
-            try {
-                if (window.tvWidget && typeof window.tvWidget.remove === 'function') {
-                    window.tvWidget.remove();
-                    console.log("⚡ Widget destroyed instantly");
-                }
-            } catch (error) {
-                console.warn("Widget destruction warning (continuing):", error);
-            }
-            
-            // 🚀 IMMEDIATE RECREATION - No delays
+            // 🚀 CREATE TRADINGVIEW IFRAME EMBED (no local library required)
             setTimeout(() => {
                 try {
-                    // Clear container
-                    chartContainer.innerHTML = '';
+                    // Create TradingView iframe embed URL
+                    const embedUrl = `https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${encodeURIComponent(tvSymbol)}&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&showpopupbutton=1&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&showpopupbutton=1&locale=en&utm_source=www.tradingview.com&utm_medium=widget&utm_campaign=chart&utm_term=${encodeURIComponent(tvSymbol)}`;
                     
-                    // Create new TradingView widget immediately
-                    window.tvWidget = new TradingView.widget({
-                        "autosize": true,
-                        "symbol": tvSymbol,
-                        "interval": "15",
-                        "container": "tradingview_chart",
-                        "library_path": "/static/js/charting_library/",
-                        "locale": "en",
-                        "disabled_features": [
-                            "use_localstorage_for_settings",
-                            "volume_force_overlay",
-                            "create_volume_indicator_by_default"
-                        ],
-                        "enabled_features": [
-                            "study_templates"
-                        ],
-                        "charts_storage_url": "",
-                        "charts_storage_api_version": "1.1",
-                        "client_id": "tradingview.com",
-                        "user_id": "public_user_id",
-                        "fullscreen": false,
-                        "studies_overrides": {},
-                        "theme": "dark",
-                        "custom_css_url": "/static/css/tradingview_custom.css"
-                    });
+                    // Clear container and create iframe
+                    chartContainer.innerHTML = `
+                        <iframe 
+                            id="tradingview_iframe"
+                            src="${embedUrl}"
+                            style="width: 100%; height: 400px; border: none; background: #1a1a1a;"
+                            frameborder="0"
+                            allowtransparency="true"
+                            scrolling="no"
+                            allowfullscreen>
+                        </iframe>
+                    `;
                     
-                    console.log(`✅ FAST CHART loaded: ${symbol} (${tvSymbol})`);
+                    console.log(`✅ TRADINGVIEW IFRAME loaded: ${symbol} (${tvSymbol})`);
                     
                 } catch (error) {
-                    console.error('❌ TradingView widget error:', error);
-                    chartContainer.innerHTML = '<div style="height: 400px; display: flex; align-items: center; justify-content: center; color: #ff4757; font-size: 16px;">Chart loading failed - TradingView library may be missing</div>';
+                    console.error('❌ TradingView iframe error:', error);
+                    // Fallback to simple price display
+                    loadSimplePriceFallback(symbol, chartContainer);
                 }
             }, 100);
         }
