@@ -4,14 +4,14 @@ from flask_login import login_required, current_user
 from omcrm.activities.models import Activity
 from omcrm.leads.models import Lead
 from omcrm.users.models import User
-from omcrm.rbac import is_admin
+from omcrm.rbac import is_admin, check_access
 
 activities = Blueprint('activities', __name__)
 
 
 @activities.route("/admin/activities")
 @login_required
-@is_admin
+@check_access('activities', 'view')
 def activities_list():
     """Display all activities for admins"""
     page = request.args.get('page', 1, type=int)
@@ -78,7 +78,7 @@ def lead_activities(lead_id):
 
 @activities.route("/admin/activities/user/<int:user_id>")
 @login_required
-@is_admin
+@check_access('activities', 'view')
 def user_activities(user_id):
     """Display activities performed by a specific user"""
     user = User.query.get_or_404(user_id)

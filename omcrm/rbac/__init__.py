@@ -66,26 +66,44 @@ def check_access(resource, operation):
                 return function(*args, **kwargs)
 
             if not current_user.role:
+                print(f"❌ User {current_user.email} has no role assigned")
                 abort(403)  # Forbidden
+
+            # Debug: Print user's role and resources
+            print(f"🔍 Checking access for {current_user.email} to {resource} ({operation})")
+            print(f"   Role: {current_user.role.name}")
+            print(f"   Resources: {[res.name for res in current_user.role.resources]}")
 
             for res in current_user.role.resources:
                 if resource == res.name:
+                    print(f"   Found resource '{resource}': view={res.can_view}, create={res.can_create}, edit={res.can_edit}, delete={res.can_delete}")
+                    
                     if operation == 'view' and res.can_view:
+                        print(f"✅ Access granted for {operation}")
                         return function(*args, **kwargs)
                     elif operation == 'edit' and res.can_edit:
+                        print(f"✅ Access granted for {operation}")
                         return function(*args, **kwargs)
                     elif operation == 'update' and res.can_edit:
+                        print(f"✅ Access granted for {operation}")
                         return function(*args, **kwargs)
                     elif operation == 'create' and res.can_create:
+                        print(f"✅ Access granted for {operation}")
                         return function(*args, **kwargs)
                     elif operation == 'delete' and res.can_delete:
+                        print(f"✅ Access granted for {operation}")
                         return function(*args, **kwargs)
                     elif operation == 'remove' and res.can_delete:
+                        print(f"✅ Access granted for {operation}")
                         return function(*args, **kwargs)
                     elif operation == 'impersonate' and res.can_impersonate:
+                        print(f"✅ Access granted for {operation}")
                         return function(*args, **kwargs)
                     else:
+                        print(f"❌ Operation '{operation}' not allowed for resource '{resource}'")
                         abort(403)  # Forbidden
+            
+            print(f"❌ Resource '{resource}' not found in user's role")
             abort(403)  # Forbidden
         return decorator
     return wrapper
