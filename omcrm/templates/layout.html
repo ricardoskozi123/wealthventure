@@ -149,7 +149,7 @@
               </a>
             </li>
             {% endif %}
-            {% if current_user.is_admin and can_view_sidebar_item('transactions') %}
+            {% if can_view_sidebar_item('transactions') %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint and 'transactions.' in request.endpoint %}active{% endif %}" href="{{ url_for('transactions.transactions_dashboard') }}">
                 <i data-feather="credit-card"></i>
