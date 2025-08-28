@@ -234,7 +234,7 @@ def email_settings():
 
 @settings.route("/settings/roles")
 @login_required
-@is_admin
+@check_access('staff', 'view')
 def settings_roles_view():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
@@ -247,7 +247,7 @@ def settings_roles_view():
 
 @settings.route("/settings/role/new", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('staff', 'create')
 def settings_roles_new():
     form = NewRoleForm()
     if request.method == 'POST':
@@ -365,7 +365,7 @@ def settings_roles_new():
 
 @settings.route("/settings/role/edit/<role_id>", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('staff', 'edit')
 def settings_roles_update(role_id):
     role = Role.query.filter_by(id=role_id).first()
     form = UpdateRoleForm()
@@ -441,7 +441,7 @@ def settings_roles_update(role_id):
 
 @settings.route("/settings/roles/del/<role_id>")
 @login_required
-@is_admin
+@check_access('staff', 'delete')
 def settings_roles_remove(role_id):
     role = Role.query.filter_by(id=role_id).first()
     db.session.delete(role)
@@ -452,7 +452,7 @@ def settings_roles_remove(role_id):
 # just for testing
 @settings.route("/settings/resource/create")
 @login_required
-@is_admin
+@check_access('staff', 'create')
 def create_resource():
     roles = Role.query \
         .filter(Role.name != 'admin') \
@@ -480,7 +480,7 @@ def create_resource():
 
 @settings.route("/settings/teams")
 @login_required
-@is_admin
+@check_access('staff', 'view')
 def settings_teams_view():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
@@ -492,7 +492,7 @@ def settings_teams_view():
 
 @settings.route("/settings/team/<int:team_id>")
 @login_required
-@is_admin
+@check_access('staff', 'view')
 def settings_team_view(team_id):
     team = Team.get_by_id(team_id)
     if not team:
@@ -504,7 +504,7 @@ def settings_team_view(team_id):
 
 @settings.route("/settings/team/new", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('staff', 'create')
 def settings_team_new():
     form = NewTeamForm()
     if request.method == 'POST':
@@ -534,7 +534,7 @@ def settings_team_new():
 
 @settings.route("/settings/team/edit/<int:team_id>", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('staff', 'edit')
 def settings_team_update(team_id):
     team = Team.get_by_id(team_id)
     if not team:
@@ -576,7 +576,7 @@ def settings_team_update(team_id):
 
 @settings.route("/settings/team/del/<int:team_id>")
 @login_required
-@is_admin
+@check_access('staff', 'delete')
 def settings_team_remove(team_id):
     team = Team.get_by_id(team_id)
     if not team:

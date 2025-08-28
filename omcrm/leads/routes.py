@@ -382,7 +382,7 @@ def convert_lead(lead_id):
 
 @leads.route("/leads/import", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('leads', 'create')
 def import_bulk_leads():
     form = ImportLeads()
     if request.method == 'POST':
@@ -416,7 +416,7 @@ def reset_filters():
 
 @leads.route("/leads/bulk_owner_assign", methods=['POST'])
 @login_required
-@is_admin
+@check_access('leads', 'edit')
 def bulk_owner_assign():
     form = BulkOwnerAssign()
     if request.method == 'POST':
@@ -438,7 +438,7 @@ def bulk_owner_assign():
 
 @leads.route("/leads/bulk_lead_source_assign", methods=['POST'])
 @login_required
-@is_admin
+@check_access('leads', 'edit')
 def bulk_lead_source_assign():
     form = BulkLeadSourceAssign()
     if request.method == 'POST':
@@ -460,7 +460,7 @@ def bulk_lead_source_assign():
 
 @leads.route("/leads/bulk_lead_status_assign", methods=['POST'])
 @login_required
-@is_admin
+@check_access('leads', 'edit')
 def bulk_lead_status_assign():
     form = BulkLeadStatusAssign()
     if request.method == 'POST':
@@ -481,7 +481,8 @@ def bulk_lead_status_assign():
 
 
 @leads.route("/leads/bulk_delete", methods=['POST'])
-@is_admin
+@login_required
+@check_access('leads', 'delete')
 def bulk_delete():
     form = BulkDelete()
     if request.method == 'POST':
@@ -858,7 +859,7 @@ def manage_balance(lead_id):
 
 @leads.route("/leads/sources", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('leads', 'view')
 def lead_sources():
     """View and manage lead sources"""
     sources = LeadSource.query.all()
@@ -898,7 +899,7 @@ def lead_sources():
 
 @leads.route("/leads/source/<int:source_id>/toggle_api", methods=['POST'])
 @login_required
-@is_admin
+@check_access('leads', 'edit')
 def toggle_api_access(source_id):
     """Enable or disable API access for a lead source"""
     source = LeadSource.query.get_or_404(source_id)
@@ -923,7 +924,7 @@ def toggle_api_access(source_id):
 
 @leads.route("/leads/source/<int:source_id>/regenerate_key", methods=['POST'])
 @login_required
-@is_admin
+@check_access('leads', 'edit')
 def regenerate_api_key(source_id):
     """Generate a new API key for a lead source"""
     source = LeadSource.query.get_or_404(source_id)
@@ -1074,7 +1075,7 @@ def return_to_admin():
 
 @leads.route("/lead_statuses", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('leads', 'view')
 def manage_lead_statuses():
     """Manage lead/client statuses"""
     from flask_wtf import FlaskForm
@@ -1105,7 +1106,7 @@ def manage_lead_statuses():
 
 @leads.route("/lead_statuses/edit/<int:status_id>", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('leads', 'edit')
 def edit_lead_status(status_id):
     """Edit an existing lead/client status"""
     status = LeadStatus.query.get_or_404(status_id)
@@ -1151,7 +1152,7 @@ def edit_lead_status(status_id):
 
 @leads.route("/lead_statuses/delete/<int:status_id>", methods=['GET', 'POST'])
 @login_required
-@is_admin
+@check_access('leads', 'delete')
 def delete_lead_status(status_id):
     """Delete a lead/client status"""
     status = LeadStatus.query.get_or_404(status_id)
@@ -1212,7 +1213,7 @@ def update_client_status():
 
 @leads.route("/leads/shuffle", methods=['POST'])
 @login_required
-@is_admin
+@check_access('leads', 'edit')
 def shuffle_leads():
     """Shuffle selected leads among team members"""
     if 'leads_to_shuffle' not in request.form or not request.form['leads_to_shuffle']:

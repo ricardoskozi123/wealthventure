@@ -6,7 +6,7 @@ import re
 
 from omcrm import db
 from omcrm.leads.models import Lead, LeadSource, LeadStatus
-from omcrm.rbac import is_admin
+from omcrm.rbac import is_admin, check_access
 from flask_login import login_required
 
 api = Blueprint('api', __name__)
