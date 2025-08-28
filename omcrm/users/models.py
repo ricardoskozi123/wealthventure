@@ -148,9 +148,9 @@ roles_resources = db.Table(
 class Role(db.Model):
     id = db.Column(db.Integer, db.Sequence('role_id_seq'), primary_key=True)
     name = db.Column(db.String(20), unique=True, nullable=False)
-    user = db.relationship(
+    users = db.relationship(
         'User',
-        uselist=False,
+        uselist=True,
         backref='role',
         lazy=True
     )
