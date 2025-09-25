@@ -12,15 +12,15 @@ class DomainRouter:
     
     def __init__(self, app=None):
         self.app = app
-        self.client_domain = os.environ.get('CLIENT_DOMAIN', 'stanford-capital.com')
-        self.crm_subdomain = os.environ.get('CRM_SUBDOMAIN', 'crm.stanford-capital.com')
+        self.client_domain = os.environ.get('CLIENT_DOMAIN', 'wealth-venture.com')
+        self.crm_subdomain = os.environ.get('CRM_SUBDOMAIN', 'crm.wealth-venture.com')
         
         # 🔐 ADMIN IP WHITELIST - Only these IPs can access admin login
         self.admin_whitelist_ips = [
             '127.0.0.1',          # Localhost
             'localhost',          # Localhost alias
             '84.32.188.252',      # Original VPS IP
-            '84.32.185.133',      # Stanford Capital VPS IP
+            '84.32.185.133',      # Wealth Venture VPS IP
             '84.32.191.249',      # Additional trusted IP
             '77.83.198.231',      # New authorized IP
             # Add your personal/office IPs below:
@@ -71,10 +71,10 @@ class DomainRouter:
         # DEBUG: Log all requests for troubleshooting
         print(f"🔍 DOMAIN ROUTER: Host={host}, Path={path}, IP={client_ip}")
         
-        # 🌐 BARE DOMAIN REDIRECT: Redirect stanford-capital.com to www.stanford-capital.com
-        if host == 'stanford-capital.com':
+        # 🌐 BARE DOMAIN REDIRECT: Redirect wealth-venture.com to www.wealth-venture.com
+        if host == 'wealth-venture.com':
             print(f"🔀 Redirecting bare domain to www: {host}{path}")
-            return redirect(f'https://www.stanford-capital.com{path}', code=301)
+            return redirect(f'https://www.wealth-venture.com{path}', code=301)
         
         # Skip routing for static files and API endpoints
         if path.startswith(('/static', '/socket.io', '/api')):

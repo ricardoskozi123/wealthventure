@@ -1,280 +1,286 @@
-# OMCRM - Trading CRM System
+# 💰 Wealth Venture - Professional Trading Platform
 
-OMCRM is a CRM system designed for managing leads, clients, and trading operations. The system includes both an admin/agent interface and a client-facing WebTrader platform.
+A comprehensive trading and wealth management platform built with Flask, featuring real-time market data, portfolio management, client relationship management (CRM), and advanced trading tools.
 
-## Features
+## 🌟 Features
 
-- Lead management with conversion to clients
-- Integrated WebTrader platform for clients
-- Transaction management (deposits/withdrawals)
-- Team-based permissions and role-based access control
-- API for external lead imports
-- Trading simulation with dynamic charts
+### Trading Platform
+- **Real-time Market Data**: Live price feeds for stocks, crypto, forex
+- **Advanced Charting**: Professional trading charts with technical indicators
+- **Portfolio Management**: Track investments, profits, and performance
+- **Trade Execution**: Simulated trading environment with real market data
+- **Risk Management**: Stop-loss, take-profit, and position sizing tools
 
-## Local Development
+### Client Management (CRM)
+- **Lead Management**: Track prospects and convert to clients
+- **Deal Pipeline**: Manage investment opportunities and deals
+- **Client Dashboard**: Dedicated client portal with trading access
+- **Activity Tracking**: Log all client interactions and communications
+- **Task Management**: Assign and track follow-up tasks
 
-1. Clone the repository:
+### Admin Features
+- **User Management**: Role-based access control (Admin, Agent, Client)
+- **Reporting**: Comprehensive analytics and performance reports
+- **Settings Management**: Platform configuration and customization
+- **Activity Logs**: Audit trail for all platform activities
+- **Multi-domain Support**: Separate admin and client domains
+
+### Security
+- **IP Whitelisting**: Restrict admin access to authorized IPs
+- **Role-based Permissions**: Granular access control
+- **Secure Authentication**: Password hashing and session management
+- **CSRF Protection**: Cross-site request forgery prevention
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8+
+- SQLite (default) or PostgreSQL
+- Modern web browser
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/wealth-venture.git
+   cd wealth-venture
    ```
-   git clone https://github.com/your-username/omcrm.git
-   cd omcrm
-   ```
 
-2. Create a virtual environment and install dependencies:
-   ```
+2. **Create virtual environment**
+   ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
    pip install -r requirements.txt
    ```
 
-3. Initialize the database:
-   ```
-   flask db upgrade
-   ```
-
-4. Run the application:
-   ```
-   python manage.py run
+4. **Set up environment variables**
+   ```bash
+   cp env.template .env
+   # Edit .env with your configuration
    ```
 
-5. Access the application at `http://127.0.0.1:5000`
-
-## Deployment
-
-### GitHub-based Deployment
-
-1. Push your changes to GitHub:
-   ```
-   git add .
-   git commit -m "Your commit message"
-   git push
+5. **Initialize database**
+   ```bash
+   python manage.py db upgrade
+   python run_setup.py  # Creates sample data
    ```
 
-2. On your server, clone the repository:
-   ```
-   git clone https://github.com/your-username/omcrm.git /var/www/omcrm
-   ```
-
-3. Follow the deployment steps in `deployment_steps.md`
-
-### Using the Deployment Script
-
-1. Run the deployment script:
-   ```
-   python deploy.py user@your-server-ip
+6. **Run the application**
+   ```bash
+   python run.py
    ```
 
-2. The script will:
-   - Create a deployment package (omcrm_deploy.tar.gz)
-   - Upload it to your server
-   - Provide instructions for completing the deployment
+7. **Access the platform**
+   - Main site: http://localhost:5000
+   - Admin login: http://localhost:5000/login
+   - Client login: http://localhost:5000/client/login
 
-3. Complete the deployment by following the steps provided by the script
-
-## Project Structure
-
-- `omcrm/` - Main application package
-  - `api/` - API routes and functionality
-  - `client/` - Client-facing routes and templates
-  - `deals/` - Deal management 
-  - `leads/` - Lead management
-  - `rbac/` - Role-based access control
-  - `settings/` - Application settings
-  - `transactions/` - Financial transactions
-  - `users/` - User management
-  - `webtrader/` - Trading platform
-- `migrations/` - Database migration scripts
-- `manage.py` - Management script
-- `wsgi.py` - WSGI entry point for production
-- `deployment_steps.md` - Deployment guide
-
-## License
-
-This project is for demonstration purposes only.
-
-## Support
-
-For support, please contact the system administrator.
-
-# OMCRM
-
-A full-featured Customer Relationship Management system built with 
-Flask, Python as well as other tools that are required to build a stable and asynchronous web application.
-
-![alt text](https://i.ibb.co/BsWm9Kf/omcrm-demo1.gif)
-
-## Instructions to run the app
-
-Below is the list that contains both database-level and module-level instructions.
-
-OMCRM contains the following modules (along with the
-percentage of completion):
-
-- Dashboard page with sales reports. (completed)
-- Leads management module. (completed)
-- Clients management module. (completed)
-- Accounts management module. (completed)
-- Contacts management module. (completed)
-- Tasks management module. (completed)
-- Deals management. (completed)
-- User and role-based system. (completed)
-- User teams management. (completed)
-- System settings (e.g. update email SMTP). (completed)
-- Data export / import. (completed)
-- Installation system. (completed)
-- WebTrader integration for client trading accounts. (completed)
-
-Additional features that need to be implemented:
-
-- Multiple language support.
-- Advanced search with saved searches.
-- Kanban view for tasks, leads, deals.
-- Gmail / Outlook sync.
-- Document management with versioning.
-- Lead / Client activity history.
-- Calendar view.
-- Mobile apps.
-- Telegram integration.
-- SMS tool.
-- Live chat functionality.
-
-## Installation and Configuration
-
-To install and configure OMCRM on your system:
-
-1. Clone the repository:
+## 📁 Project Structure
 
 ```
-git clone https://github.com/yourusername/OMCRM.git
+wealth-venture/
+├── omcrm/                 # Main application package
+│   ├── templates/         # HTML templates
+│   ├── static/           # CSS, JS, images
+│   ├── users/            # User management
+│   ├── leads/            # Lead/client management
+│   ├── deals/            # Deal pipeline
+│   ├── webtrader/        # Trading platform
+│   ├── activities/       # Activity tracking
+│   ├── tasks/            # Task management
+│   └── main/             # Main routes
+├── migrations/           # Database migrations
+├── scripts/             # Deployment scripts
+├── nginx/               # Nginx configurations
+├── requirements.txt     # Python dependencies
+├── run.py              # Application entry point
+└── config.py           # Configuration settings
 ```
 
-2. Create a virtual environment (Linux/macOS):
+## 🔧 Configuration
 
-```
-virtualenv -p python3 omcrm
-source omcrm/bin/activate
-```
+### Environment Variables
 
-Or on Windows:
-```
-python -m venv venv
-.\venv\Scripts\activate
-```
+Key configuration options in `.env`:
 
-3. Navigate to the application directory:
-```
-cd omcrm
-```
+```bash
+# Platform Settings
+PLATFORM_NAME=Wealth Venture
+SECRET_KEY=your-secret-key-here
 
-4. Install the required packages:
-```
-pip install -r requirements.txt
-```
+# Database
+DATABASE_URL=sqlite:///dev.db
 
-5. Initialize the database:
-```
-flask db init
-flask db migrate
-flask db upgrade
+# Domains (for multi-domain setup)
+CLIENT_DOMAIN=wealth-venture.com
+CRM_SUBDOMAIN=crm.wealth-venture.com
+
+# Email (optional)
+MAIL_SERVER=smtp.example.com
+MAIL_USERNAME=your-email@example.com
+MAIL_PASSWORD=your-password
+
+# API Keys (optional)
+ALPHA_VANTAGE_API_KEY=your-api-key
 ```
 
-6. Run the application:
+## 🐳 Docker Deployment
+
+### Quick Docker Setup
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# The platform will be available at:
+# - Main site: http://localhost
+# - Admin: http://localhost/login
 ```
-python run.py
+
+### Production Deployment
+
+For production deployment with SSL and custom domains:
+
+```bash
+# Configure domains in deploy_with_domains.sh
+./deploy_with_domains.sh
 ```
 
-7. Navigate to http://localhost:5000 in your browser.
+## 👥 Default Users
 
-## System Requirements
+After running the setup, default users are created:
 
-- Python 3.6+
-- Flask 2.0+
-- SQLAlchemy 1.4+
-- PostgreSQL (recommended for production) or SQLite (for development)
+- **Admin**: admin@example.com / password123
+- **Agent**: agent@example.com / password123
+- **Client**: client@example.com / password123
 
-## License
+⚠️ **Important**: Change these passwords in production!
+
+## 🎨 Customization
+
+### Branding
+- Update `PLATFORM_NAME` in environment variables
+- Modify templates in `omcrm/templates/`
+- Update CSS in `omcrm/static/css/`
+
+### Features
+- Add new modules in `omcrm/`
+- Create database migrations with Flask-Migrate
+- Extend the API in `omcrm/api/`
+
+## 📊 Trading Features
+
+### Market Data
+- Real-time price feeds
+- Historical data analysis
+- Multiple asset classes (stocks, crypto, forex)
+- Technical indicators
+
+### Portfolio Management
+- Position tracking
+- P&L calculations
+- Performance analytics
+- Risk metrics
+
+### Client Portal
+- Personal trading dashboard
+- Account statements
+- Trade history
+- Market research
+
+## 🔐 Security Features
+
+### Access Control
+- Role-based permissions (RBAC)
+- IP whitelisting for admin access
+- Session management
+- CSRF protection
+
+### Data Protection
+- Password hashing
+- Secure session cookies
+- SQL injection prevention
+- XSS protection
+
+## 📈 Analytics & Reporting
+
+### Admin Reports
+- User activity analytics
+- Trading performance metrics
+- Revenue tracking
+- Lead conversion rates
+
+### Client Reports
+- Portfolio performance
+- Trade history
+- Account statements
+- Tax reporting
+
+## 🛠️ Development
+
+### Running Tests
+```bash
+python -m pytest tests/
+```
+
+### Database Migrations
+```bash
+# Create new migration
+python manage.py db migrate -m "Description"
+
+# Apply migrations
+python manage.py db upgrade
+```
+
+### Adding New Features
+1. Create new module in `omcrm/`
+2. Add routes and templates
+3. Update database models
+4. Create migration
+5. Add tests
+
+## 📝 API Documentation
+
+The platform includes a REST API for external integrations:
+
+- `/api/leads` - Lead management
+- `/api/deals` - Deal pipeline
+- `/api/activities` - Activity tracking
+- `/api/users` - User management
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Contributing
+## 🆘 Support
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+For support and questions:
+- Create an issue on GitHub
+- Check the documentation in `/docs`
+- Review the deployment guides
 
-## Screenshots
+## 🚀 Roadmap
 
-![Dashboard](https://example.com/dashboard.png)
-![Leads](https://example.com/leads.png)
-![Deals](https://example.com/deals.png)
-![WebTrader](https://example.com/webtrader.png)
+### Upcoming Features
+- Mobile app (React Native)
+- Advanced algorithmic trading
+- Social trading features
+- Cryptocurrency staking
+- DeFi integrations
+- AI-powered market analysis
 
-# OMCRM Deployment Guide
+---
 
-This repository contains a Flask-based CRM application configured for demonstration with Docker.
-
-## Prerequisites
-
-- Ubuntu 22.04 LTS
-- Docker and Docker Compose installed
-- Git installed
-
-## Deployment Steps
-
-1. **Clone the repository**
-
-```bash
-git clone https://github.com/yourusername/letstrythis.git
-cd letstrythis
-```
-
-2. **Create required directories**
-
-```bash
-mkdir -p logs instance nginx
-```
-
-3. **Setup the environment variables**
-
-The default environment variables are in the `.env` file. You can modify them as needed.
-
-4. **Build and start the containers**
-
-```bash
-docker-compose up -d
-```
-
-This will start both the web application and the Nginx reverse proxy.
-
-5. **Access the application**
-
-The application will be available at:
-- http://your-server-ip
-
-## Folder Structure
-
-- `logs/`: Application logs
-- `instance/`: SQLite database and instance-specific files
-- `nginx/`: Nginx configuration files
-- `omcrm/`: Application source code
-
-## Database
-
-This demonstration uses SQLite for simplicity. The database file will be stored in the `instance` directory.
-
-## API Keys
-
-The application uses Alpha Vantage API for Forex data. The default key is included for demonstration purposes but has rate limits. For production use, obtain your own API key from [Alpha Vantage](https://www.alphavantage.co/support/#api-key).
-
-## Customization
-
-- Edit `config.py` to change application settings
-- Edit `nginx/app.conf` to customize the Nginx configuration
-- Edit `Dockerfile` to modify the container setup
-
-## Troubleshooting
-
-- Check the application logs: `docker-compose logs web`
-- Check the Nginx logs: `docker-compose logs nginx`
-- Ensure all volumes are mounted correctly
-- Verify the SQLite database has correct permissions
-
-
-
+**Wealth Venture** - Empowering your financial future through technology.
