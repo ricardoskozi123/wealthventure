@@ -162,7 +162,7 @@ def get_users_deals():
 
 @reports.route("/reports/deal_stage_by_users")
 @login_required
-@is_admin
+@check_access('reports', 'view')
 def deal_stage_by_users():
     query = Deal.query \
         .with_entities(
@@ -518,7 +518,7 @@ def client_by_country():
 
 @reports.route("/reports/user_activity")
 @login_required
-@is_admin
+@check_access('reports', 'view')
 def user_activity():
     # Get user activity data
     query = db.session.query(
@@ -568,7 +568,7 @@ def user_activity():
 
 @reports.route("/reports/team_performance")
 @login_required
-@is_admin
+@check_access('reports', 'view')
 def team_performance():
     # Get team performance data
     query = db.session.query(
@@ -627,7 +627,7 @@ def team_performance():
 
 @reports.route("/reports/task_completion")
 @login_required
-@is_admin
+@check_access('reports', 'view')
 def task_completion():
     # Get task completion data
     query = db.session.query(

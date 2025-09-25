@@ -110,7 +110,7 @@ cat > .env << 'EOL'
 SECRET_KEY=omcrm-trading-secret-2024
 FLASK_ENV=production
 FLASK_DEBUG=0
-PLATFORM_NAME=OMCRM Trading
+PLATFORM_NAME=Wealth Venture
 DATABASE_URL=sqlite:///instance/site.db
 SQLALCHEMY_DATABASE_URI=sqlite:///instance/site.db
 SQLALCHEMY_TRACK_MODIFICATIONS=False

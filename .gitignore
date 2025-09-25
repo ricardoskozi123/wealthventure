@@ -1,71 +1,118 @@
-# Database files
-*.db
-dev.db
-app.db
-omcrm.db
-*.sqlite
-*.sqlite3
-
-# Environment variables and sensitive configuration
-.env
-.flaskenv
-*.env
-config_vars.py
-local_settings.py
-instance/
-
-# Python virtual environments
-venv/
-.venv/
-virtualenv/
-env/
-ENV/
-
-# Python cache files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-.pytest_cache/
-.coverage
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
 htmlcov/
 .tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
 coverage.xml
 *.cover
+.hypothesis/
+.pytest_cache/
 
-# IDE specific files
-.idea/
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Flask instance folder
+instance/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+app.db
+dev.db
+omcrm.db
+
+# Environment variables
+.env
+.env.local
+.env.production
+config_vars.py
+
+# IDE files
 .vscode/
+.idea/
 *.swp
 *.swo
+*~
+
+# OS files
 .DS_Store
-.~*
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Log files
 logs/
 *.log
 
-# Temporary files and compiled code
-*.bak
-*.tmp
-*.temp
-.webassets-cache/
-*.so
-dist/
-build/
-*.egg-info/
+# Backup files
+backup/
+*.backup*
 
-# Local deployment and testing
-.pytest_cache/
-.vagrant/
-.ipynb_checkpoints
-
-# Compiled frontend assets (if using webpack/gulp/etc)
+# Node modules (if any)
 node_modules/
-bower_components/
-static/dist/
-static/.webassets-cache
-static/gen
 
-# Migration specific files we don't want to commit
-migrations/versions/*.py
-!migrations/versions/de1f187d2bb7_add_api_key_and_affiliate_id_to_.py
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+
+# Docker volumes
+docker-data/
+
+# Custom excludes for this project
+dasdad
+scripts/backup_config.json
+scripts/disaster_recovery_config.json

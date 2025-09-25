@@ -60,3 +60,5 @@ if __name__ == "__main__":
     
     print(f"Making {len(ADMIN_EMAILS)} users admin...")
     bulk_make_admin(ADMIN_EMAILS)
+
+

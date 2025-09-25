@@ -5,7 +5,7 @@ from omcrm import db
 from omcrm.transactions.models import Deposit, Withdrawal
 from omcrm.leads.models import Lead
 from omcrm.users.models import User
-from omcrm.rbac import is_admin, check_access
+from omcrm.rbac import is_admin
 from omcrm.activities.models import Activity
 
 transactions = Blueprint('transactions', __name__)
@@ -13,7 +13,7 @@ transactions = Blueprint('transactions', __name__)
 
 @transactions.route("/admin/transactions")
 @login_required
-@check_access('transactions', 'view')
+@is_admin
 def transactions_dashboard():
     """Admin dashboard for all transactions"""
     # Add debug logging
@@ -51,7 +51,7 @@ def transactions_dashboard():
 
 @transactions.route("/admin/deposit/<int:deposit_id>/approve", methods=['POST'])
 @login_required
-@check_access('transactions', 'edit')
+@is_admin
 def approve_deposit(deposit_id):
     """Approve a deposit request"""
     deposit = Deposit.query.get_or_404(deposit_id)
@@ -87,7 +87,7 @@ def approve_deposit(deposit_id):
 
 @transactions.route("/admin/deposit/<int:deposit_id>/reject", methods=['POST'])
 @login_required
-@check_access('transactions', 'edit')
+@is_admin
 def reject_deposit(deposit_id):
     """Reject a deposit request"""
     deposit = Deposit.query.get_or_404(deposit_id)
@@ -119,7 +119,7 @@ def reject_deposit(deposit_id):
 
 @transactions.route("/admin/withdrawal/<int:withdrawal_id>/approve", methods=['POST'])
 @login_required
-@check_access('transactions', 'edit')
+@is_admin
 def approve_withdrawal(withdrawal_id):
     """Approve a withdrawal request"""
     withdrawal = Withdrawal.query.get_or_404(withdrawal_id)
@@ -159,7 +159,7 @@ def approve_withdrawal(withdrawal_id):
 
 @transactions.route("/admin/withdrawal/<int:withdrawal_id>/reject", methods=['POST'])
 @login_required
-@check_access('transactions', 'edit')
+@is_admin
 def reject_withdrawal(withdrawal_id):
     """Reject a withdrawal request"""
     withdrawal = Withdrawal.query.get_or_404(withdrawal_id)
@@ -197,7 +197,7 @@ def reject_withdrawal(withdrawal_id):
 
 @transactions.route("/admin/client/<int:client_id>/transactions")
 @login_required
-@check_access('transactions', 'view')
+@is_admin
 def client_transactions(client_id):
     """View all transactions for a specific client"""
     client = Lead.query.get_or_404(client_id)
@@ -222,7 +222,7 @@ def client_transactions(client_id):
 
 @transactions.route("/api/transactions/stats", methods=['GET'])
 @login_required
-@check_access('transactions', 'view')
+@is_admin
 def transaction_stats():
     """API endpoint for transaction statistics"""
     # Calculate statistics
@@ -252,7 +252,7 @@ def transaction_stats():
 
 @transactions.route("/admin/client/<int:client_id>/add-deposit", methods=['POST'])
 @login_required
-@check_access('transactions', 'create')
+@is_admin
 def add_manual_deposit(client_id):
     """Manually add a deposit for a client"""
     client = Lead.query.get_or_404(client_id)
@@ -305,7 +305,7 @@ def add_manual_deposit(client_id):
 
 @transactions.route("/admin/client/<int:client_id>/add-withdrawal", methods=['POST'])
 @login_required
-@check_access('transactions', 'create')
+@is_admin
 def add_manual_withdrawal(client_id):
     """Manually add a withdrawal for a client"""
     client = Lead.query.get_or_404(client_id)

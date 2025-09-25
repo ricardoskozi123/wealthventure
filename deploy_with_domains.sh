@@ -80,7 +80,7 @@ FLASK_DEBUG=0
 DATABASE_URL=postgresql://omcrm_user:omcrm_password_2024@db:5432/omcrm_trading
 
 # Platform Configuration
-PLATFORM_NAME=Investment Pro Hub
+PLATFORM_NAME=Wealth Venture
 EOF
     
     print_success "Environment file created"

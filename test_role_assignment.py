@@ -94,3 +94,4 @@ def test_role_assignment():
 if __name__ == "__main__":
     success = test_role_assignment()
     sys.exit(0 if success else 1)
+

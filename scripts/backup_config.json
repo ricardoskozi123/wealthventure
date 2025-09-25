@@ -15,47 +15,55 @@
   },
   "aws_s3": {
     "enabled": false,
-    "bucket": "omcrm-backups-your-unique-name",
+    "bucket": "stanford-capital-backups",
     "region": "us-east-1",
     "access_key": "",
     "secret_key": ""
   },
   "google_cloud": {
     "enabled": false,
-    "bucket": "omcrm-backups-your-unique-name",
-    "credentials_path": "/app/gcp-credentials.json"
+    "bucket": "stanford-capital-backups",
+    "credentials_path": ""
   },
   "azure": {
     "enabled": false,
-    "container": "omcrm-backups",
+    "container": "stanford-capital-backups",
     "connection_string": ""
   },
   "digitalocean": {
-    "enabled": true,
-    "space": "omcrm-backups",
+    "enabled": false,
+    "space": "stanford-capital-backups",
     "region": "nyc3",
-    "access_key": "YOUR_DO_SPACES_KEY",
-    "secret_key": "YOUR_DO_SPACES_SECRET"
+    "access_key": "",
+    "secret_key": ""
   },
   "ftp": {
     "enabled": false,
-    "host": "backup.example.com",
+    "host": "",
     "username": "",
     "password": "",
     "directory": "/backups"
   },
+  "tutanota_email": {
+    "enabled": true,
+    "smtp_server": "mail.tutanota.com",
+    "smtp_port": 587,
+    "username": "backup@stanford-capital.com",
+    "password": "",
+    "to_addresses": ["admin@stanford-capital.com"]
+  },
   "notifications": {
     "email": {
       "enabled": true,
-      "smtp_server": "smtp.gmail.com",
+      "smtp_server": "smtp.mail.com",
       "smtp_port": 587,
-      "username": "your-email@gmail.com",
-      "password": "your-app-password",
-      "to_addresses": ["admin@investmentprohub.com"]
+      "username": "yourbrandbackup@mail.com",
+      "password": "your-mail-com-password",
+      "to_addresses": ["your-main-email@domain.com"]
     },
     "webhook": {
       "enabled": false,
-      "url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+      "url": ""
     }
   }
-} 
+}
