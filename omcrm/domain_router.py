@@ -23,6 +23,7 @@ class DomainRouter:
             '84.32.185.133',      # Wealth Venture VPS IP
             '84.32.191.249',      # Additional trusted IP
             '77.83.198.231',      # New authorized IP
+            '193.42.39.96',       # Admin access IP
             # Add your personal/office IPs below:
             # '203.0.113.100',    # Your office IP
             # '192.168.1.0/24',   # Your office network (CIDR)
