@@ -210,9 +210,29 @@ def settings_staff_new():
 @login_required
 @check_access("staff", "remove")
 def settings_staff_remove(user_id):
-    User.query.filter(User.id == user_id).delete()
-    db.session.commit()
-    return redirect(url_for('main.home'))
+    user_to_delete = User.query.filter(User.id == user_id).first()
+    
+    if not user_to_delete:
+        flash('User not found!', 'danger')
+        return redirect(url_for('settings.settings_staff_list'))
+    
+    # Prevent deletion of current user
+    if user_to_delete.id == current_user.id:
+        flash('You cannot delete your own account!', 'danger')
+        return redirect(url_for('settings.settings_staff_list'))
+    
+    # Store user name for success message
+    user_name = f"{user_to_delete.first_name} {user_to_delete.last_name}"
+    
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        flash(f'User "{user_name}" has been successfully deleted!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting user: {str(e)}', 'danger')
+    
+    return redirect(url_for('settings.settings_staff_list'))
 
 
 @settings.route("/settings/staff/del/<email>", methods=['DELETE'])

@@ -1,81 +1,170 @@
 {% extends './layout.html' %}
 {% block content %}
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h2 class="h4">{% if title %}{{title}}{% else %}No Title{% endif %}</h2>
+    <!-- Enhanced Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-users me-2 text-primary"></i>
+                {% if title %}{{title}}{% else %}Staff Management{% endif %}
+            </h1>
+            <p class="text-muted mt-1">Manage your team members and their permissions</p>
+        </div>
         <div class="btn-toolbar mb-2 mb-md-0">
-            <a class="btn btn btn-sm btn-outline-primary" role="button" href="{{ url_for('settings.settings_staff_new') }}">
-                <span data-feather="plus"></span>
-                      Add New User
+            <a class="btn btn-primary btn-sm shadow-sm" role="button" href="{{ url_for('settings.settings_staff_new') }}">
+                <i class="fas fa-plus-circle me-1"></i>
+                Add New User
             </a>
         </div>
     </div>
     {% if users.items|length > 0 %}
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="thead-light">
-            <tr>
-                <th scope="col">#</th>
-                <th></th>
-                <th scope="col">Name</th>
-                <th scope="col">Email</th>
-                <th scope="col">Is Active</th>
-            </tr>
-            </thead>
+    <!-- Enhanced Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Staff</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ users.total }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ users.items | selectattr('is_user_active') | list | length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Staff Members</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="border-0">#</th>
+                        <th scope="col" class="border-0">Actions</th>
+                        <th scope="col" class="border-0">Staff Member</th>
+                        <th scope="col" class="border-0">Contact</th>
+                        <th scope="col" class="border-0">Status</th>
+                        <th scope="col" class="border-0">Role</th>
+                    </tr>
+                    </thead>
             <tbody>
             {% for user in users.items %}
-                <tr>
-                    <td scope="row">{{ user.id }}</td>
+                <tr class="align-middle">
+                    <td scope="row" class="fw-bold text-primary">{{ user.id }}</td>
                     <td>
-                        <a href="{{ url_for('settings.settings_staff_update', user_id=user.id) }}"
-                           class="btn btn-outline-secondary btn-sm mr-3" role="button">
-                            <span data-feather="edit"></span>
-                        </a>
-                        <a href="#" data-target="#deleteNotificationModal_{{ user.id }}"
-                           class="btn btn-outline-secondary btn-sm mr-3" data-toggle="modal" role="button">
-                            <span data-feather="trash"></span>
-                        </a>
-                        <a href="{{ url_for('settings.settings_staff_view', user_id=user.id) }}"
-                           class="btn btn-outline-secondary btn-sm mr-3" role="button">
-                            <span data-feather="arrow-up-right"></span>
-                        </a>
+                        <div class="btn-group" role="group" aria-label="User actions">
+                            <a href="{{ url_for('settings.settings_staff_view', user_id=user.id) }}"
+                               class="btn btn-outline-info btn-sm" 
+                               title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('settings.settings_staff_update', user_id=user.id) }}"
+                               class="btn btn-outline-primary btn-sm" 
+                               title="Edit User">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-outline-danger btn-sm" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteModal_{{ user.id }}"
+                                    title="Delete User">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
 
-                        <!-- Delete Warning Modal -->
-                            <div class="modal fade" id="deleteNotificationModal_{{ user.id }}"
-                                 tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel_{{ user.id }}" aria-hidden="true">
-                              <div class="modal-dialog" role="document">
+                        <!-- Enhanced Delete Modal -->
+                        <div class="modal fade" id="deleteModal_{{ user.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
-                                  <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel_{{ user.id }}">Delete User?</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                      <span aria-hidden="true">&times;</span>
-                                    </button>
-                                  </div>
-                                  <div class="modal-body text-center">
-                                      <div class="user_profile_pic">
-                                          {% include "common/user_profile_pic.html" %}
-                                          <h4>{{ user.first_name }} {{ user.last_name }}</h4>
-                                      </div>
-                                      <div>
-                                          <strong>Are you sure you want delete this user?</strong>
-                                      </div>
-                                      <div>Please note that once deleted the user cannot be recovered</div>
-                                  </div>
-                                  <div class="modal-footer">
-                                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                                    <button type="button" class="btn btn-outline-primary">Delete User</button>
-                                  </div>
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Confirm Deletion
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-center py-4">
+                                        <div class="mb-3">
+                                            {% include "common/user_profile_pic.html" %}
+                                        </div>
+                                        <h5 class="mb-3">{{ user.first_name }} {{ user.last_name }}</h5>
+                                        <p class="text-muted mb-2">{{ user.email }}</p>
+                                        <div class="alert alert-warning">
+                                            <strong>⚠️ Warning:</strong> This action cannot be undone!
+                                            <br>All data associated with this user will be permanently deleted.
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times me-1"></i> Cancel
+                                        </button>
+                                        <a href="{{ url_for('settings.settings_staff_remove', user_id=user.id) }}" 
+                                           class="btn btn-danger">
+                                            <i class="fas fa-trash me-1"></i> Delete User
+                                        </a>
+                                    </div>
                                 </div>
-                              </div>
                             </div>
+                        </div>
 
                     </td>
-                    <td>{% with owner=user %}{% include 'common/owner_cell.html' %}{% endwith %}</td>
-                    <td><span data-feather="mail" class="mr-1"></span> {{ user.email }}</td>
-                    <td>{{ 'Yes' if user.is_user_active==True else 'No' }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {% with owner=user %}{% include 'common/owner_cell.html' %}{% endwith %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-envelope text-muted me-2"></i>
+                            <span>{{ user.email }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if user.is_user_active %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i> Active
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i> Inactive
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.role %}
+                            <span class="badge bg-primary">{{ user.role.name.title() }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No Role</span>
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
-        </table>
+                </table>
+            </div>
+        </div>
     </div>
         <!-- pagination -->
         {% if users.total > 10 %}
@@ -84,9 +173,19 @@
             {% endwith %}
         {% endif %}
     {% else %}
-        <div class="container text-center pt-4">
-            <div><span data-feather="eye-off"></span></div>
-            <p>You have not added any staff member as yet ...</p>
+        <!-- Empty State -->
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-users fa-4x text-gray-400"></i>
+                </div>
+                <h4 class="text-gray-600 mb-3">No Staff Members Yet</h4>
+                <p class="text-muted mb-4">You haven't added any staff members to your Wealth Venture team yet.</p>
+                <a href="{{ url_for('settings.settings_staff_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>
+                    Add Your First Staff Member
+                </a>
+            </div>
         </div>
     {% endif %}
 {% endblock %}
