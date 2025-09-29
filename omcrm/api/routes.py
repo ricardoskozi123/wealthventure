@@ -8,7 +8,7 @@ from omcrm import db
 from omcrm.leads.models import Lead, LeadSource, LeadStatus, Comment
 from omcrm.rbac import is_admin, check_access
 from flask_login import login_required
-from flask_wtf import csrf
+# CSRF exemption removed - using different approach
 
 api = Blueprint('api', __name__)
 
@@ -43,7 +43,6 @@ def list_sources():
     }), 200
 
 @api.route('/api/import_lead', methods=['GET', 'POST'])
-@csrf.exempt
 def import_lead():
     """API endpoint for importing leads from external sources
     
@@ -240,7 +239,6 @@ def generate_api_key(source_id):
     }), 200
 
 @api.route('/api/add_comment', methods=['POST'])
-@csrf.exempt
 def add_comment_to_lead():
     """API endpoint for adding comments to existing leads
     
