@@ -8,6 +8,7 @@ from omcrm import db
 from omcrm.leads.models import Lead, LeadSource, LeadStatus, Comment
 from omcrm.rbac import is_admin, check_access
 from flask_login import login_required
+from flask_wtf.csrf import exempt
 
 api = Blueprint('api', __name__)
 
@@ -42,6 +43,7 @@ def list_sources():
     }), 200
 
 @api.route('/api/import_lead', methods=['GET', 'POST'])
+@exempt
 def import_lead():
     """API endpoint for importing leads from external sources
     
@@ -64,15 +66,35 @@ def import_lead():
     - JSON response with success/error message and lead ID if successful
     """
     # Extract data from request (handle both GET and POST)
+    data = {}
     if request.method == 'POST':
-        data = request.get_json() or request.form.to_dict()
+        # Try JSON first, then form data
+        if request.is_json:
+            data = request.get_json() or {}
+        else:
+            data = request.form.to_dict()
+        
+        # If still no data, try to get from request.data as JSON
+        if not data and request.data:
+            try:
+                import json
+                data = json.loads(request.data.decode('utf-8'))
+            except:
+                pass
     else:  # GET
         data = request.args.to_dict()
     
     if not data:
         return jsonify({
             'success': False,
-            'error': 'No data provided'
+            'error': 'No data provided',
+            'debug': {
+                'method': request.method,
+                'content_type': request.content_type,
+                'is_json': request.is_json,
+                'has_form': bool(request.form),
+                'has_data': bool(request.data)
+            }
         }), 400
     
     # Validate required parameters
@@ -218,6 +240,7 @@ def generate_api_key(source_id):
     }), 200
 
 @api.route('/api/add_comment', methods=['POST'])
+@exempt
 def add_comment_to_lead():
     """API endpoint for adding comments to existing leads
     
@@ -230,7 +253,19 @@ def add_comment_to_lead():
     - JSON response with success/error message and comment ID if successful
     """
     # Extract data from request
-    data = request.get_json() or request.form.to_dict()
+    data = {}
+    if request.is_json:
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict()
+    
+    # If still no data, try to get from request.data as JSON
+    if not data and request.data:
+        try:
+            import json
+            data = json.loads(request.data.decode('utf-8'))
+        except:
+            pass
     
     if not data:
         return jsonify({
