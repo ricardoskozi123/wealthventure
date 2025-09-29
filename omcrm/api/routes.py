@@ -5,7 +5,7 @@ import string
 import re
 
 from omcrm import db
-from omcrm.leads.models import Lead, LeadSource, LeadStatus
+from omcrm.leads.models import Lead, LeadSource, LeadStatus, Comment
 from omcrm.rbac import is_admin, check_access
 from flask_login import login_required
 
@@ -56,7 +56,8 @@ def import_lead():
     - phone: Phone number
     - country: Country
     - company_name: Company name
-    - notes: Additional notes
+    - notes: Additional notes (stored in lead notes field)
+    - comment: Optional comment (creates a proper comment record)
     - funnel_name: Funnel name for tracking
     
     Returns:
@@ -168,11 +169,30 @@ def import_lead():
         db.session.add(new_lead)
         db.session.commit()
         
-        return jsonify({
+        # Add comment if provided
+        comment_text = data.get('comment')
+        if comment_text and comment_text.strip():
+            comment = Comment(
+                content=comment_text.strip(),
+                user_id=1,  # System user for API comments (you may want to create a dedicated API user)
+                lead_id=new_lead.id,
+                date_posted=datetime.utcnow()
+            )
+            db.session.add(comment)
+            db.session.commit()
+        
+        response_data = {
             'success': True,
             'message': 'Lead imported successfully',
             'lead_id': new_lead.id
-        }), 201
+        }
+        
+        # Include comment ID in response if comment was added
+        if comment_text and comment_text.strip():
+            response_data['comment_added'] = True
+            response_data['comment_id'] = comment.id
+        
+        return jsonify(response_data), 201
         
     except Exception as e:
         db.session.rollback()
@@ -195,4 +215,89 @@ def generate_api_key(source_id):
     return jsonify({
         'success': True,
         'api_key': api_key
-    }), 200 
+    }), 200
+
+@api.route('/api/add_comment', methods=['POST'])
+def add_comment_to_lead():
+    """API endpoint for adding comments to existing leads
+    
+    Required parameters:
+    - api_key: The API key associated with a lead source
+    - lead_id: The ID of the lead to add comment to
+    - comment: The comment text
+    
+    Returns:
+    - JSON response with success/error message and comment ID if successful
+    """
+    # Extract data from request
+    data = request.get_json() or request.form.to_dict()
+    
+    if not data:
+        return jsonify({
+            'success': False,
+            'error': 'No data provided'
+        }), 400
+    
+    # Validate required parameters
+    api_key = data.get('api_key')
+    if not api_key:
+        return jsonify({
+            'success': False,
+            'error': 'API key is required'
+        }), 400
+
+    # Validate API key
+    lead_source = LeadSource.get_by_api_key(api_key)
+    if not lead_source:
+        return jsonify({
+            'success': False,
+            'error': 'Invalid API key or API access is disabled'
+        }), 401
+
+    lead_id = data.get('lead_id')
+    if not lead_id:
+        return jsonify({
+            'success': False,
+            'error': 'Lead ID is required'
+        }), 400
+
+    comment_text = data.get('comment')
+    if not comment_text or not comment_text.strip():
+        return jsonify({
+            'success': False,
+            'error': 'Comment text is required'
+        }), 400
+
+    # Find the lead
+    lead = Lead.query.get(lead_id)
+    if not lead:
+        return jsonify({
+            'success': False,
+            'error': 'Lead not found'
+        }), 404
+
+    try:
+        # Create comment
+        comment = Comment(
+            content=comment_text.strip(),
+            user_id=1,  # System user for API comments
+            lead_id=lead.id,
+            date_posted=datetime.utcnow()
+        )
+        
+        db.session.add(comment)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Comment added successfully',
+            'comment_id': comment.id,
+            'lead_id': lead.id
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': f'Error adding comment: {str(e)}'
+        }), 500 
