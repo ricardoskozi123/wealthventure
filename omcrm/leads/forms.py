@@ -4,7 +4,7 @@ from wtforms import SelectField, DateField, DateTimeField
 from wtforms import StringField, SubmitField, FloatField, BooleanField, HiddenField
 from wtforms import TextAreaField, PasswordField
 from wtforms.widgets import TextArea
-from wtforms.validators import DataRequired, Email, Optional, EqualTo, NumberRange
+from wtforms.validators import DataRequired, Email, Optional, EqualTo, NumberRange, Length
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 
 from omcrm.leads.models import LeadSource, LeadStatus
@@ -21,7 +21,7 @@ class NewLead(FlaskForm):
     last_name = StringField('Last Name', validators=[DataRequired(message='Last name is mandatory')])
     company_name = StringField('Company Name')
     email = StringField('Email', validators=[Email(message='Invalid Email Address!')])
-    phone = StringField('Phone Number')
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20, message='Phone number must be 20 characters or less')])
     country = StringField('Country', validators=[DataRequired(message='Country is mandatory')])
     
     # Keep owner assignment for admin
@@ -84,7 +84,7 @@ class ConvertLead(FlaskForm):
     client_first_name = StringField('First Name')
     client_last_name = StringField('Last Name')
     client_email = StringField('Email')
-    client_phone = StringField('Phone')
+    client_phone = StringField('Phone', validators=[Optional(), Length(max=20, message='Phone number must be 20 characters or less')])
 
     create_deal = BooleanField('Create Deal', default=True)
 
