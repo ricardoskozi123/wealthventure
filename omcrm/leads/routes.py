@@ -1358,6 +1358,9 @@ def shuffle_leads():
 @check_access('leads', 'update')
 def update_status():
     """Update the status of a lead or client via AJAX"""
+    import logging
+    logging.info(f"Status update request from user {current_user.id}: {request.form}")
+    
     if not request.is_json and not request.form:
         return jsonify({"success": False, "message": "Invalid request format"}), 400
     
@@ -1403,6 +1406,18 @@ def update_status():
     # Update the lead status
     lead.lead_status_id = status_id
     db.session.commit()
+    
+    logging.info(f"Successfully updated lead {lead_id} status to {status_id} ({status.status_name})")
+    
+    # Log the activity
+    Activity.log(
+        action_type='status_updated',
+        description=f'Lead status updated to "{status.status_name}"',
+        user=current_user,
+        lead=lead,
+        target_type='lead',
+        target_id=lead.id
+    )
     
     return jsonify({"success": True})
 
