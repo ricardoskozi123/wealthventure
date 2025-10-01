@@ -277,7 +277,10 @@
         }
         
         // Update lead status via AJAX when changed
-        $('.lead-status-select').change(function() {
+        $('.lead-status-select').change(function(e) {
+            e.preventDefault(); // Prevent any default form submission
+            e.stopPropagation(); // Prevent event bubbling
+            
             const $select = $(this);
             const leadId = $select.data('lead-id');
             const statusId = $select.val();

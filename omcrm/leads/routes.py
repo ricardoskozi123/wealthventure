@@ -1382,21 +1382,33 @@ def update_status():
         return jsonify({"success": False, "message": "Lead not found"}), 404
     
     # Check permissions - allow if user is admin, owner, or has leads update permission
+    logging.info(f"Permission check: user_id={current_user.id}, is_admin={current_user.is_admin}, lead_owner_id={lead.owner_id}")
+    
     if not current_user.is_admin and lead.owner_id != current_user.id:
         # Check if user has general leads update permission
         try:
             from omcrm.rbac import is_allowed
-            if not is_allowed(current_user, 'leads', 'update'):
+            has_permission = is_allowed(current_user, 'leads', 'update')
+            logging.info(f"RBAC permission check result: {has_permission}")
+            if not has_permission:
                 return jsonify({"success": False, "message": "You don't have permission to update this lead's status"}), 403
-        except:
+        except Exception as e:
             # Fallback - if RBAC check fails, deny access for non-admin non-owners
+            logging.error(f"RBAC check failed: {e}")
             return jsonify({"success": False, "message": "You don't have permission to update this lead's status"}), 403
     
     # If status_id is None, set lead_status_id to None
     if status_id is None:
+        logging.info(f"Setting lead {lead_id} status to None")
         lead.lead_status_id = None
-        db.session.commit()
-        return jsonify({"success": True})
+        try:
+            db.session.commit()
+            logging.info(f"Successfully set lead {lead_id} status to None")
+            return jsonify({"success": True})
+        except Exception as e:
+            logging.error(f"Failed to commit None status for lead {lead_id}: {e}")
+            db.session.rollback()
+            return jsonify({"success": False, "message": "Database error"}), 500
     
     # Otherwise, verify status exists
     status = LeadStatus.query.get(status_id)
@@ -1404,22 +1416,28 @@ def update_status():
         return jsonify({"success": False, "message": "Status not found"}), 404
     
     # Update the lead status
+    logging.info(f"Updating lead {lead_id} status from {lead.lead_status_id} to {status_id} ({status.status_name})")
     lead.lead_status_id = status_id
-    db.session.commit()
     
-    logging.info(f"Successfully updated lead {lead_id} status to {status_id} ({status.status_name})")
-    
-    # Log the activity
-    Activity.log(
-        action_type='status_updated',
-        description=f'Lead status updated to "{status.status_name}"',
-        user=current_user,
-        lead=lead,
-        target_type='lead',
-        target_id=lead.id
-    )
-    
-    return jsonify({"success": True})
+    try:
+        db.session.commit()
+        logging.info(f"Successfully updated lead {lead_id} status to {status_id} ({status.status_name})")
+        
+        # Log the activity
+        Activity.log(
+            action_type='status_updated',
+            description=f'Lead status updated to "{status.status_name}"',
+            user=current_user,
+            lead=lead,
+            target_type='lead',
+            target_id=lead.id
+        )
+        
+        return jsonify({"success": True})
+    except Exception as e:
+        logging.error(f"Failed to commit status update for lead {lead_id}: {e}")
+        db.session.rollback()
+        return jsonify({"success": False, "message": "Database error"}), 500
 
 @leads.route("/leads/export_csv", methods=['GET'])
 @login_required
