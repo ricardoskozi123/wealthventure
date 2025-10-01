@@ -1,143 +1,262 @@
 """
-Market Hours Checker for Trading Platform
-Prevents trading during market closures
+Market Hours Utility for Wealth Venture Trading Platform
+========================================================
+
+Checks if stock markets are open and provides trading session information.
 """
 
-from datetime import datetime, time
+from datetime import datetime, time, date
 import pytz
+from typing import Dict, Tuple, Optional
+import requests
+import json
+from functools import lru_cache
 
-def is_stock_market_open():
-    """
-    Check if US stock market is currently open
-    NYSE/NASDAQ trading hours: 9:30 AM - 4:00 PM EST (Monday-Friday)
-    """
-    try:
-        # Get current time in Eastern timezone
-        eastern = pytz.timezone('US/Eastern')
-        now_eastern = datetime.now(eastern)
+class MarketHoursChecker:
+    """Check if stock markets are open for trading"""
+    
+    def __init__(self):
+        # Market timezones
+        self.timezones = {
+            'US': pytz.timezone('US/Eastern'),
+            'UK': pytz.timezone('Europe/London'),
+            'EU': pytz.timezone('Europe/Frankfurt'),
+            'ASIA': pytz.timezone('Asia/Tokyo')
+        }
         
-        # Check if it's a weekday (Monday=0, Sunday=6)
-        if now_eastern.weekday() >= 5:  # Saturday or Sunday
-            return False
+        # US Market Hours (Eastern Time)
+        self.us_market_hours = {
+            'pre_market_start': time(4, 0),      # 4:00 AM
+            'regular_start': time(9, 30),       # 9:30 AM
+            'regular_end': time(16, 0),         # 4:00 PM
+            'after_hours_end': time(20, 0)      # 8:00 PM
+        }
         
-        # Market hours: 9:30 AM - 4:00 PM EST
-        market_open = time(9, 30)  # 9:30 AM
-        market_close = time(16, 0)  # 4:00 PM
+        # US Market Holidays 2024-2025 (add more as needed)
+        self.us_holidays = {
+            # 2024
+            date(2024, 1, 1),   # New Year's Day
+            date(2024, 1, 15),  # MLK Day
+            date(2024, 2, 19),  # Presidents Day
+            date(2024, 3, 29),  # Good Friday
+            date(2024, 5, 27),  # Memorial Day
+            date(2024, 6, 19),  # Juneteenth
+            date(2024, 7, 4),   # Independence Day
+            date(2024, 9, 2),   # Labor Day
+            date(2024, 11, 28), # Thanksgiving
+            date(2024, 12, 25), # Christmas
+            
+            # 2025
+            date(2025, 1, 1),   # New Year's Day
+            date(2025, 1, 20),  # MLK Day
+            date(2025, 2, 17),  # Presidents Day
+            date(2025, 4, 18),  # Good Friday
+            date(2025, 5, 26),  # Memorial Day
+            date(2025, 6, 19),  # Juneteenth
+            date(2025, 7, 4),   # Independence Day
+            date(2025, 9, 1),   # Labor Day
+            date(2025, 11, 27), # Thanksgiving
+            date(2025, 12, 25), # Christmas
+        }
+    
+    def get_current_time_et(self) -> datetime:
+        """Get current time in Eastern Time"""
+        return datetime.now(self.timezones['US'])
+    
+    def is_market_holiday(self, check_date: date = None) -> bool:
+        """Check if given date is a market holiday"""
+        if check_date is None:
+            check_date = self.get_current_time_et().date()
         
-        current_time = now_eastern.time()
+        return check_date in self.us_holidays
+    
+    def is_weekend(self, check_date: date = None) -> bool:
+        """Check if given date is weekend"""
+        if check_date is None:
+            check_date = self.get_current_time_et().date()
         
-        # Check if current time is within market hours
-        return market_open <= current_time <= market_close
+        return check_date.weekday() >= 5  # Saturday = 5, Sunday = 6
+    
+    def get_market_status(self) -> Dict:
+        """
+        Get comprehensive market status
         
-    except Exception as e:
-        print(f"Error checking market hours: {e}")
-        # In case of error, allow trading (fail-safe)
-        return True
-
-def get_market_status():
-    """
-    Get detailed market status information
-    """
-    try:
-        eastern = pytz.timezone('US/Eastern')
-        now_eastern = datetime.now(eastern)
+        Returns:
+            Dict with market status information
+        """
+        now_et = self.get_current_time_et()
+        current_date = now_et.date()
+        current_time = now_et.time()
         
-        is_open = is_stock_market_open()
+        # Check if market is closed due to weekend or holiday
+        if self.is_weekend(current_date):
+            next_open = self._get_next_market_open(now_et)
+            return {
+                'is_open': False,
+                'status': 'CLOSED_WEEKEND',
+                'message': 'Market is closed for the weekend',
+                'current_time_et': now_et.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                'next_open': next_open.strftime('%Y-%m-%d %H:%M:%S %Z') if next_open else None,
+                'session': 'CLOSED'
+            }
         
-        # Calculate next market open/close
-        if now_eastern.weekday() >= 5:  # Weekend
-            # Next Monday 9:30 AM
-            days_until_monday = (7 - now_eastern.weekday()) % 7
-            if days_until_monday == 0:
-                days_until_monday = 1  # If it's Sunday, next Monday is 1 day
-            next_open = now_eastern.replace(hour=9, minute=30, second=0, microsecond=0)
-            next_open = next_open.replace(day=now_eastern.day + days_until_monday)
-        elif is_open:
-            # Market is open, next close is today at 4:00 PM
-            next_close = now_eastern.replace(hour=16, minute=0, second=0, microsecond=0)
+        if self.is_market_holiday(current_date):
+            next_open = self._get_next_market_open(now_et)
+            return {
+                'is_open': False,
+                'status': 'CLOSED_HOLIDAY',
+                'message': 'Market is closed for holiday',
+                'current_time_et': now_et.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                'next_open': next_open.strftime('%Y-%m-%d %H:%M:%S %Z') if next_open else None,
+                'session': 'CLOSED'
+            }
+        
+        # Check trading sessions
+        if current_time < self.us_market_hours['pre_market_start']:
+            # Before pre-market
+            next_open = now_et.replace(
+                hour=self.us_market_hours['pre_market_start'].hour,
+                minute=self.us_market_hours['pre_market_start'].minute,
+                second=0, microsecond=0
+            )
+            return {
+                'is_open': False,
+                'status': 'CLOSED_OVERNIGHT',
+                'message': 'Market opens at 4:00 AM ET (Pre-market)',
+                'current_time_et': now_et.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                'next_open': next_open.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                'session': 'CLOSED'
+            }
+        
+        elif current_time < self.us_market_hours['regular_start']:
+            # Pre-market hours
             return {
                 'is_open': True,
-                'status': 'Market is OPEN',
-                'next_change': 'Market closes',
-                'next_time': next_close.strftime('%I:%M %p %Z'),
-                'current_time': now_eastern.strftime('%I:%M %p %Z on %A')
+                'status': 'PRE_MARKET',
+                'message': 'Pre-market trading is open (4:00 AM - 9:30 AM ET)',
+                'current_time_et': now_et.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                'next_open': None,
+                'session': 'PRE_MARKET',
+                'regular_open_at': now_et.replace(
+                    hour=self.us_market_hours['regular_start'].hour,
+                    minute=self.us_market_hours['regular_start'].minute,
+                    second=0, microsecond=0
+                ).strftime('%Y-%m-%d %H:%M:%S %Z')
             }
+        
+        elif current_time < self.us_market_hours['regular_end']:
+            # Regular market hours
+            return {
+                'is_open': True,
+                'status': 'REGULAR_HOURS',
+                'message': 'Regular market hours (9:30 AM - 4:00 PM ET)',
+                'current_time_et': now_et.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                'next_open': None,
+                'session': 'REGULAR',
+                'market_close_at': now_et.replace(
+                    hour=self.us_market_hours['regular_end'].hour,
+                    minute=self.us_market_hours['regular_end'].minute,
+                    second=0, microsecond=0
+                ).strftime('%Y-%m-%d %H:%M:%S %Z')
+            }
+        
+        elif current_time < self.us_market_hours['after_hours_end']:
+            # After-hours trading
+            return {
+                'is_open': True,
+                'status': 'AFTER_HOURS',
+                'message': 'After-hours trading (4:00 PM - 8:00 PM ET)',
+                'current_time_et': now_et.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                'next_open': None,
+                'session': 'AFTER_HOURS',
+                'after_hours_end_at': now_et.replace(
+                    hour=self.us_market_hours['after_hours_end'].hour,
+                    minute=self.us_market_hours['after_hours_end'].minute,
+                    second=0, microsecond=0
+                ).strftime('%Y-%m-%d %H:%M:%S %Z')
+            }
+        
         else:
-            # Market is closed, check if it's same day or next day
-            current_time = now_eastern.time()
-            if current_time < time(9, 30):
-                # Before market open today
-                next_open = now_eastern.replace(hour=9, minute=30, second=0, microsecond=0)
+            # After 8 PM - market closed until next day
+            next_open = self._get_next_market_open(now_et)
+            return {
+                'is_open': False,
+                'status': 'CLOSED_OVERNIGHT',
+                'message': 'Market is closed until next trading day',
+                'current_time_et': now_et.strftime('%Y-%m-%d %H:%M:%S %Z'),
+                'next_open': next_open.strftime('%Y-%m-%d %H:%M:%S %Z') if next_open else None,
+                'session': 'CLOSED'
+            }
+    
+    def _get_next_market_open(self, from_time: datetime) -> Optional[datetime]:
+        """Get the next time the market opens"""
+        current_date = from_time.date()
+        
+        # Try next 10 days to find next market open
+        for days_ahead in range(1, 11):
+            check_date = current_date + datetime.timedelta(days=days_ahead)
+            
+            # Skip weekends and holidays
+            if not self.is_weekend(check_date) and not self.is_market_holiday(check_date):
+                next_open = datetime.combine(
+                    check_date, 
+                    self.us_market_hours['pre_market_start']
+                )
+                return self.timezones['US'].localize(next_open)
+        
+        return None
+    
+    def is_trading_allowed(self, allow_pre_market: bool = False, allow_after_hours: bool = False) -> Tuple[bool, str]:
+        """
+        Check if trading should be allowed based on market status
+        
+        Args:
+            allow_pre_market: Allow trading during pre-market hours
+            allow_after_hours: Allow trading during after-hours
+            
+        Returns:
+            Tuple of (is_allowed, reason)
+        """
+        status = self.get_market_status()
+        
+        if not status['is_open']:
+            return False, status['message']
+        
+        session = status['session']
+        
+        if session == 'REGULAR':
+            return True, "Regular market hours - trading allowed"
+        
+        elif session == 'PRE_MARKET':
+            if allow_pre_market:
+                return True, "Pre-market trading allowed"
             else:
-                # After market close, next open is tomorrow (or Monday if Friday)
-                if now_eastern.weekday() == 4:  # Friday
-                    next_open = now_eastern.replace(hour=9, minute=30, second=0, microsecond=0)
-                    next_open = next_open.replace(day=now_eastern.day + 3)  # Monday
-                else:
-                    next_open = now_eastern.replace(hour=9, minute=30, second=0, microsecond=0)
-                    next_open = next_open.replace(day=now_eastern.day + 1)  # Tomorrow
+                return False, "Pre-market trading not enabled"
         
-        return {
-            'is_open': False,
-            'status': 'Market is CLOSED',
-            'next_change': 'Market opens',
-            'next_time': next_open.strftime('%I:%M %p %Z on %A'),
-            'current_time': now_eastern.strftime('%I:%M %p %Z on %A')
-        }
+        elif session == 'AFTER_HOURS':
+            if allow_after_hours:
+                return True, "After-hours trading allowed"
+            else:
+                return False, "After-hours trading not enabled"
         
-    except Exception as e:
-        print(f"Error getting market status: {e}")
-        return {
-            'is_open': True,
-            'status': 'Market status unknown',
-            'next_change': 'Unable to determine',
-            'next_time': 'N/A',
-            'current_time': 'N/A'
-        }
+        return False, "Trading not allowed at this time"
 
-def is_instrument_tradeable(instrument_type):
-    """
-    Check if a specific instrument type can be traded right now
-    """
-    if instrument_type.lower() == 'stock':
-        return is_stock_market_open()
-    
-    # Crypto, Forex, Commodities can be traded 24/7 (or have different hours)
-    # For now, allow all non-stock instruments
-    return True
+# Global instance
+market_checker = MarketHoursChecker()
 
-# Market holidays (add more as needed)
-MARKET_HOLIDAYS = [
-    # 2024 holidays (update yearly)
-    "2024-01-01",  # New Year's Day
-    "2024-01-15",  # Martin Luther King Jr. Day
-    "2024-02-19",  # Presidents' Day
-    "2024-03-29",  # Good Friday
-    "2024-05-27",  # Memorial Day
-    "2024-06-19",  # Juneteenth
-    "2024-07-04",  # Independence Day
-    "2024-09-02",  # Labor Day
-    "2024-11-28",  # Thanksgiving
-    "2024-12-25",  # Christmas
-    
-    # 2025 holidays
-    "2025-01-01",  # New Year's Day
-    "2025-01-20",  # Martin Luther King Jr. Day
-    "2025-02-17",  # Presidents' Day
-    "2025-04-18",  # Good Friday
-    "2025-05-26",  # Memorial Day
-    "2025-06-19",  # Juneteenth
-    "2025-07-04",  # Independence Day
-    "2025-09-01",  # Labor Day
-    "2025-11-27",  # Thanksgiving
-    "2025-12-25",  # Christmas
-]
+# Convenience functions
+def is_market_open() -> bool:
+    """Quick check if market is open (regular hours only)"""
+    status = market_checker.get_market_status()
+    return status['is_open'] and status['session'] == 'REGULAR'
 
-def is_market_holiday():
-    """Check if today is a market holiday"""
-    try:
-        eastern = pytz.timezone('US/Eastern')
-        today = datetime.now(eastern).strftime('%Y-%m-%d')
-        return today in MARKET_HOLIDAYS
-    except:
-        return False
+def get_market_status() -> Dict:
+    """Get current market status"""
+    return market_checker.get_market_status()
+
+def can_trade(allow_extended_hours: bool = False) -> Tuple[bool, str]:
+    """Check if trading is allowed"""
+    return market_checker.is_trading_allowed(
+        allow_pre_market=allow_extended_hours,
+        allow_after_hours=allow_extended_hours
+    )

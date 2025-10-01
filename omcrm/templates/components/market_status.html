@@ -1,0 +1,178 @@
+<!-- Market Status Component for Wealth Venture -->
+<!-- Include this in your trading pages -->
+
+<div class="market-status-widget">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div id="market-status" class="d-flex align-items-center">
+                        <i class="fas fa-circle text-muted me-2"></i>
+                        <span class="text-muted">Checking market status...</span>
+                        <div class="spinner-border spinner-border-sm ms-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="market-controls">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="extendedHoursToggle">
+                        <label class="form-check-label small text-muted" for="extendedHoursToggle">
+                            Extended Hours
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Market Details (expandable) -->
+            <div class="collapse mt-3" id="marketDetails">
+                <div class="border-top pt-3">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="small text-muted">Pre-Market</div>
+                            <div class="fw-bold">4:00 AM</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-muted">Regular</div>
+                            <div class="fw-bold">9:30 AM - 4:00 PM</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-muted">After Hours</div>
+                            <div class="fw-bold">8:00 PM</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">All times Eastern Time (ET)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Toggle details button -->
+            <div class="text-center mt-2">
+                <button class="btn btn-link btn-sm p-0 text-decoration-none" 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#marketDetails">
+                    <small>Market Hours <i class="fas fa-chevron-down"></i></small>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Market Alerts Container -->
+<div id="market-alerts" class="market-alerts-container mb-3"></div>
+
+<style>
+.market-status-widget {
+    margin-bottom: 1rem;
+}
+
+.market-status-widget .market-open {
+    animation: pulse-success 2s infinite;
+}
+
+.market-status-widget .market-closed {
+    opacity: 0.8;
+}
+
+@keyframes pulse-success {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.market-alerts-container {
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+}
+
+/* Trading button states */
+.trading-btn:disabled,
+.trading-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.trading-btn:disabled:hover,
+.trading-btn.disabled:hover {
+    transform: none;
+}
+
+/* Market status indicator styles */
+#market-status .fas.fa-circle {
+    font-size: 0.8rem;
+}
+
+#market-status .text-success {
+    color: #28a745 !important;
+}
+
+#market-status .text-danger {
+    color: #dc3545 !important;
+}
+
+#market-status .text-warning {
+    color: #ffc107 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .market-status-widget .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .market-controls {
+        margin-top: 0.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize market status checking
+    if (window.marketChecker) {
+        // Check if extended hours toggle exists and get its state
+        const extendedToggle = document.getElementById('extendedHoursToggle');
+        const extendedHours = extendedToggle ? extendedToggle.checked : false;
+        
+        // Start auto-checking
+        window.marketChecker.startAutoCheck(1, extendedHours);
+        
+        // Handle extended hours toggle
+        if (extendedToggle) {
+            extendedToggle.addEventListener('change', function() {
+                const extended = this.checked;
+                
+                // Restart checking with new extended hours setting
+                window.marketChecker.stopAutoCheck();
+                window.marketChecker.startAutoCheck(1, extended);
+                
+                // Save preference to localStorage
+                localStorage.setItem('wealthventure_extended_hours', extended);
+            });
+            
+            // Load saved preference
+            const savedExtended = localStorage.getItem('wealthventure_extended_hours');
+            if (savedExtended !== null) {
+                extendedToggle.checked = savedExtended === 'true';
+            }
+        }
+    }
+    
+    // Handle collapse icon rotation
+    const collapseButton = document.querySelector('[data-bs-target="#marketDetails"]');
+    if (collapseButton) {
+        const marketDetails = document.getElementById('marketDetails');
+        marketDetails.addEventListener('show.bs.collapse', function() {
+            collapseButton.querySelector('i').classList.replace('fa-chevron-down', 'fa-chevron-up');
+        });
+        marketDetails.addEventListener('hide.bs.collapse', function() {
+            collapseButton.querySelector('i').classList.replace('fa-chevron-up', 'fa-chevron-down');
+        });
+    }
+});
+</script>

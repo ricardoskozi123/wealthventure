@@ -1090,6 +1090,30 @@
             font-weight: 600;
             color: white;
         }
+        
+        /* Market Status Indicator */
+        .market-status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background-color: var(--darker-bg);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .market-status-indicator .fas.fa-circle {
+            font-size: 0.7rem;
+        }
+        
+        .market-status-indicator.market-open {
+            border-color: var(--success-color);
+        }
+        
+        .market-status-indicator.market-closed {
+            border-color: var(--danger-color);
+        }
 
         .user-info {
             display: flex;
@@ -1380,6 +1404,12 @@
             <div class="logo">
                 <img src="{{ url_for('static', filename='imgs/bootstrap-solid.svg') }}" alt="Logo" class="logo-img">
                 <span class="logo-text">WebTrader</span>
+            </div>
+            
+            <!-- Market Status Indicator (Non-intrusive) -->
+            <div id="market-status-indicator" class="market-status-indicator">
+                <i class="fas fa-circle text-muted"></i>
+                <span class="text-muted">Checking market...</span>
             </div>
             
             <div class="user-info">
@@ -4030,6 +4060,25 @@
                 `;
                 marketStatusEl.className = data.is_market_hours ? 'text-success' : 'text-warning';
             }
+            
+            // Update the new market status indicator
+            const marketIndicator = document.getElementById('market-status-indicator');
+            if (marketIndicator) {
+                const icon = marketIndicator.querySelector('i');
+                const text = marketIndicator.querySelector('span');
+                
+                if (data.trading_allowed) {
+                    icon.className = 'fas fa-circle text-success';
+                    text.textContent = 'Market Open';
+                    text.className = 'text-success';
+                    marketIndicator.className = 'market-status-indicator market-open';
+                } else {
+                    icon.className = 'fas fa-circle text-danger';
+                    text.textContent = 'Market Closed';
+                    text.className = 'text-danger';
+                    marketIndicator.className = 'market-status-indicator market-closed';
+                }
+            }
         }
 
         function formatPrice(price) {
@@ -4807,9 +4856,35 @@
             }
         }
         
+        // Check market status for the indicator
+        function checkMarketStatusIndicator() {
+            fetch('/api/market/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateMarketStatus(data);
+                })
+                .catch(error => {
+                    console.log('Market status check failed:', error);
+                    // Fallback - assume market is open to avoid blocking trading
+                    const marketIndicator = document.getElementById('market-status-indicator');
+                    if (marketIndicator) {
+                        const icon = marketIndicator.querySelector('i');
+                        const text = marketIndicator.querySelector('span');
+                        icon.className = 'fas fa-circle text-warning';
+                        text.textContent = 'Status Unknown';
+                        text.className = 'text-warning';
+                        marketIndicator.className = 'market-status-indicator';
+                    }
+                });
+        }
+        
         // Check market hours every 5 minutes
         checkMarketHours();
         setInterval(checkMarketHours, 5 * 60 * 1000);
+        
+        // Check market status for the indicator
+        checkMarketStatusIndicator();
+        setInterval(checkMarketStatusIndicator, 60 * 1000); // Every minute
         
         // Check when user selects a stock instrument
         document.addEventListener('click', (e) => {

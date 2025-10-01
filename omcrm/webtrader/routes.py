@@ -132,6 +132,22 @@ def webtrader_dashboard():
             flash('Invalid instrument selected.', 'danger')
             return redirect(url_for('webtrader.webtrader_dashboard'))
 
+        # 🕐 MARKET HOURS CHECK: Prevent stock trading when market is closed
+        if instrument.type.lower() == 'stock':
+            try:
+                from omcrm.utils.market_hours import can_trade
+                
+                # Check if stock trading is allowed (regular hours only for stocks)
+                can_trade_now, reason = can_trade(allow_extended_hours=False)
+                
+                if not can_trade_now:
+                    flash(f'Stock trading is not available: {reason}', 'warning')
+                    return redirect(url_for('webtrader.webtrader_dashboard'))
+            except Exception as e:
+                # If market hours check fails, log but allow trading (failsafe)
+                logging.warning(f"Market hours check failed: {e}")
+                pass
+
         # 🚀 PERFORMANCE: Get current price from database only (no API calls)
         current_price = instrument.current_price
         if not current_price or current_price <= 0:
@@ -866,12 +882,19 @@ def execute_trade():
     
     # 🕐 MARKET HOURS CHECK: Prevent stock trading when market is closed
     if instrument.type.lower() == 'stock':
-        from omcrm.utils.market_hours import is_stock_market_open, get_market_status
-        
-        if not is_stock_market_open():
-            market_status = get_market_status()
-            flash(f'Stock trading is not available when the market is closed. {market_status["status"]}. {market_status["next_change"]} at {market_status["next_time"]}.', 'warning')
-            return redirect(url_for('webtrader.webtrader_dashboard'))
+        try:
+            from omcrm.utils.market_hours import can_trade
+            
+            # Check if stock trading is allowed (regular hours only for stocks)
+            can_trade_now, reason = can_trade(allow_extended_hours=False)
+            
+            if not can_trade_now:
+                flash(f'Stock trading is not available: {reason}', 'warning')
+                return redirect(url_for('webtrader.webtrader_dashboard'))
+        except Exception as e:
+            # If market hours check fails, log but allow trading (failsafe)
+            logging.warning(f"Market hours check failed: {e}")
+            pass
 
     # 🚀 PERFORMANCE: Get current price from database only (no API calls)
     current_price = instrument.current_price

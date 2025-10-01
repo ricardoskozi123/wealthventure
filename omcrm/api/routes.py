@@ -21,6 +21,56 @@ def api_status():
         'message': 'API is operational'
     }), 200
 
+@api.route('/api/market/status', methods=['GET'])
+def market_status():
+    """Get current market status and trading hours"""
+    try:
+        from omcrm.utils.market_hours import get_market_status, can_trade
+        
+        # Get basic market status
+        status = get_market_status()
+        
+        # Check if trading is allowed (with optional extended hours)
+        allow_extended = request.args.get('extended_hours', 'false').lower() == 'true'
+        can_trade_now, trade_reason = can_trade(allow_extended_hours=allow_extended)
+        
+        # Add trading permission to response
+        status['trading_allowed'] = can_trade_now
+        status['trading_reason'] = trade_reason
+        status['extended_hours_enabled'] = allow_extended
+        
+        return jsonify(status), 200
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Error checking market status: {str(e)}',
+            'is_open': False,
+            'trading_allowed': False,
+            'status': 'ERROR'
+        }), 500
+
+@api.route('/api/market/can_trade', methods=['GET'])
+def can_trade_check():
+    """Simple endpoint to check if trading is currently allowed"""
+    try:
+        from omcrm.utils.market_hours import can_trade
+        
+        allow_extended = request.args.get('extended_hours', 'false').lower() == 'true'
+        can_trade_now, reason = can_trade(allow_extended_hours=allow_extended)
+        
+        return jsonify({
+            'can_trade': can_trade_now,
+            'reason': reason,
+            'extended_hours_enabled': allow_extended
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'can_trade': False,
+            'reason': f'Error: {str(e)}',
+            'extended_hours_enabled': False
+        }), 500
+
 @api.route('/api/admin/sources', methods=['GET'])
 @login_required
 @is_admin

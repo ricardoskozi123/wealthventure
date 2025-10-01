@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Trading Dashboard - {{ platform_name }}{% endblock %}
+
+{% block head %}
+<!-- Include market hours JavaScript -->
+<script src="{{ url_for('static', filename='js/market_hours.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Trading Dashboard</h1>
+            
+            <!-- Market Status Widget -->
+            {% include 'components/market_status.html' %}
+            
+            <!-- Trading Controls -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Buy Order</h5>
+                        </div>
+                        <div class="card-body">
+                            <form data-trading-form="true" method="POST" action="/trading/buy">
+                                <div class="mb-3">
+                                    <label for="symbol" class="form-label">Symbol</label>
+                                    <input type="text" class="form-control" id="symbol" name="symbol" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="quantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="price" class="form-label">Price</label>
+                                    <input type="number" class="form-control" id="price" name="price" step="0.01">
+                                </div>
+                                
+                                <!-- Trading buttons - will be disabled when market is closed -->
+                                <button type="submit" class="btn btn-success trading-btn" data-trading-action="buy">
+                                    <i class="fas fa-arrow-up"></i> Buy
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Sell Order</h5>
+                        </div>
+                        <div class="card-body">
+                            <form data-trading-form="true" method="POST" action="/trading/sell">
+                                <div class="mb-3">
+                                    <label for="sell_symbol" class="form-label">Symbol</label>
+                                    <input type="text" class="form-control" id="sell_symbol" name="symbol" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="sell_quantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="sell_quantity" name="quantity" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="sell_price" class="form-label">Price</label>
+                                    <input type="number" class="form-control" id="sell_price" name="price" step="0.01">
+                                </div>
+                                
+                                <!-- Trading buttons - will be disabled when market is closed -->
+                                <button type="submit" class="btn btn-danger trading-btn" data-trading-action="sell">
+                                    <i class="fas fa-arrow-down"></i> Sell
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Trade Buttons -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary trading-btn" data-trading-action="portfolio">
+                                    <i class="fas fa-chart-pie"></i> View Portfolio
+                                </button>
+                                <button type="button" class="btn btn-outline-info trading-btn" data-trading-action="watchlist">
+                                    <i class="fas fa-eye"></i> Watchlist
+                                </button>
+                                <button type="button" class="btn btn-outline-warning trading-btn" data-trading-action="orders">
+                                    <i class="fas fa-list"></i> Open Orders
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Custom trading logic
+document.addEventListener('DOMContentLoaded', function() {
+    // Example: Custom validation before trading
+    document.querySelectorAll('form[data-trading-form]').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            // Market hours validation is handled automatically by market_hours.js
+            // Add any additional custom validation here
+            
+            const symbol = this.querySelector('input[name="symbol"]').value;
+            const quantity = this.querySelector('input[name="quantity"]').value;
+            
+            if (!symbol || !quantity) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+                return false;
+            }
+            
+            // Additional validation can go here
+            console.log('Trading form submitted:', { symbol, quantity });
+        });
+    });
+    
+    // Example: Real-time market status updates
+    if (window.marketChecker) {
+        // Custom callback when market status changes
+        setInterval(async () => {
+            const status = await window.marketChecker.getMarketStatus();
+            
+            // Update page title with market status
+            if (status.trading_allowed) {
+                document.title = '🟢 Trading Dashboard - Market Open';
+            } else {
+                document.title = '🔴 Trading Dashboard - Market Closed';
+            }
+        }, 60000); // Check every minute
+    }
+});
+</script>
+{% endblock %}
