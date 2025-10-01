@@ -214,8 +214,8 @@ def import_lead():
     
     # Create new lead
     try:
-        # Get default lead status (or first status if no default is set)
-        default_status = LeadStatus.query.first()
+        # No default status - leads should start with no status
+        default_status = None
         
         new_lead = Lead(
             first_name=data.get('first_name'),

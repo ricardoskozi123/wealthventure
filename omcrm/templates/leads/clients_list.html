@@ -145,25 +145,14 @@
                     <td>{{ client.first_name }}</td>
                     <td>{{ client.last_name }}</td>
                     <td>
-                        {% if client.status %}
-                            <select class="form-select form-select-sm lead-status-select" style="min-width: 140px;" data-lead-id="{{ client.id }}">
-                                <option value="">Select Status</option>
-                                {% for status in statuses %}
-                                    <option value="{{ status.id }}" {% if client.lead_status_id == status.id %}selected{% endif %}>
-                                        {{ status.status_name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        {% else %}
-                            <select class="form-select form-select-sm lead-status-select" style="min-width: 140px;" data-lead-id="{{ client.id }}">
-                                <option value="" selected>No Status</option>
-                                {% for status in statuses %}
-                                    <option value="{{ status.id }}">
-                                        {{ status.status_name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        {% endif %}
+                        <select class="form-select form-select-sm lead-status-select" style="min-width: 140px;" data-lead-id="{{ client.id }}">
+                            <option value="" {% if not client.lead_status_id %}selected{% endif %}>No Status</option>
+                            {% for status in statuses %}
+                                <option value="{{ status.id }}" {% if client.lead_status_id == status.id %}selected{% endif %}>
+                                    {{ status.status_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </td>
                     <td>
                         {% if client.email %}
@@ -362,33 +351,51 @@
         
         // Update client status via AJAX when changed
         $('.lead-status-select').change(function() {
-            const leadId = $(this).data('lead-id');
-            const statusId = $(this).val();
+            const $select = $(this);
+            const leadId = $select.data('lead-id');
+            const statusId = $select.val();
+            const previousValue = $select.data('previous-value') || '';
+            
+            // Store current value as previous for next time
+            $select.data('previous-value', statusId);
+            
+            console.log('Updating client status:', { leadId, statusId, previousValue });
             
             $.ajax({
                 url: '/leads/update_status',
                 type: 'POST',
                 data: {
                     lead_id: leadId,
-                    status_id: statusId,
+                    status_id: statusId || '',  // Send empty string for "No Status"
                     csrf_token: '{{ csrf_token }}'
                 },
                 success: function(response) {
+                    console.log('Status update response:', response);
                     if (response.success) {
                         // Show success message
-                        toastr.success('Client status updated');
+                        toastr.success('Client status updated successfully');
+                        // Update the selected attribute in the DOM
+                        $select.find('option').removeAttr('selected');
+                        if (statusId) {
+                            $select.find('option[value="' + statusId + '"]').attr('selected', 'selected');
+                        } else {
+                            $select.find('option[value=""]').attr('selected', 'selected');
+                        }
                     } else {
                         // Show error message
                         toastr.error(response.message || 'Error updating client status');
                         // Reset select to previous value
-                        $(this).val($(this).find('option[selected]').val()).trigger('change');
+                        $select.val(previousValue);
+                        $select.data('previous-value', previousValue);
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', { xhr, status, error });
                     // Show error message
-                    toastr.error('Error updating client status');
+                    toastr.error('Error updating client status: ' + (xhr.responseJSON?.message || error));
                     // Reset select to previous value
-                    $(this).val($(this).find('option[selected]').val()).trigger('change');
+                    $select.val(previousValue);
+                    $select.data('previous-value', previousValue);
                 }
             });
         });

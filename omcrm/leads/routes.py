@@ -304,11 +304,10 @@ def get_lead_view(lead_id):
         # Check if lead has a status, if not, try to assign a default one
         if not lead.lead_status_id:
             # Try to get the first available status
-            default_status = LeadStatus.query.first()
-            if default_status:
-                lead.lead_status_id = default_status.id
-                db.session.commit()
-                flash('A default status has been assigned to this lead/client.', 'info')
+            # No default status - leads should start with no status
+            lead.lead_status_id = None
+            db.session.commit()
+            flash('Lead/client updated successfully.', 'info')
         
         # Prepare comment form
         form = CommentForm()
@@ -1356,6 +1355,7 @@ def shuffle_leads():
 
 @leads.route("/leads/update_status", methods=['POST'])
 @login_required
+@check_access('leads', 'update')
 def update_status():
     """Update the status of a lead or client via AJAX"""
     if not request.is_json and not request.form:
@@ -1378,9 +1378,16 @@ def update_status():
     if not lead:
         return jsonify({"success": False, "message": "Lead not found"}), 404
     
-    # Check permissions
+    # Check permissions - allow if user is admin, owner, or has leads update permission
     if not current_user.is_admin and lead.owner_id != current_user.id:
-        return jsonify({"success": False, "message": "You don't have permission to update this lead's status"}), 403
+        # Check if user has general leads update permission
+        try:
+            from omcrm.rbac import is_allowed
+            if not is_allowed(current_user, 'leads', 'update'):
+                return jsonify({"success": False, "message": "You don't have permission to update this lead's status"}), 403
+        except:
+            # Fallback - if RBAC check fails, deny access for non-admin non-owners
+            return jsonify({"success": False, "message": "You don't have permission to update this lead's status"}), 403
     
     # If status_id is None, set lead_status_id to None
     if status_id is None:
