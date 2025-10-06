@@ -397,14 +397,15 @@
             window.open(url, '_blank');
         });
         
-        // Function to change per-page value
-        function changePerPage(perPage) {
-            const url = new URL(window.location);
-            url.searchParams.set('per_page', perPage);
-            url.searchParams.set('page', '1'); // Reset to first page
-            window.location.href = url.toString();
-        }
     });
+    
+    // Function to change per-page value (global scope)
+    function changePerPage(perPage) {
+        const url = new URL(window.location);
+        url.searchParams.set('per_page', perPage);
+        url.searchParams.set('page', '1'); // Reset to first page
+        window.location.href = url.toString();
+    }
 </script>
 
 <!-- Lead Owner Assign Modal -->
