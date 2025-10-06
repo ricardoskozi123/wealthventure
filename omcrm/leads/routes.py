@@ -158,8 +158,13 @@ def get_leads_view():
     shuffle_form = LeadTeamShuffle()
     
     page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
-    paginator = Paginate(query, page=page, per_page=10)
+    # Validate per_page to prevent abuse
+    if per_page not in [10, 25, 50, 100]:
+        per_page = 10
+    
+    paginator = Paginate(query, page=page, per_page=per_page)
     leads_to_template = paginator.items()
     total_leads = paginator.total_records
     
@@ -179,6 +184,7 @@ def get_leads_view():
                            shuffle_form=shuffle_form,
                            statuses=statuses,
                            countries=countries,
+                           current_per_page=per_page,
                            form=FilterLeads())
 
 @leads.route("/leads/new", methods=['GET', 'POST'])
@@ -615,8 +621,13 @@ def get_clients_view():
     shuffle_form = LeadTeamShuffle()
     
     page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
-    paginator = Paginate(query, page=page, per_page=10)
+    # Validate per_page to prevent abuse
+    if per_page not in [10, 25, 50, 100]:
+        per_page = 10
+    
+    paginator = Paginate(query, page=page, per_page=per_page)
     leads_to_template = paginator.items()
     total_leads = paginator.total_records
     
@@ -640,7 +651,8 @@ def get_clients_view():
                           shuffle_form=shuffle_form,
                           statuses=statuses,
                           users=users,
-                          sources=sources)
+                          sources=sources,
+                          current_per_page=per_page)
 
 @leads.route("/leads/edit_trade/<int:trade_id>", methods=['GET', 'POST'])
 @login_required
