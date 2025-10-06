@@ -6,6 +6,7 @@ import re
 
 from omcrm import db
 from omcrm.leads.models import Lead, LeadSource, LeadStatus, Comment
+from omcrm.webtrader.models import TradingInstrument
 from omcrm.rbac import is_admin, check_access
 from flask_login import login_required
 # CSRF exemption removed - using different approach
@@ -383,4 +384,72 @@ def add_comment_to_lead():
         return jsonify({
             'success': False,
             'error': f'Error adding comment: {str(e)}'
+        }), 500
+
+@api.route('/api/prices/landing', methods=['GET'])
+def get_landing_prices():
+    """Get real-time prices for landing page display"""
+    try:
+        # Define the symbols we want to show on landing page
+        landing_symbols = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'AAPL']
+        
+        prices = []
+        
+        for symbol in landing_symbols:
+            instrument = TradingInstrument.query.filter_by(symbol=symbol).first()
+            
+            if instrument:
+                # Calculate change percentage
+                change_percent = 0.0
+                if instrument.previous_price and instrument.previous_price > 0:
+                    change_percent = ((instrument.current_price - instrument.previous_price) / instrument.previous_price) * 100
+                
+                # Determine icon based on symbol
+                icon_map = {
+                    'BTC/USD': 'fab fa-bitcoin',
+                    'ETH/USD': 'fab fa-ethereum', 
+                    'SOL/USD': 'fas fa-chart-area',
+                    'AAPL': 'fas fa-coins'
+                }
+                
+                # Determine color based on symbol
+                color_map = {
+                    'BTC/USD': 'var(--crypto-gold)',
+                    'ETH/USD': 'var(--neon-blue)',
+                    'SOL/USD': 'var(--neon-purple)', 
+                    'AAPL': 'var(--trading-green)'
+                }
+                
+                prices.append({
+                    'symbol': symbol,
+                    'price': float(instrument.current_price) if instrument.current_price else 0.0,
+                    'change': round(change_percent, 2),
+                    'formatted_price': instrument.formatted_price,
+                    'icon': icon_map.get(symbol, 'fas fa-chart-line'),
+                    'color': color_map.get(symbol, 'var(--trading-green)'),
+                    'last_updated': instrument.last_updated.isoformat() if instrument.last_updated else None
+                })
+            else:
+                # Fallback for missing instruments
+                prices.append({
+                    'symbol': symbol,
+                    'price': 0.0,
+                    'change': 0.0,
+                    'formatted_price': '0.00',
+                    'icon': 'fas fa-chart-line',
+                    'color': 'var(--trading-green)',
+                    'last_updated': None
+                })
+        
+        return jsonify({
+            'success': True,
+            'prices': prices,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error fetching prices: {str(e)}',
+            'prices': []
         }), 500 

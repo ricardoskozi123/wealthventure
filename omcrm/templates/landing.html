@@ -1531,44 +1531,79 @@
             }, 16);
         }
 
-        // Enhanced price ticker animation
-        function animateRealTimePrices() {
-            const tickers = document.querySelectorAll('.price-ticker');
-            
-            setInterval(() => {
-                tickers.forEach(ticker => {
-                    const priceElement = ticker.querySelector('.ticker-price');
-                    const changeElement = ticker.querySelector('.ticker-change');
-                    
-                    if (priceElement && changeElement) {
-                        // Get current price
-                        const currentPrice = parseFloat(priceElement.textContent.replace(/[$,]/g, ''));
+        // Real-time price updates from API
+        function updateRealTimePrices() {
+            fetch('/api/prices/landing')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.prices) {
+                        const tickers = document.querySelectorAll('.price-ticker');
                         
-                        // Generate realistic price movement
-                        const volatility = currentPrice > 1000 ? 0.005 : 0.02; // Lower volatility for high-value assets
-                        const change = (Math.random() - 0.5) * volatility;
-                        const newPrice = currentPrice * (1 + change);
-                        const changePercent = change * 100;
+                        data.prices.forEach((priceData, index) => {
+                            if (tickers[index]) {
+                                const ticker = tickers[index];
+                                const priceElement = ticker.querySelector('.ticker-price');
+                                const changeElement = ticker.querySelector('.ticker-change');
+                                const symbolElement = ticker.querySelector('.ticker-symbol');
+                                const iconElement = ticker.querySelector('i');
+                                
+                                if (priceElement && changeElement && symbolElement) {
+                                    // Store previous price for animation
+                                    const previousPrice = parseFloat(priceElement.textContent.replace(/[$,]/g, '')) || 0;
+                                    const currentPrice = priceData.price;
+                                    
+                                    // Update symbol and icon
+                                    symbolElement.textContent = priceData.symbol;
+                                    if (iconElement) {
+                                        iconElement.className = priceData.icon;
+                                        iconElement.style.color = priceData.color;
+                                    }
+                                    
+                                    // Update price with proper formatting
+                                    if (currentPrice > 1000) {
+                                        priceElement.textContent = `$${currentPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                                    } else {
+                                        priceElement.textContent = `$${currentPrice.toFixed(2)}`;
+                                    }
+                                    
+                                    // Update change percentage
+                                    const changePercent = priceData.change;
+                                    changeElement.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                                    changeElement.className = `ticker-change ${changePercent >= 0 ? 'positive' : 'negative'}`;
+                                    
+                                    // Add pulse effect if price changed
+                                    if (Math.abs(currentPrice - previousPrice) > 0.01) {
+                                        ticker.style.transform = 'scale(1.02)';
+                                        ticker.style.boxShadow = changePercent >= 0 ? 
+                                            '0 15px 40px rgba(0, 212, 170, 0.3)' : 
+                                            '0 15px 40px rgba(255, 107, 107, 0.3)';
+                                        
+                                        setTimeout(() => {
+                                            ticker.style.transform = 'scale(1)';
+                                            ticker.style.boxShadow = '';
+                                        }, 300);
+                                    }
+                                }
+                            }
+                        });
                         
-                        // Update price with proper formatting
-                        if (currentPrice > 1000) {
-                            priceElement.textContent = `$${newPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                        } else {
-                            priceElement.textContent = `$${newPrice.toFixed(2)}`;
-                        }
-                        
-                        // Update change percentage
-                        changeElement.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
-                        changeElement.className = `ticker-change ${changePercent >= 0 ? 'positive' : 'negative'}`;
-                        
-                        // Add pulse effect
-                        ticker.style.transform = 'scale(1.02)';
-                        setTimeout(() => {
-                            ticker.style.transform = 'scale(1)';
-                        }, 150);
+                        console.log('✅ Real-time prices updated:', data.timestamp);
+                    } else {
+                        console.error('❌ Failed to fetch prices:', data.error);
                     }
+                })
+                .catch(error => {
+                    console.error('❌ Error fetching real-time prices:', error);
                 });
-            }, 2000); // Update every 2 seconds for realistic feel
+        }
+        
+        // Initialize real-time price updates
+        function initializeRealTimePrices() {
+            // Update immediately on load
+            updateRealTimePrices();
+            
+            // Then update every 5 seconds
+            setInterval(updateRealTimePrices, 5000);
         }
 
         // Enhanced scroll effects
@@ -1643,7 +1678,7 @@
         // Initialize everything when page loads
         document.addEventListener('DOMContentLoaded', function() {
             createEnhancedParticles();
-            animateRealTimePrices();
+            initializeRealTimePrices();
             
             // Observe stats sections for counter animation
             const statsSection = document.querySelector('.stats-section');
