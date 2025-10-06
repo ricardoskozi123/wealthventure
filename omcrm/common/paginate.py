@@ -7,7 +7,8 @@ class Paginate:
         self.page = request.args.get('page', page, type=int)
         self.per_page = request.args.get('per_page', per_page, type=int)
 
-        if self.per_page < 10:
+        # Validate per_page - allow 10, 25, 50, 100
+        if self.per_page not in [10, 25, 50, 100]:
             self.per_page = 10
 
         self.total_records = query.count()
