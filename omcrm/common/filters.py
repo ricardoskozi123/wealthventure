@@ -22,14 +22,48 @@ class CommonFilters:
                     session.pop(key, None)
                     owner = True
             else:
-                owner = text('%s.owner_id=%d' % (module, current_user.id))
-                session[key] = current_user.id
+                # Check if user has permission to view all clients/leads
+                can_view_all = False
+                if current_user.role:
+                    for res in current_user.role.resources:
+                        # For clients, check can_view_all_clients on leads resource
+                        # For leads, check can_view_all_leads on leads resource
+                        if res.name == 'leads':
+                            if (module == 'Lead' and hasattr(res, 'can_view_all_clients') and res.can_view_all_clients) or \
+                               (module == 'Lead' and hasattr(res, 'can_view_all_leads') and res.can_view_all_leads):
+                                can_view_all = True
+                                break
+                
+                if can_view_all:
+                    # User can see all - don't filter by owner
+                    if filters.assignees.data:
+                        owner = text('%s.owner_id=%d' % (module, filters.assignees.data.id))
+                        session[key] = filters.assignees.data.id
+                    else:
+                        session.pop(key, None)
+                        owner = True
+                else:
+                    # Regular user - filter by owner
+                    owner = text('%s.owner_id=%d' % (module, current_user.id))
+                    session[key] = current_user.id
         else:
             if key in session:
                 owner = text('%s.owner_id=%d' % (module, session[key]))
                 filters.assignees.data = User.get_by_id(session[key])
             else:
-                owner = True if current_user.is_admin else text('%s.owner_id=%d' % (module, current_user.id))
+                # Check if user has permission to view all
+                can_view_all = False
+                if current_user.is_admin:
+                    can_view_all = True
+                elif current_user.role:
+                    for res in current_user.role.resources:
+                        if res.name == 'leads':
+                            if (module == 'Lead' and hasattr(res, 'can_view_all_clients') and res.can_view_all_clients) or \
+                               (module == 'Lead' and hasattr(res, 'can_view_all_leads') and res.can_view_all_leads):
+                                can_view_all = True
+                                break
+                
+                owner = True if can_view_all else text('%s.owner_id=%d' % (module, current_user.id))
         return owner
 
 
